@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from "styled-components";
+import { serviceAPI } from "../api/index.js"
+
 
 const Container = styled.div`
   display: flex;
@@ -209,145 +211,156 @@ const WrapperFilter = styled.div`
   border-radius: 4px; // Скругление углов
 `;
 
+/*
+const getData = async function (get) {
+  try {
+    const response = await get
+    return response.data
+  }
+  catch (error) {
+    console.log(error)
+    return []
+  }
+}
+*/
+
+export const Sidebar = ({ setSelectedRegion }) => {
+  const [selectedButton, setSelectedButton] = useState('status');
+  const [statusIP, setStatusIP] = useState('');
+  const [category, setCategory] = useState('');
+  const [listRegions, setListRegions] = useState([]);
+  const [listDebitTypes, setListDebitTypes] = useState([]);
+
+  useEffect(() => {
+    serviceAPI.getRegions("Index").then(data => setListRegions(data.data)).catch(console.log)
+    serviceAPI.getDebtTypes().then(data => setListDebitTypes(data.data)).catch(console.log)
+  }, [])
 
 
-export const Sidebar = () => {
-    const [selectedButton, setSelectedButton] = useState('status');
-    const [statusIP, setStatusIP] = useState('');
-    const [category, setCategory] = useState('');
+  const handleChange = (value) => {
+    setSelectedButton(value);
+  };
 
-    const handleChange = (value) => {
-        setSelectedButton(value);
-    };
+  const handleApply = () => {
+    console.log('Применить:', { statusIP, category });
+  };
 
-    const handleApply = () => {
-        console.log('Применить:', { statusIP, category });
-    };
+  const handleReset = () => {
+    setStatusIP('');
+    setCategory('');
+    console.log('Сбросить');
+  };
 
-    const handleReset = () => {
-        setStatusIP('');
-        setCategory('');
-        console.log('Сбросить');
-    };
+  return (
+    <Container>
+      <Filters>
+        {/* Селект */}
+        <SelectWrapper>
+          <StyledSelect onChange={event => setSelectedRegion(event.target.value)}>
+            {/* Значение по умолчанию */}
+            <option value="" disabled selected>
+              Выберите регион
+            </option>
+            {/* Остальные опции */}
+            {listRegions.map(region => <option key={region}>{region}</option>)}
+          </StyledSelect>
+          {/* Иконка стрелки */}
+          <ArrowIcon viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+            <path d="M7 10l5 5 5-5z" />
+          </ArrowIcon>
+        </SelectWrapper>
 
-    return (
-        <Container>
-            <Filters>
-                {/* Селект */}
-                <SelectWrapper>
-                    <StyledSelect>
-                        {/* Значение по умолчанию */}
-                        <option value="" disabled selected>
-                            Выберите регион
-                        </option>
-                        {/* Остальные опции */}
-                        <option value="option1">0500</option>
-                        <option value="option2">1000</option>
-                        <option value="option3">1100</option>
-                        <option value="option4">2900</option>
-                        <option value="option5">3500</option>
-                        <option value="option6">3900</option>
-                        <option value="option7">4700</option>
-                        <option value="option8">5100</option>
-                        <option value="option9">7800</option>
-                    </StyledSelect>
-                    {/* Иконка стрелки */}
-                    <ArrowIcon viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-                        <path d="M7 10l5 5 5-5z" />
-                    </ArrowIcon>
-                </SelectWrapper>
-
-                {/* Инпут */}
-                <InputWrapper>
-                    <Icon
-                        viewBox="0 0 24 24"
-                        focusable="false"
-                        aria-hidden="true"
-                        data-testid="SearchIcon"
-                    >
-                        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path>
-                    </Icon>
-                    <Input type="text" placeholder="Поиск по ИНН" />
-                </InputWrapper>
+        {/* Инпут */}
+        <InputWrapper>
+          <Icon
+            viewBox="0 0 24 24"
+            focusable="false"
+            aria-hidden="true"
+            data-testid="SearchIcon"
+          >
+            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path>
+          </Icon>
+          <Input type="text" placeholder="Поиск по ИНН" />
+        </InputWrapper>
 
 
-                <WrapperFilter>
-                {/* Кнопки */}
-                <ToggleButtonGroup>
-                    <ToggleButton
-                        active={selectedButton === 'status'}
-                        onClick={() => handleChange('status')}
-                    >
-                        По статусу
-                    </ToggleButton>
-                    <ToggleButton
-                        active={selectedButton === 'sum'}
-                        onClick={() => handleChange('sum')}
-                    >
-                        По сумме
-                    </ToggleButton>
-                </ToggleButtonGroup>
+        <WrapperFilter>
+          {/* Кнопки */}
+          <ToggleButtonGroup>
+            <ToggleButton
+              active={selectedButton === 'status'}
+              onClick={() => handleChange('status')}
+            >
+              По статусу
+            </ToggleButton>
+            <ToggleButton
+              active={selectedButton === 'sum'}
+              onClick={() => handleChange('sum')}
+            >
+              По сумме
+            </ToggleButton>
+          </ToggleButtonGroup>
 
-                {/* Два селекта */}
-                <SelectsContainer>
-                    <SelectWrapper>
-                        <StyledSelect
-                            value={statusIP}
-                            onChange={(e) => setStatusIP(e.target.value)}
-                        >
-                            <option value="" disabled selected>
-                                Статуса ИП
-                            </option>
-                            <option value="active">Активный</option>
-                            <option value="inactive">Неактивный</option>
-                        </StyledSelect>
-                        <ArrowIcon viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-                            <path d="M7 10l5 5 5-5z" />
-                        </ArrowIcon>
-                    </SelectWrapper>
-                    <SelectWrapper>
-                        <StyledSelect
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
-                        >
-                            <option value="" disabled selected>
-                                Категория
-                            </option>
-                            <option value="individual">Физическое лицо</option>
-                            <option value="legal">Юридическое лицо</option>
-                        </StyledSelect>
-                        <ArrowIcon viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-                            <path d="M7 10l5 5 5-5z" />
-                        </ArrowIcon>
-                    </SelectWrapper>
-                </SelectsContainer>
+          {/* Два селекта */}
+          <SelectsContainer>
+            <SelectWrapper>
+              <StyledSelect
+                value={statusIP}
+                onChange={(e) => setStatusIP(e.target.value)}
+              >
+                <option value="" disabled selected>
+                  Статуса ИП
+                </option>
+                <option value="active">Активный</option>
+                <option value="inactive">Неактивный</option>
+              </StyledSelect>
+              <ArrowIcon viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                <path d="M7 10l5 5 5-5z" />
+              </ArrowIcon>
+            </SelectWrapper>
+            <SelectWrapper>
+              <StyledSelect
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                <option value="" disabled selected>
+                  Категория
+                </option>
+                <option value="individual">Физическое лицо</option>
+                <option value="legal">Юридическое лицо</option>
+              </StyledSelect>
+              <ArrowIcon viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                <path d="M7 10l5 5 5-5z" />
+              </ArrowIcon>
+            </SelectWrapper>
+          </SelectsContainer>
 
-                {/* Кнопки "Применить" и "Сбросить" */}
-                <ButtonsContainer>
-                    <ActionButton variant="primary" onClick={handleApply}>
-                        Применить
-                    </ActionButton>
-                    <ActionButton variant="secondary" onClick={handleReset}>
-                        Сбросить
-                    </ActionButton>
-                </ButtonsContainer>
-                </WrapperFilter>
-            </Filters>
-            <Footer>
-                {/* Контейнер для ФИО и иконки */}
-                <UserInfo>
-                    Седов Никита
-                    {/* Иконка выхода */}
-                    <LogoutIcon
-                        viewBox="0 0 24 24"
-                        focusable="false"
-                        aria-hidden="true"
-                        onClick={() => console.log("Выход")}
-                    >
-                        <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
-                    </LogoutIcon>
-                </UserInfo>
-            </Footer>
-        </Container>
-    );
+          {/* Кнопки "Применить" и "Сбросить" */}
+          <ButtonsContainer>
+            <ActionButton variant="primary" onClick={handleApply}>
+              Применить
+            </ActionButton>
+            <ActionButton variant="secondary" onClick={handleReset}>
+              Сбросить
+            </ActionButton>
+          </ButtonsContainer>
+        </WrapperFilter>
+      </Filters>
+      <Footer>
+        {/* Контейнер для ФИО и иконки */}
+        <UserInfo>
+          Седов Никита
+          {/* Иконка выхода */}
+          <LogoutIcon
+            viewBox="0 0 24 24"
+            focusable="false"
+            aria-hidden="true"
+            onClick={() => console.log("Выход")}
+          >
+            <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
+          </LogoutIcon>
+        </UserInfo>
+      </Footer>
+    </Container>
+  );
 };

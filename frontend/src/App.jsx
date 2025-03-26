@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
-import {createGlobalStyle} from "styled-components";
-import {Header} from "./components/Header.jsx";
-import {Sidebar} from "./components/Sidebar.jsx";
-import {Main} from "./components/Main.jsx";
+import { createGlobalStyle } from "styled-components";
+import { Header } from "./components/Header.jsx";
+import { Sidebar } from "./components/Sidebar.jsx";
+import { Main } from "./components/Main.jsx";
 
 
 const GlobalStyles = createGlobalStyle`
@@ -59,20 +59,22 @@ const TablesContainer = styled.div`
 `;
 
 function App() {
-    return (
-        <Container>
-            <GlobalStyles/>
-            <HeaderContainer>
-                <Header/>
-            </HeaderContainer>
-            <FiltersContainer>
-                <Sidebar/>
-            </FiltersContainer>
-            <TablesContainer>
-                <Main/>
-            </TablesContainer>
-        </Container>
-    );
+  const [selectedRegion, setSelectedRegion] = useState("")
+
+  return (
+    <Container>
+      <GlobalStyles />
+      <HeaderContainer>
+        <Header />
+      </HeaderContainer>
+      <FiltersContainer>
+        <Sidebar setSelectedRegion={setSelectedRegion} />
+      </FiltersContainer>
+      <TablesContainer>
+        <Main selectedRegion={selectedRegion} />
+      </TablesContainer>
+    </Container>
+  );
 }
 
 export default App;
