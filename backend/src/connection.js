@@ -1,20 +1,27 @@
 import dotenv from "dotenv"
-import mysql2 from "mysql2"
+import knex from "knex"
 
 
 dotenv.config()
 
-const pool = mysql2.createPool({
-    host: process.env.DB_HOST ?? "127.0.0.1",
-    user:  process.env.DB_USER,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
-}).promise()
 
+const db = knex({
+    client: 'mysql',
+    connection: {
+        host: process.env.DB_HOST ?? "127.0.0.1",
+        user: process.env.DB_USER,
+        database: process.env.DB_NAME,
+        password: process.env.DB_PASSWORD
+    },
+    pool: {
+        min: 2,
+        max: 10,
+    }
+})
 
 export const APP_CONFIG = {
     host: process.env.APP_HOST ?? "127.0.0.1",
     port: process.env.APP_PORT ?? 3022
 }
 
-export default pool
+export default db

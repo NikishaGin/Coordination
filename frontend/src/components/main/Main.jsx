@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from "styled-components";
-import { activesAPI } from "../api/index.js"
+import { activesAPI } from "../../api/index.js"
 
 
 
@@ -110,7 +110,6 @@ const ButtonContainer = styled.div`
   margin-top: 22px;
 `;
 
-// Стиль для кнопок
 const Button = styled.button`
   display: flex;
   align-items: center; // Выравнивание текста и иконки по центру
@@ -119,19 +118,37 @@ const Button = styled.button`
   font-size: 14px; // Размер шрифта
   font-weight: 500; // Жирность текста
   color: white; // Цвет текста
-  background-color: hsl(210, 98%, 40%); // Более темный синий фон
-  border: none; // Убираем границу
+  background-color: rgba(25, 118, 210, 0.6); // Очень насыщенный синий фон
+  border: 1px solid rgba(25, 118, 210, 0.8); // Очень насыщенная граница
   border-radius: 4px; // Скругление углов
   cursor: pointer; // Курсор указывает на интерактивность
-  transition: background-color 0.3s ease; // Плавный переход при наведении
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1); // Легкая тень
+  transition: 
+    background-color 150ms cubic-bezier(0.4, 0, 0.2, 1), 
+    color 150ms cubic-bezier(0.4, 0, 0.2, 1), 
+    box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1); // Плавные переходы
 
   &:hover {
-    background-color: hsl(210, 98%, 35%); // Еще темнее при наведении
+    background-color: rgba(30, 136, 229, 0.8); // Очень яркий синий фон при наведении
+    border-color: rgba(30, 136, 229, 0.9); // Усиленная граница
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); // Усиленная тень
+  }
+
+  &:active {
+    background-color: rgba(21, 101, 192, 0.9); // Очень темный синий фон при активации
+    border-color: rgba(21, 101, 192, 1); // Полностью непрозрачная граница
+    box-shadow: inset 0px 1px 2px rgba(0, 0, 0, 0.2); // Внутренняя тень
   }
 
   &:focus {
     outline: none; // Убираем стандартное выделение при фокусе
-    box-shadow: 0 0 4px rgba(51, 153, 255, 0.5); // Легкая тень при фокусе
+    box-shadow: 0 0 4px rgba(51, 153, 255, 0.7); // Более заметная тень при фокусе
+  }
+
+  /* Адаптивное поведение для маленьких экранов */
+  @media (max-width: 600px) {
+    padding: 8px 8px; // Уменьшаем отступы
+    font-size: 0.75rem; // Уменьшаем размер шрифта
   }
 `;
 
@@ -165,26 +182,21 @@ const headings = [
 ];
 
 
-
 const formatPrice = price => {
   if (typeof price === "string")
     price = parseFloat(price)
-  return price.toLocaleString('ru-RU', {minimumFractionDigits: 2, maximumFractionDigits: 2})
+  return price.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 
 
 
-
-export const Main = ({ selectedRegion }) => {
+export const Main = () => {
   const [tableData, setTableData] = useState([])
 
   useEffect(() => {
-    if (selectedRegion.length > 0) {
-      activesAPI.getTables("Index", selectedRegion).then(data => setTableData(data.data)).catch(console.log)
-    }
-  }, [selectedRegion])
-
+    activesAPI.getTables("Index", "0500").then(data => setTableData(data.data)).catch(console.log)
+  }, [])
 
   return (
     <Container>

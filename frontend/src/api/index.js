@@ -8,12 +8,12 @@ const instance = axios.create({
 
 
 export const serviceAPI = {
-    getRegions: (page) => instance.get(`/service/det-regions/${page}`),
-    getRegionName: (regionCode) => instance.get(`/service/get-region-name/${regionCode}`),
+    getRegions: (page) => instance.get(`/service/get-regions/${page}`),
     getDebtTypes: () => instance.get(`/service/get-debt-types`)
 }
 
 
 export const activesAPI = {
-    getTables: (page, regionCode) => instance.get(`/actives/get-table/${page}/${regionCode}`)
+    getTables: (page, regionCode) => instance.get(`/actives/get-table/${page}/${regionCode}`),
+    getActives: inn => instance.get(`/actives/get-actives/${inn}`)
 }  

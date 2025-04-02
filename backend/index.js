@@ -1,7 +1,7 @@
 import express from "express"
 import cors from "cors"
 import {APP_CONFIG} from "./src/connection.js"
-import baseRouter from "./src/routes.js"
+import baseRouter from "./src/modules/routes.js"
 
 
 const app = express()
