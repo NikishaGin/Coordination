@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from "styled-components";
+import { activesAPI } from "../../api/index.js"
+
+
 
 const Container = styled.div`
   padding-right: 24px;
@@ -157,73 +160,103 @@ const Icon = styled.svg`
 `;
 
 const headings = [
-    "№",
-    "ИНН",
-    "Наименование",
-    "Сумма по постановлениям",
-    "Остаток по постановлениям",
-    "Категория должника",
-    "Сумма активов и дебиторской задолженности",
-    "Статус ИП",
-    "Код СОСП",
-    "Направление ходатайства в ГМУ",
-    "Взаимодействие с ТНО",
-    "Арест имущества",
-    "Оценка имущества",
-    "Принудительная реализация",
-    "Торги 2 этап",
-    "Результат принудительной реализации",
-    "Сумма возврата имущества плательщику",
-    "Обращение взыскания на дебиторскую задолженность",
-    "Детализация индикаторов работы"
+  "№",
+  "ИНН",
+  "Наименование",
+  "Сумма по постановлениям",
+  "Остаток по постановлениям",
+  "Категория должника",
+  "Сумма активов и дебиторской задолженности",
+  "Статус ИП",
+  "Код СОСП",
+  "Направление ходатайства в ГМУ",
+  "Взаимодействие с ТНО",
+  "Арест имущества",
+  "Оценка имущества",
+  "Принудительная реализация",
+  "Торги 2 этап",
+  "Результат принудительной реализации",
+  "Сумма возврата имущества плательщику",
+  "Обращение взыскания на дебиторскую задолженность",
+  "Детализация индикаторов работы"
 ];
 
+
+const formatPrice = price => {
+  if (typeof price === "string")
+    price = parseFloat(price)
+  return price.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+
+
+
 export const Main = () => {
-    return (
-        <Container>
-            <Ul>
-                <Li>не произведено</Li>
-                <Li>произведено с нарушением</Li>
-                <Li>произведено в срок</Li>
-                <Li>в розыске</Li>
-                <Li>обновление данных произведено за последние 7 дней</Li>
-            </Ul>
-            <TableContainer>
-                <Table>
-                    <Thead>
-                        <tr>
-                            {headings.map((heading, index) => (
-                                <Th key={`header-${index}`}>{heading}</Th>
-                            ))}
-                        </tr>
-                    </Thead>
-                    <Tbody>
-                        {/* Создаем 55 строк данных */}
-                        {Array.from({length: 55}).map((_, rowIndex) => (
-                            <tr key={`row-${rowIndex}`}>
-                                {/* В каждой строке создаем 20 ячеек */}
-                                {Array.from({length: 19}).map((_, cellIndex) => (
-                                    <Td key={`cell-${rowIndex}-${cellIndex}`}>Ячейка {cellIndex + 1}</Td>
-                                ))}
-                            </tr>
-                        ))}
-                    </Tbody>
-                </Table>
-            </TableContainer>
-            <ButtonContainer>
-                <Button>
-                    <Icon viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
-                    </Icon>
-                    Статистика
-                </Button>
-                <Button>
-                    <Icon viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
-                    </Icon>
-                    Статистика по ИП
-                </Button>
-            </ButtonContainer>
-        </Container>
-    );
+  const [tableData, setTableData] = useState([])
+
+  useEffect(() => {
+    activesAPI.getTables("Index", "0500").then(data => setTableData(data.data)).catch(console.log)
+  }, [])
+
+  return (
+    <Container>
+      <Ul>
+        <Li>не произведено</Li>
+        <Li>произведено с нарушением</Li>
+        <Li>произведено в срок</Li>
+        <Li>в розыске</Li>
+        <Li>обновление данных произведено за последние 7 дней</Li>
+      </Ul>
+      <TableContainer>
+        <Table>
+          <Thead>
+            <tr>
+              {headings.map((heading, index) => (
+                <Th key={`header-${index}`}>{heading}</Th>
+              ))}
+            </tr>
+          </Thead>
+          <Tbody>
+            {tableData.map((row, rowIndex) => (
+              <tr key={rowIndex}>
+                <Td>{rowIndex + 1}</Td>
+                <Td>{row.inn}</Td>
+                <Td>{row.name}</Td>
+                <Td>{formatPrice(row.post_sum)}</Td>
+                <Td>{formatPrice(row.cur_debt)}</Td>
+                <Td>{row.category}</Td>
+                <Td>{formatPrice(row.total_sum)}</Td>
+                <Td>{row.status_ip}</Td>
+                <Td>{row.sosp_code}</Td>
+                <Td></Td>
+                <Td></Td>
+                <Td>{formatPrice(row.arrest)}</Td>
+                <Td>{formatPrice(row.evaluation)}</Td>
+                <Td>{formatPrice(row.realization_property)}</Td>
+                <Td>{formatPrice(row.price_reduction)}</Td>
+                <Td>{formatPrice(row.realization_sum_2)}</Td>
+                <Td>{formatPrice(row.return_sum)}</Td>
+                <Td>{formatPrice(row.debitor)}</Td>
+                <Td></Td>
+              </tr>
+            ))}
+          </Tbody>
+        </Table>
+      </TableContainer>
+      <ButtonContainer>
+        <Button>
+          <Icon viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+          </Icon>
+          Статистика
+        </Button>
+        <Button>
+          <Icon viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+          </Icon>
+          Статистика по ИП
+        </Button>
+      </ButtonContainer>
+    </Container>
+  );
 };
