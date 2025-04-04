@@ -1,7 +1,7 @@
 import db from "../../connection.js"
 
 
-export async function getRegions(request, response) {
+export function getRegions(request, response) {
     const page = request.params.page
     db('meta')
         .select(db.raw('DISTINCT meta.region AS regionCode'), 'regions.regionName AS regionName')
@@ -17,6 +17,6 @@ export async function getRegions(request, response) {
 }
 
 
-export async function getDebtTypes(_, response) {
+export function getDebtTypes(_, response) {
     db("debt_type").select("*").then(data => response.end(JSON.stringify(data))).catch(console.log)
 }

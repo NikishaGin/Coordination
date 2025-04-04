@@ -3,7 +3,7 @@ import { resolutions, actives } from "./subqueries.js"
 
 
 
-export async function getTables(request, response) {
+export function getTables(request, response) {
     const page = request.params.page
     const regionCode = request.params.regionCode
     const sumPrices = (tableNames, field) => tableNames.map(table => `IFNULL(${table}.${field}, 0.00)`).join(" + ")
@@ -49,13 +49,13 @@ export async function getTables(request, response) {
 }
 
 
-export async function getInfo(request, response) {
+export function getInfo(request, response) {
     const inn = request.params.inn
     
 }
 
 
-export async function getActives(request, response) {
+export function getActives(request, response) {
     const inn = request.params.inn
     db("meta")
         .select(["kno", db.ref("debt_type.debt_type").as("category")])

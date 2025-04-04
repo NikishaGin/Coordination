@@ -6,7 +6,7 @@ import {Main} from "../components/main/Main.jsx";
 
 export const Container = styled.div`
   display: grid;
-  grid-template-columns: 320px minmax(0, 1400px); // ограничивает вторую колонку 800px
+  grid-template-columns: 320px minmax(0, 100%); // ограничивает вторую колонку 800px
   grid-template-rows: 65px 1fr;
   grid-template-areas:
   "header header"

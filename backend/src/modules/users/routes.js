@@ -1,13 +1,9 @@
-import { Router } from 'express';
-import { loginUser, verifyUser, destroySession } from './controllers';
+import { Router } from 'express'
+import * as controllers from "./controllers.js"
 
 
-const router = Router();
+const router = Router()
 
-router.post("/login", loginUser)
-router.post("/verify", verifyUser)
-router.post("/destroy", destroySession)
-
-
+router.post("/login", controllers.loginUser)
   
-export default router;
+export default router
