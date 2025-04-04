@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 import {ButtonsSwitches} from "./ButtonsSwitches.jsx";
 import styled from "styled-components";
-import {CustomSelect} from "./CustomSelect.jsx";
 import {FilterButtons} from "./FilterButtons.jsx";
 import {StatusFilter} from "./StatusFilter.jsx";
 import {SumFilter} from "./SumFilter.jsx";
@@ -17,11 +16,10 @@ const WrapperFilter = styled.div`
 // Стиль для контейнера кнопок
 const ToggleButtonGroup = styled.div`
   display: flex;
-  border: 1px solid rgba(51, 60, 77, 0.6); // Граница вокруг всего контейнера
-  border-radius: 4px; // Скругление углов
   overflow: hidden; // Убираем видимость границ внутри
   margin-bottom: 24px; // Отступ снизу
 `;
+
 
 // Стиль для контейнера селектов
 const SelectsContainer = styled.div`

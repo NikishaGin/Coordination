@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import styled from "styled-components";
 import { activesAPI } from "../../api/index.js"
-
+import {useSelector} from "react-redux";
 
 
 const Container = styled.div`
@@ -91,10 +91,18 @@ const Th = styled.th`
   border-bottom: 1px solid rgba(51, 60, 77, 0.6);
   white-space: nowrap; // Запрещаем перенос текста
   background-color: rgb(12, 16, 23);
+  
 `;
 
 // Стиль для строк данных
 const Tbody = styled.tbody``;
+
+// Стиль для строк данных
+const Tr = styled.tr`
+  &:hover {
+    background-color: rgba(71, 83, 107, 0.2); // Цвет фона при наведении на строку
+  }
+`;
 
 // Стиль для ячеек данных
 const Td = styled.td`
@@ -118,26 +126,24 @@ const Button = styled.button`
   font-size: 14px; // Размер шрифта
   font-weight: 500; // Жирность текста
   color: white; // Цвет текста
-  background-color: rgba(25, 118, 210, 0.6); // Очень насыщенный синий фон
-  border: 1px solid rgba(25, 118, 210, 0.8); // Очень насыщенная граница
+  background-color: hsl(210, 100%, 30%); // Основной цвет фона
+  border: 1px solid hsl(210, 100%, 40%); // Граница
   border-radius: 4px; // Скругление углов
   cursor: pointer; // Курсор указывает на интерактивность
   box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1); // Легкая тень
-  transition: 
-    background-color 150ms cubic-bezier(0.4, 0, 0.2, 1), 
-    color 150ms cubic-bezier(0.4, 0, 0.2, 1), 
-    box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1); // Плавные переходы
+  transition: all 0.3s ease; // Плавный переход
 
   &:hover {
-    background-color: rgba(30, 136, 229, 0.8); // Очень яркий синий фон при наведении
-    border-color: rgba(30, 136, 229, 0.9); // Усиленная граница
+    background-color: hsl(210, 100%, 50%); // Яркий фон при наведении
+    border-color: hsl(210, 100%, 60%); // Усиленная граница
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); // Усиленная тень
   }
 
   &:active {
-    background-color: rgba(21, 101, 192, 0.9); // Очень темный синий фон при активации
-    border-color: rgba(21, 101, 192, 1); // Полностью непрозрачная граница
+    background-color: hsl(210, 100%, 20%); // Темный фон при активации
+    border-color: hsl(210, 100%, 30%); // Полностью непрозрачная граница
     box-shadow: inset 0px 1px 2px rgba(0, 0, 0, 0.2); // Внутренняя тень
+    transform: scale(0.98); // Легкий эффект "нажатия"
   }
 
   &:focus {
@@ -188,15 +194,25 @@ const formatPrice = price => {
   return price.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-
-
-
 export const Main = () => {
+
+  const inputValue = useSelector((state) => state.global.inputValue);
+  const selectedRegion = useSelector((state) => state.global.selectedRegion); // Получаем выбранный регион
+
+  console.log(typeof selectedRegion)
+
   const [tableData, setTableData] = useState([])
 
   useEffect(() => {
-    activesAPI.getTables("Index", "0500").then(data => setTableData(data.data)).catch(console.log)
-  }, [])
+    activesAPI.getTables("Index", selectedRegion)
+        .then(data => setTableData(data.data))
+        .catch(console.log)
+  }, [selectedRegion])
+
+
+  const filteredData = inputValue
+      ? tableData.filter((row) => row.inn.toString().includes(inputValue))
+      : tableData;
 
   return (
     <Container>
@@ -217,28 +233,28 @@ export const Main = () => {
             </tr>
           </Thead>
           <Tbody>
-            {tableData.map((row, rowIndex) => (
-              <tr key={rowIndex}>
-                <Td>{rowIndex + 1}</Td>
-                <Td>{row.inn}</Td>
-                <Td>{row.name}</Td>
-                <Td>{formatPrice(row.post_sum)}</Td>
-                <Td>{formatPrice(row.cur_debt)}</Td>
-                <Td>{row.category}</Td>
-                <Td>{formatPrice(row.total_sum)}</Td>
-                <Td>{row.status_ip}</Td>
-                <Td>{row.sosp_code}</Td>
-                <Td></Td>
-                <Td></Td>
-                <Td>{formatPrice(row.arrest)}</Td>
-                <Td>{formatPrice(row.evaluation)}</Td>
-                <Td>{formatPrice(row.realization_property)}</Td>
-                <Td>{formatPrice(row.price_reduction)}</Td>
-                <Td>{formatPrice(row.realization_sum_2)}</Td>
-                <Td>{formatPrice(row.return_sum)}</Td>
-                <Td>{formatPrice(row.debitor)}</Td>
-                <Td></Td>
-              </tr>
+            {filteredData.map((row, rowIndex) => (
+                <Tr key={rowIndex}>
+                  <Td>{rowIndex + 1}</Td>
+                  <Td>{row.inn}</Td>
+                  <Td>{row.name}</Td>
+                  <Td>{formatPrice(row.post_sum)}</Td>
+                  <Td>{formatPrice(row.cur_debt)}</Td>
+                  <Td>{row.category}</Td>
+                  <Td>{formatPrice(row.total_sum)}</Td>
+                  <Td>{row.status_ip}</Td>
+                  <Td>{row.sosp_code}</Td>
+                  <Td></Td>
+                  <Td></Td>
+                  <Td>{formatPrice(row.arrest)}</Td>
+                  <Td>{formatPrice(row.evaluation)}</Td>
+                  <Td>{formatPrice(row.realization_property)}</Td>
+                  <Td>{formatPrice(row.price_reduction)}</Td>
+                  <Td>{formatPrice(row.realization_sum_2)}</Td>
+                  <Td>{formatPrice(row.return_sum)}</Td>
+                  <Td>{formatPrice(row.debitor)}</Td>
+                  <Td></Td>
+                </Tr>
             ))}
           </Tbody>
         </Table>

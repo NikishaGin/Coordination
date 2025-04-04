@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-// Стиль для кнопки
+// Стиль для кнопки "Сбросить"
 const ActionButton = styled.button`
   padding: 8px 16px; // Внутренние отступы
   font-size: 14px; // Размер шрифта
@@ -40,8 +40,35 @@ const ActionButton = styled.button`
   }
 `;
 
+// Стиль для кнопки "Применить"
+const ApplyButton = styled(ActionButton)`
+  color: white; // Белый текст
+  background-color: hsl(210, 100%, 30%); // Основной цвет фона
+  border: 1px solid hsl(210, 100%, 40%); // Граница
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1); // Легкая тень
+
+  &:hover {
+    background-color: hsl(210, 100%, 50%); // Яркий фон при наведении
+    border-color: hsl(210, 100%, 60%); // Усиленная граница
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); // Усиленная тень
+  }
+
+  &:active {
+    background-color: hsl(210, 100%, 20%); // Темный фон при активации
+    border-color: hsl(210, 100%, 30%); // Полностью непрозрачная граница
+    box-shadow: inset 0px 1px 2px rgba(0, 0, 0, 0.2); // Внутренняя тень
+  }
+
+  &:focus {
+    outline: none; // Убираем стандартное выделение при фокусе
+    box-shadow: 0 0 4px rgba(51, 153, 255, 0.7); // Более заметная тень при фокусе
+  }
+`;
+
 export const FilterButtons = (props) => {
-    return (
+    return props.title === 'Применить' ? (
+        <ApplyButton onClick={props.onClick}>{props.title}</ApplyButton>
+    ) : (
         <ActionButton variant={props.variant} onClick={props.onClick}>
             {props.title}
         </ActionButton>

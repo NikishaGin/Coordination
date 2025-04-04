@@ -1,5 +1,8 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import styled from "styled-components";
+import {setInputValue} from "../../store/globalSlice.js";
+import {useDispatch} from "react-redux";
+
 
 // Контейнер для инпута и иконки
 const InputWrapper = styled.div`
@@ -11,8 +14,13 @@ const InputWrapper = styled.div`
   padding: 4px; // Внутренние отступы для контейнера
   width: 100%; // Занимает всю доступную ширину
   
+  &:hover {
+    transition: all 0.3s ease;
+    background-color: rgba(51, 60, 77, 0.3);
+  }
+  
   &:focus-within {
-    border-color: rgb(51, 153, 255); // Подсветка при фокусе на любом дочернем элементе
+    border-color: hsl(210, 100%, 60%); // Подсветка при фокусе на любом дочернем элементе
   }
 `;
 
@@ -21,7 +29,7 @@ const Icon = styled.svg`
   width: 20px; // Размер иконки
   height: 20px; // Размер иконки
   fill: currentColor; // Наследует цвет из свойства color
-  color: rgb(51, 153, 255); // Цвет иконки
+  color: hsl(210, 100%, 60%); // Цвет иконки
   margin-right: 8px; // Отступ между иконкой и инпутом
   flex-shrink: 0; // Иконка не сжимается
 `;
@@ -43,6 +51,20 @@ const Input = styled.input`
 `;
 
 export const SearchInn = () => {
+
+    const dispatch = useDispatch(); // Получаем функцию dispatch
+
+    const handleChange = (event) => {
+        dispatch(setInputValue(event.target.value)); // Обновляем значение инпута
+    };
+
+    const handleKeyPress = (event) => {
+        // Разрешаем только цифры и специальные клавиши (например, Backspace)
+        if (!/^\d$/.test(event.key) && event.key !== "Backspace") {
+            event.preventDefault(); // Блокируем ввод недопустимых символов
+        }
+    };
+
     return (
         <InputWrapper>
             <Icon
@@ -53,7 +75,7 @@ export const SearchInn = () => {
             >
                 <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path>
             </Icon>
-            <Input type="text" placeholder="Поиск по ИНН" />
+            <Input type="text" onChange={handleChange} onKeyPress={handleKeyPress} placeholder="Поиск по ИНН" />
         </InputWrapper>
     );
 };

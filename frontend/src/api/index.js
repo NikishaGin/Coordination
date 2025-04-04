@@ -16,4 +16,4 @@ export const serviceAPI = {
 export const activesAPI = {
     getTables: (page, regionCode) => instance.get(`/actives/get-table/${page}/${regionCode}`),
     getActives: inn => instance.get(`/actives/get-actives/${inn}`)
-}  
+}
