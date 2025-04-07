@@ -19,10 +19,10 @@ const Container = styled.header`
 `;
 
 const Navigation = styled.ul`
-  width: 100%;
+  margin-left: 26px;
   list-style: none;
   display: flex;
-  justify-content: space-evenly;
+  gap: 26px;
 `;
 
 // Общие стили
@@ -30,6 +30,7 @@ export const StyledItem = styled.li`
   display: flex;
   position: relative;
   text-decoration: none;
+  padding: 0px 8px 0px 8px;
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.5;

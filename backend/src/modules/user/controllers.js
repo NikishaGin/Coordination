@@ -10,18 +10,12 @@ const SECRET_KEY = "i5n3b4f5br65HY567JHGFRHb55vgcfvghjkokm87654dse76UHYGF765tyhj
 function auth(userInfo, password) {
     if (!userInfo) return { code: 1 }
     const passwordHash = userInfo.password.replace(/^\$2y\$/, "$2a$")
-    bcrypt.compare(password, passwordHash, (error, result) => {
-        if (error) {
-            console.log(error)
-            return { code: 3 }
-        }
-        if (result) {
-            const info = { ...userInfo, password: undefined }
-            const token = jwt.sign(info, SECRET_KEY, { expiresIn: "1m" })
-            return { code: 0, userInfo: info, jwtToken: token }
-        } else
-            return { code: 2 }
-    })
+    if (bcrypt.compareSync(password, passwordHash)) {
+        const info = { ...userInfo, password: undefined }
+        const token = jwt.sign(info, SECRET_KEY, { expiresIn: "1m" })
+        return { code: 0, userInfo: { ...info, token } }
+    } else
+        return { code: 2 }
 }
 
 
@@ -30,7 +24,6 @@ export function loginUser(request, response) {
     const password = request.body.password
     db("users")
         .select([
-            "id",
             "password",
             db.ref("name").as("firstname"),
             db.ref("surname").as("secondname"),
@@ -44,13 +37,23 @@ export function loginUser(request, response) {
 
 
 export function verifyUser(request, response) {
-    request.headers['x-access-token']
+    const token = request.headers.authorization
+    let result
+    try {
+        const data = jwt.verify(token, SECRET_KEY)
+        result = {
+            isVerify: true,
+            exp: data.exp
+        }
+    } catch {
+        result = { isVerify: false }
+    }
+    response.end(JSON.stringify(result))
 }
 
 
-
 /*
-export function destroySession(request, response) {
-    
+export function destroyUser(request, response) {
+
 }
 */

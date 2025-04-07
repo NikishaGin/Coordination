@@ -1,12 +1,6 @@
-import React, { useState } from 'react';
-import { useNavigate } from "react-router";
-import { useForm } from "react-hook-form";
+import React from 'react';
 import styled from "styled-components";
-import {useDispatch} from "react-redux";
-import { setUserInfo } from "../store/userSlice.js";
-import { userAPI } from '../api';
-
-
+import {useNavigate} from "react-router";
 
 const Wrapper = styled.div`
   display: flex;
@@ -83,50 +77,27 @@ const Button = styled.button`
   }
 `;
 
-// Ошибка в форме в случае неверных данных
-const ErrorText = styled.div`
-  height: 2rem;
-  color: red;
-`
-
-
 export const Login = () => {
-  const [messageError, setMessageError] = useState("");
-  const dispatch = useDispatch(); 
-  const navigate = useNavigate()
-  const { register, handleSubmit } = useForm()
 
-  // Обработка формы авторизации
-  const onSubmitLogin = async formData => {
-    if (formData.username && formData.password) {
-      const result = await userAPI.loginUser(formData.username, formData.password);
-      if (result.data.code == 0) {
-        dispatch(setUserInfo(result.data.userInfo));
-        navigate("/coordination")
-      } else if (result.data.code == 1)
-        setMessageError("Пользователя с таким логином не существует");
-      else if (result.data.code == 2)
-        setMessageError("Неверный пароль");
-    } else
-      setMessageError("Заполните логин и пароль");
-  }
+    const navigate = useNavigate()
 
-  return (
-    <Wrapper>
-      <form onSubmit={handleSubmit(onSubmitLogin)}>
-        <Container>
-          <FieldGroup>
-            <Label htmlFor="username">Имя пользователя *</Label>
-            <Input id="username" {...register("username")} />
-          </FieldGroup>
-          <FieldGroup>
-            <Label htmlFor="password">Пароль *</Label>
-            <Input id="password" type="password" {...register("password")} />
-          </FieldGroup>
-          <ErrorText>{messageError}</ErrorText>
-          <Button type='submit'>Войти</Button>
-        </Container>
-      </form>
-    </Wrapper>
-  );
+    return (
+        <Wrapper>
+            <Container>
+                <FieldGroup>
+                    <Label htmlFor="username">Имя пользователя *</Label>
+                    <Input id="username"/>
+                </FieldGroup>
+
+                <FieldGroup>
+                    <Label htmlFor="password">Пароль *</Label>
+                    <Input id="password" type="password"/>
+                </FieldGroup>
+
+                <Button onClick={() => navigate('/coordination')}>
+                    Войти
+                </Button>
+            </Container>
+        </Wrapper>
+    );
 };

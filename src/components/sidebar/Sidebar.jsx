@@ -40,13 +40,8 @@ export const StyledSelect = styled.select`
   appearance: none; // Убираем стандартную стрелку браузера
   cursor: pointer;
 
-  &:hover {
-    transition: all 0.3s ease;
-    background-color: rgba(51, 60, 77, 0.3);
-  }
-
   &:focus {
-    border-color: hsl(210, 100%, 60%); // Изменение цвета границы при фокусе
+    border-color: rgb(51, 153, 255); // Изменение цвета границы при фокусе
   }
 
   &::placeholder {

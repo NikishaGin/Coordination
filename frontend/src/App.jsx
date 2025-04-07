@@ -1,7 +1,6 @@
 import React from 'react';
 import { createGlobalStyle } from "styled-components";
 import { AppRoutes } from "./routes/AppRoutes.jsx";
-import Cookies from "js-cookie"
 
 
 
@@ -35,10 +34,9 @@ const GlobalStyles = createGlobalStyle`
 
 
 export default function App() {
-  const isAuth = !!Cookies.get('sessionId')
 
   return <>
     <GlobalStyles />
-    <AppRoutes isAuth={isAuth} />
+    <AppRoutes />
   </>
 }
