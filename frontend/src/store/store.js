@@ -1,14 +1,45 @@
-import { configureStore } from "@reduxjs/toolkit";
+import { configureStore, combineReducers } from "@reduxjs/toolkit";
+import {
+    persistStore,
+    persistReducer,
+    FLUSH,
+    REHYDRATE,
+    PAUSE,
+    PERSIST,
+    PURGE,
+    REGISTER,
+} from 'redux-persist';
+import storage from 'redux-persist/lib/storage';
 import globalReducer from "./globalSlice";
 import userReducer from "./userSlice";
 
 
+
+const persistConfig = {
+    key: 'root',
+    storage,
+    whitelist: ["user"]
+}
+
+const rootReducer = combineReducers({
+    global: globalReducer,
+    user: userReducer
+  });
+
+const persistedReducer = persistReducer(persistConfig, rootReducer);
+
+
+
 // Создаем хранилище
-const store = configureStore({
-    reducer: {
-        global: globalReducer,
-        user: userReducer
-    },
+export const store = configureStore({
+    reducer: persistedReducer,
+    middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware({
+            serializableCheck: {
+                ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+            },
+        }),
 });
 
-export default store;
+
+export const persistor = persistStore(store)

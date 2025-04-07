@@ -24,9 +24,13 @@ export const AppRoutes = () => {
     const navigate = useNavigate()
     const token = useSelector((state) => state.user.token);
 
+
+
+
     
     useEffect(() => {
-        if (token.length > 0) {
+        console.log(token)
+        if (token && (token.length > 0)) {
             userAPI.verifyUser(token)
                 .then(data => {
                     setIsAuth(data.data.isVerify)
@@ -34,14 +38,20 @@ export const AppRoutes = () => {
                         setTimeout(() => {
                             setIsAuth(false)
                             navigate("/login")
-                        }, data.data.exp - Date.now())
+                        }, (data.data.exp - Date.now()) * 1000)
                 })
                 .catch(console.log)
         } else {
-            setIsAuth(false)
+           // setIsAuth(false)
             //navigate("/login")
         }
+
+        
     }, [token, location])
+
+
+
+
 
 
     if (isAuth)
