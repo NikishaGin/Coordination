@@ -6,6 +6,6 @@ const router = Router()
 
 router.get("/get-table/:page/:regionCode", controllers.getTables)
 router.get("/get-info/:inn", controllers.getInfo)
-router.get("/get-actives/:inn", controllers.getActives)
+router.get("/get-resolutions/:inn", controllers.getResolutions)
   
 export default router

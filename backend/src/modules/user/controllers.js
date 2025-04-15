@@ -12,7 +12,7 @@ function auth(userInfo, password) {
     const passwordHash = userInfo.password.replace(/^\$2y\$/, "$2a$")
     if (bcrypt.compareSync(password, passwordHash)) {
         const info = { ...userInfo, password: undefined }
-        const token = jwt.sign(info, SECRET_KEY, { expiresIn: "1m" })
+        const token = jwt.sign(info, SECRET_KEY, { expiresIn: "72h" })
         return { code: 0, userInfo: { ...info, token } }
     } else
         return { code: 2 }
@@ -28,6 +28,7 @@ export function loginUser(request, response) {
             db.ref("name").as("firstname"),
             db.ref("surname").as("secondname"),
             db.ref("patronymic").as("lastname"),
+            db.ref("region").as("regionCode"),
             "role"
         ])
         .where({ username: login })

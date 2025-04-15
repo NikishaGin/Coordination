@@ -100,10 +100,9 @@ export const Login = () => {
   const onSubmitLogin = async formData => {
     if (formData.username && formData.password) {
       const result = await userAPI.loginUser(formData.username, formData.password);
-      if (result.data.code == 0) {
+      if (result.data.code == 0)
         dispatch(setUserInfo(result.data.userInfo));
-        navigate("/coordination")
-      } else if (result.data.code == 1)
+      else if (result.data.code == 1)
         setMessageError("Пользователя с таким логином не существует");
       else if (result.data.code == 2)
         setMessageError("Неверный пароль");

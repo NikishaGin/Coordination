@@ -1,7 +1,7 @@
-import db from "../../connection.js"
+import db from "../connection.js"
 
 
-export const resolutions = db('resolutions')
+export const getResolutions = db('resolutions')
     .select('inn')
     .sum({ post_sum: db.raw('IFNULL(post_sum, 0.00)') })
     .sum({ cur_debt: db.raw('IFNULL(cur_debt, 0.00)') })
@@ -15,7 +15,7 @@ export const resolutions = db('resolutions')
     .groupBy('inn')
 
 
-export function actives(tableName) {
+export function getActives(tableName) {
     let query = db(tableName)
         .select('inn')
         .sum({ total_sum: ((tableName === "debit") ? db.raw('IFNULL(total_sum, 0.00)') : db.raw('IFNULL(cost, 0.00)')) })

@@ -22,5 +22,14 @@ export const serviceAPI = {
 // API для получения информации, связанной с активыми
 export const activesAPI = {
     getTables: (page, regionCode) => instance.get(`/actives/get-table/${page}/${regionCode}`),   // Таблицы для страниц "Взыскание по 47 ст.", и т.д.
-    getActives: inn => instance.get(`/actives/get-actives/${inn}`)  // Активы для конкретного ИНН (для модалки)
+    getInfo: inn => instance.get(`/actives/get-info/${inn}`),
+    getResolutions: inn => instance.get(`/actives/get-resolutions/${inn}`)
 }
+
+
+export const downloadAPI = {
+    getStatistics: (isDerived, regionCode, innList) => instance.get("/download/get-statistics", { params: { isDerived, regionCode, innList }, responseType: 'blob' }),
+    getStatisticsIP: (isDerived, regionCode, innList) => instance.get("/download/get-statistics-IP", { params: { isDerived, regionCode, innList }, responseType: 'blob' })
+}
+
+

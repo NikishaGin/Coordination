@@ -10,8 +10,8 @@ import {
     REGISTER,
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-import globalReducer from "./globalSlice";
-import userReducer from "./userSlice";
+import globalReducer, { resetGlobal } from "./globalSlice";
+import userReducer, { resetUser } from "./userSlice";
 
 
 
@@ -24,9 +24,10 @@ const persistConfig = {
 const rootReducer = combineReducers({
     global: globalReducer,
     user: userReducer
-  });
+});
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
+
 
 
 
@@ -43,3 +44,9 @@ export const store = configureStore({
 
 
 export const persistor = persistStore(store)
+
+
+export default function resetStore() {
+    store.dispatch(resetGlobal());
+    store.dispatch(resetUser());
+}

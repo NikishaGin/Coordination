@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import {NavLink, useNavigate} from "react-router";
+import { useSelector } from "react-redux";
+import resetStore from "../../store/store"
+
 
 // Стиль для футера
 const Container = styled.footer`
@@ -177,7 +179,7 @@ const MenuButton = styled.button`
   }
 `;
 
-const StyledNavLink = styled(NavLink)`
+const Logout = styled.div`
   text-decoration: none; // Убираем подчеркивание
   color: inherit; // Наследуем цвет текста от родителя
   font-family: inherit; // Наследуем шрифт
@@ -203,10 +205,16 @@ export const Footer = () => {
         setIsMenuVisible((prev) => !prev);
     };
 
+    
+      const firstname = useSelector((state) => state.user.firstname);
+      const secondname = useSelector((state) => state.user.secondname);
+      const lastname = useSelector((state) => state.user.lastname);
+
+
     return (
         <Container>
             <UserInfo>
-               Седов Никита
+               {secondname} {firstname} {lastname}
                 <IconButton onClick={toggleMenu}>
                     <Icon
                         viewBox="0 0 24 24"
@@ -262,7 +270,7 @@ export const Footer = () => {
                             >
                                 <path d="m17 7-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4z"></path>
                             </svg>
-                            <StyledNavLink to={'/login'}>Выход</StyledNavLink>
+                            <Logout onClick={resetStore}>Выход</Logout>
                         </MenuButton>
                     </div>
                 </DropdownMenu>

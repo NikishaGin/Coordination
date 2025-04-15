@@ -5,6 +5,7 @@ const initialState = {
     firstname: "",
     secondname: "",
     lastname: "",
+    regionCode: "",
     role: "",
     token: ""
 };
@@ -16,14 +17,17 @@ const userSlice = createSlice({
     initialState,
     reducers: {
         setUserInfo: (state, action) => {
-            state.firstname = action.payload.firstname;
-            state.secondname = action.payload.secondname;
-            state.lastname = action.payload.lastname;
-            state.role = action.payload.role;
-            state.token = action.payload.token;
+            Object.keys(state).forEach(key => {
+                state[key] = action.payload[key]
+            })
+        },
+        resetUser(state, action) {
+            Object.keys(state).forEach(key => {
+                state[key] = initialState[key]
+            })
         }
     }
 });
 
-export const { setUserInfo } = userSlice.actions;
+export const { setUserInfo, resetUser } = userSlice.actions;
 export default userSlice.reducer;

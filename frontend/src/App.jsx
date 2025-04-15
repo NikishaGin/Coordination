@@ -1,42 +1,38 @@
-import React from 'react';
-import { createGlobalStyle } from "styled-components";
+import React, { useState, useEffect } from 'react';
+import { useLocation } from "react-router";
+import { useSelector } from "react-redux";
+import resetStore from "./store/store.js"
+import { userAPI } from './api/index.js';
 import { AppRoutes } from "./routes/AppRoutes.jsx";
+import "./App.css";
 
-
-
-const GlobalStyles = createGlobalStyle`
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
-  ul {
-    list-style: none;
-    margin: 0; 
-    padding: 0; 
-  }
-
-  li {
-    display: block;
-    margin: 0; 
-    padding: 0;
-  }
-
-  html, body {
-    height: 100%;
-    //background-color: rgb(5, 7, 10);
-    background-color: rgb(15, 20, 30);
-    color: rgb(255, 255, 255);
-    overflow: hidden;
-  }
-`;
 
 
 export default function App() {
+  const [isAuth, setIsAuth] = useState(false)
+  const location = useLocation()
+  const token = useSelector((state) => state.user.token)
 
-  return <>
-    <GlobalStyles />
-    <AppRoutes />
-  </>
+  useEffect(() => {
+    if (token && (token.length > 0)) {
+      userAPI.verifyUser(token)
+        .then(data => {
+          setIsAuth(data.data.isVerify)
+          if (data.data.isVerify) {
+            const expirationTime = data.data.exp * 1000 - Date.now() - 30
+            setTimeout(() => {
+              setIsAuth(false)
+              resetStore()
+            }, expirationTime)
+          } else 
+            resetStore()
+        })
+        .catch(console.log)
+    } else {
+      setIsAuth(false)
+    }
+  }, [token, location])
+
+
+  return <AppRoutes isAuth={isAuth} />
 }
