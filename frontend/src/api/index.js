@@ -23,7 +23,10 @@ export const serviceAPI = {
 export const activesAPI = {
     getTables: (page, regionCode) => instance.get(`/actives/get-table/${page}/${regionCode}`),   // Таблицы для страниц "Взыскание по 47 ст.", и т.д.
     getInfo: inn => instance.get(`/actives/get-info/${inn}`),
-    getResolutions: inn => instance.get(`/actives/get-resolutions/${inn}`)
+    getResolutions: inn => instance.get(`/actives/get-info/${inn}/resolutions`),
+    getActivesStatistics: inn => instance.get(`/actives/get-info/${inn}/actives-statistics`),
+    getDebt: inn => instance.get(`/actives/get-info/${inn}/debt`),
+    getActives: (inn, nameActive) => instance.get(`/actives/get-actives/${inn}/${nameActive}`),
 }
 
 

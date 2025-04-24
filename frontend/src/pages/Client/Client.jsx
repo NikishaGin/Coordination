@@ -1,40 +1,76 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import styled from "styled-components";
-import Info from "./Info.jsx"
-import Actives from "./Actives.jsx"
-import Hodatai from "./Hodatai.jsx"
-import Tno from "./Tno.jsx"
-import Details from "./Details.jsx"
+import { NavItem } from "../../components/buttons/Button.jsx";
+import Info from "./sections/Info/Info.jsx"
+import Actives from "./sections/Actives/Actives.jsx"
+import Hodatai from "./sections/Hodatai.jsx"
+import Tno from "./sections/Tno.jsx"
+import Details from "./sections/Details.jsx"
+import { useSelector } from "react-redux";
 import { activesAPI } from "../../api/index.js";
 
 
+// 250px
+// 330px
+
+
 const Container = styled.div`
-    height: calc(100vh - 65px);
-    display: flex;
-    flex-direction: column;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 330px minmax(0, 100%);
+  grid-template-rows: 250px 1fr;
+
+  & > :first-child {
+    grid-column: 1 / span 2;
+  }
+
+  & > :nth-child(2):nth-last-child(1) {
+    grid-column: 1 / span 2;
+  }
+  
 `
+
+/*
+  & > :first-child:nth-last-child(2) {
+    grid-row: 1;
+    grid-column: 1 / -1;
+    height: 250px; // Высота шапки
+}
+
+& > :nth-child(2):nth-last-child(1) {
+  grid-row: 2;
+  grid-column: 1 / -1;
+}
+
+& > :first-child:nth-last-child(3) {
+  grid-row: 1;
+  grid-column: 1 / -1;
+  height: 250px; // Высота шапки
+}
+
+& > :nth-child(2):nth-last-child(2) {
+  grid-row: 2;
+  grid-column: 1;
+  width: 330px; // Ширина второго элемента
+}
+*/
+
+
+
 
 export const InfoBlock = styled.div`
-    display: block;
-    margin: 6px;
     padding: 15px;
-    background-color: rgb(20, 27, 39);
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-`
-
-export const Sidebar = styled.div`
-
+    border: 1px solid rgba(51, 60, 77, 0.6);
 `
 
 const Back = styled.div`
     position: relative;
-    width: 100px;
+    width: 105px;
     display: flex;
     flex-direction: row;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
     font-weight: bolder;
 
     &:hover {
@@ -45,14 +81,16 @@ const Back = styled.div`
         content: "";
         position: absolute;
         left: 0;
-        bottom: 7px;
+        bottom: 0px;
         width: 100%;
         height: 1px;
         background: currentColor;
     }
 
-    & span {
-        font-size: 35px;
+    & svg {
+        width: 30px;
+        height: 30px;
+        fill: currentColor;
     }
 `
 
@@ -79,28 +117,19 @@ const Nav = styled.div`
     gap: 10px;
 `
 
-const NavItem = styled.div`
-    padding: 15px;
-    background-color: ${({active}) => (active) ? "rgba(21, 101, 192, 0.3)" : "rgba(25, 118, 210, 0.1)"} ;
-    border: 1px solid rgba(25, 118, 210, 0.3);
-    border-radius: 10px;
-    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
 
-    &:hover {
-        cursor: ${({active}) => (active) ? "default" : "pointer"};
-    }
-`
-
-
-
-export function Client()  {
+export function Client() {
     const [info, setInfo] = useState({})
     const [nav, setNav] = useState("info")
+    const [isCoordination, setIsCoordination] = useState(false)
     const { inn } = useParams()
     const navigate = useNavigate()
+    const urlHistory = useSelector((state) => state.global.urlHistory);
+
 
     useEffect(() => {
         activesAPI.getInfo(inn).then(data => setInfo(data.data)).catch(console.log)
+        setIsCoordination(urlHistory[1] === "/coordination")
     }, [])
 
     return (
@@ -108,8 +137,14 @@ export function Client()  {
             <div></div>
             <Container>
                 <InfoBlock>
-                    <Back onClick={() => navigate(-1)}><span>&larr;</span>&emsp;Назад</Back>
-                    <h1>{info.name}</h1>
+                    <Back onClick={() => navigate(-1)}>
+                        <svg viewBox="0 0 24 24">
+                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                        </svg>
+                        &emsp;
+                        Назад
+                    </Back>
+                    <h2>{info.name}</h2>
                     <InfoBox>
                         <div><span>ИНН:</span>&emsp;{info.inn}</div>
                         <div><span>Код НО:</span>&emsp;{info.kno}</div>
@@ -119,11 +154,9 @@ export function Client()  {
                     <Nav>
                         <NavItem active={nav === "info"} onClick={() => setNav("info")}>Информация о должнике</NavItem>
                         <NavItem active={nav === "actives"} onClick={() => setNav("actives")}>Активы должника</NavItem>
-
-                        <NavItem active={nav === "hodatai"} onClick={() => setNav("hodatai")}>Направление ходатайства в ГМУ</NavItem>
-                        <NavItem active={nav === "tno"} onClick={() => setNav("tno")}>Примечание ТНО</NavItem>
-
-                        <NavItem active={nav === "details"} onClick={() => setNav("details")}>Детализация индикаторов работы </NavItem>
+                        {(isCoordination) && <NavItem active={nav === "hodatai"} onClick={() => setNav("hodatai")}>Направление ходатайства в ГМУ</NavItem>}
+                        {(isCoordination) && <NavItem active={nav === "tno"} onClick={() => setNav("tno")}>Примечание ТНО</NavItem>}
+                        {/* <NavItem active={nav === "details"} onClick={() => setNav("details")}>Детализация индикаторов работы </NavItem> */}
                     </Nav>
                 </InfoBlock>
                 {(nav === "info") && <Info />}

@@ -35,5 +35,83 @@ export function getActives(tableName) {
 }
 
 
+export function getActivesDetails(tableName) {
+    let query = db(tableName)
+        .select("id")
+        .select("is_verified")
+        .select("obj_status")
+        .select("obj_status_manual")
+        .select("arrest_propperty")
+        .select("arrest_sum")
+        .select("wanted_open")
+        .select("wanted_close")
+        .select("wanted_result")
+        .select("evaluation_submit")
+        .select("evaluation_accept")
+        .select("evaluation_sum")
+        .select("realization_submit")
+        .select({ realization_sum: "realization_sum_1" })
+        .select({ realization_date: "realization_date_1" })
+        .select({ realization_report: "realization_result_1" })
+        .select({ realization_property_sum_1: "realization_property_sum" })
+        .select({ not_realization_notification_1: "not_realization_notification" })
+        .select("price_reduction_resolution")
+        .select("price_reduction_sum")
+        .select({ realization_property_sum_2: "realization_sum_2" })
+        .select("not_realization_notification_2")
+        .select({ date_2: "realization_date_2" })
+        .select({ report_2: "realization_result_2" })
+        .select("property_to_debtor_act")
+        .select("property_to_debtor_sum")
+        .select("comment")
+    if (tableName != "debit")
+        query = query
+            .select("name")
+            .select("cost")
+            .select("lizing_name")
+            .select("is_fns_lizing")
+            .select("encumbrance_type")
+            .select("encumbrance_date")
+    else
+        query = query
+            .select({ name: "debitor_names" })
+            .select({ cost: "total_sum" })
+    return query
+}
 
 
+
+export function buildQuery(table, key) {
+    let knex = db(key);
+    const spec = table[key];
+    const modifiers = Object.entries(spec);
+    modifiers.forEach(([name, modifier]) => {
+        if (typeof modifier !== 'object' && modifier === null) {
+            throw Error('')
+        }
+        if (!Array.isArray()) {
+            modifier.forEach(source => { knex = knex[name](source) });
+            return
+        }
+        knex = knex[name](modifier);
+    });
+    return spec.call(knex)
+}
+
+
+
+const semanticTable = {
+    transport: {},
+    property: {},
+    ground: {},
+    debit: {},
+    another: {}
+
+
+    // groud: {select: commonFields,  where: {inn,}, andWhere: [
+    //     ["status", "<>", 2]
+    // ], 
+    // call: knex => {
+    //     return k
+    // }},
+};

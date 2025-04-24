@@ -114,7 +114,7 @@ const StyledSelectLink = styled(NavLink)`
   color: rgb(245, 246, 250);
   font-size: 0.875rem;
   font-weight: 500;
-  text-transform: capitalize;
+  // text-transform: capitalize;
   border: none;
   cursor: pointer;
   transition: background-color 150ms ease;

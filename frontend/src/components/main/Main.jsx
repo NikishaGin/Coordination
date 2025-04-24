@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import styled from "styled-components";
+import { TableContainer, Tr } from "../tables/Table.jsx";
+import { ButtonContainer, Button } from "../buttons/Button.jsx";
 import { activesAPI, downloadAPI } from "../../api/index.js";
 import downloadExcel from "../../utils/downloadExcel.js"
 import { useSelector } from "react-redux";
@@ -66,101 +68,6 @@ const Li = styled.li`
   }
 `;
 
-const TableContainer = styled.div`
-  width: 100%;
-  height: calc(100vh - 185px);
-  overflow-x: auto;
-  overflow-y: auto;
-  border: 1px solid rgba(51, 60, 77, 0.6);
-  border-radius: 8px;
-`;
-
-const Table = styled.table`
-  width: auto;
-  border-collapse: collapse;
-  font-family: Arial, sans-serif;
-  font-size: 14px;
-  text-align: center;
-  min-width: 100%;
-  display: block;
-`;
-
-const Thead = styled.thead`
-  color: rgb(255, 255, 255);
-`;
-
-const Th = styled.th`
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  padding: 10px;
-  border-bottom: 1px solid rgba(51, 60, 77, 0.6);
-  white-space: nowrap;
-  background-color: rgb(12, 16, 23);
-`;
-
-const Tbody = styled.tbody``;
-
-const Tr = styled.tr`
-  cursor: pointer;
-  background-color: ${({ isSelected }) =>
-    isSelected ? "rgba(2, 122, 242, 0.16)" : "transparent"};
-  &:hover {
-    background-color: ${({ isSelected }) =>
-    isSelected ? "rgba(242, 162, 2, 0.16)" : "rgba(71, 83, 107, 0.2)"};
-  }
-`;
-
-const Td = styled.td`
-  padding: 10px;
-  border-bottom: 1px solid rgba(51, 60, 77, 0.6);
-  white-space: nowrap;
-`;
-
-const ButtonContainer = styled.div`
-  display: flex;
-  gap: 15px;
-  margin-top: 22px;
-`;
-
-const Button = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  color: white;
-  background-color: hsl(210, 100%, 30%);
-  border: 1px solid hsl(210, 100%, 40%);
-  border-radius: 4px;
-  cursor: pointer;
-  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-
-  &:hover {
-    background-color: hsl(210, 100%, 50%);
-    border-color: hsl(210, 100%, 60%);
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-  }
-
-  &:active {
-    background-color: hsl(210, 100%, 20%);
-    border-color: hsl(210, 100%, 30%);
-    box-shadow: inset 0px 1px 2px rgba(0, 0, 0, 0.2);
-    transform: scale(0.98);
-  }
-
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 4px rgba(51, 153, 255, 0.7);
-  }
-
-  @media (max-width: 600px) {
-    padding: 8px 8px;
-    font-size: 0.75rem;
-  }
-`;
 
 const Icon = styled.svg`
   width: 16px;
@@ -252,8 +159,6 @@ const headings = [
   "Сумма активов и дебиторской задолженности",
   "Статус ИП",
   "Код СОСП",
-  "Направление ходатайства в ГМУ",
-  "Взаимодействие с ТНО",
   "Арест имущества",
   "Оценка имущества",
   "Принудительная реализация",
@@ -261,16 +166,7 @@ const headings = [
   "Результат принудительной реализации",
   "Сумма возврата имущества плательщику",
   "Обращение взыскания на дебиторскую задолженность",
-  "Детализация индикаторов работы",
 ];
-
-
-const formatPrice = (price) => {
-  if (typeof price === "string") price = parseFloat(price);
-  return price.toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-};
-
-
 
 
 
@@ -344,11 +240,11 @@ export const Main = () => {
         <Li>залог перед ФНС</Li>
         <Li>обновление данных произведено за последние 7 дней</Li>
       </Ul>
-      <TableContainer>
-        <Table>
-          <Thead>
+      <TableContainer hHeader="185px">
+        <table>
+          <thead>
             <tr>
-              <Th>
+              <th>
                 <CustomCheckbox>
                   <input
                     type="checkbox"
@@ -357,16 +253,16 @@ export const Main = () => {
                   />
                   <span></span>
                 </CustomCheckbox>
-              </Th>
+              </th>
               {headings.slice(1).map((heading, index) => (
-                <Th key={`header-${index}`}>{heading}</Th>
+                <th key={`header-${index}`}>{heading}</th>
               ))}
             </tr>
-          </Thead>
-          <Tbody>
+          </thead>
+          <tbody>
             {filteredData.map((row, rowIndex) => (
-              <Tr key={rowIndex} isSelected={selectedInn.includes(row.inn)} onClick={event => handleLink(event, row.inn)}>
-                <Td onClick={event => event.stopPropagation()}>
+              <Tr key={rowIndex} isSelected={selectedInn.includes(row.inn)} cursor={true} onClick={event => handleLink(event, row.inn)}>
+                <td onClick={event => event.stopPropagation()}>
                   <CustomCheckbox>
                     <input
                       type="checkbox"
@@ -375,30 +271,27 @@ export const Main = () => {
                     />
                     <span></span>
                   </CustomCheckbox>
-                </Td>
-                <Td>{rowIndex + 1}</Td>
-                <Td>{row.inn}</Td>
-                <Td>{row.name}</Td>
-                <Td>{formatPrice(row.post_sum)}</Td>
-                <Td>{formatPrice(row.cur_debt)}</Td>
-                <Td>{row.category}</Td>
-                <Td>{formatPrice(row.total_sum)}</Td>
-                <Td>{row.status_ip}</Td>
-                <Td>{row.sosp_code}</Td>
-                <Td></Td>
-                <Td></Td>
-                <Td>{formatPrice(row.arrest)}</Td>
-                <Td>{formatPrice(row.evaluation)}</Td>
-                <Td>{formatPrice(row.realization_property)}</Td>
-                <Td>{formatPrice(row.price_reduction)}</Td>
-                <Td>{formatPrice(row.realization_sum_2)}</Td>
-                <Td>{formatPrice(row.return_sum)}</Td>
-                <Td>{formatPrice(row.debitor)}</Td>
-                <Td></Td>
+                </td>
+                <td>{rowIndex + 1}</td>
+                <td>{row.inn}</td>
+                <td>{row.name}</td>
+                <td>{row.post_sum}</td>
+                <td>{row.cur_debt}</td>
+                <td>{row.category}</td>
+                <td>{row.total_sum}</td>
+                <td>{row.status_ip}</td>
+                <td>{row.sosp_code}</td>
+                <td>{row.arrest}</td>
+                <td>{row.evaluation}</td>
+                <td>{row.realization_property}</td>
+                <td>{row.price_reduction}</td>
+                <td>{row.realization_sum_2}</td>
+                <td>{row.return_sum}</td>
+                <td>{row.debitor}</td>
               </Tr>
             ))}
-          </Tbody>
-        </Table>
+          </tbody>
+        </table>
       </TableContainer>
       <ButtonContainer>
         <Button onClick={() => downloadStatistics(true)}>
@@ -414,7 +307,7 @@ export const Main = () => {
           Статистика по ИП
         </Button>
       </ButtonContainer>
-      <Message visible={showMessage}>Выберете регион и строки, которые необходимо включить в статистику</Message>
+      {/* <Message visible={showMessage}>Выберете регион и строки, которые необходимо включить в статистику</Message> */}
     </Container>
   );
 };

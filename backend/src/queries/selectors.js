@@ -1,5 +1,9 @@
 import db from "../connection.js"
-import { getActives, getResolutions } from "./subqueries.js"
+import * as subqueries from "./subqueries.js"
+
+
+
+const sumPrices = (tableNames, field) => db.ref(db.raw(tableNames.map(table => `IFNULL(${table}.${field}, 0.00)`).join(" + "))).as(field)
 
 
 
@@ -22,12 +26,8 @@ export const service = {
 }
 
 
-
-
-
 export const actives = {
     getTables(regionCode, is_derivative_debt, is_archive) {
-        const sumPrices = (tableNames, field) => db.ref(db.raw(tableNames.map(table => `IFNULL(${table}.${field}, 0.00)`).join(" + "))).as(field)
         return db('meta')
             .select(db.ref("meta.inn").as("inn"))
             .select(db.ref("meta.name").as("name"))
@@ -54,11 +54,11 @@ export const actives = {
             .select(db.ref(db.raw("IFNULL(debit_data.foreclose, 0.00)")).as("debitor"))
             // .select(db.ref(db.raw( )).as("indicators"))
             .leftJoin("debt_type", "debt_type.id", "meta.debt_type")
-            .leftJoin(db.raw('(??) as resolutions_data', [getResolutions]), 'meta.inn', 'resolutions_data.inn')
-            .leftJoin(db.raw('(??) as transport_data', [getActives("transport")]), 'meta.inn', 'transport_data.inn')
-            .leftJoin(db.raw('(??) as nedvizh_data', [getActives("property")]), 'meta.inn', 'nedvizh_data.inn')
-            .leftJoin(db.raw('(??) as debit_data', [getActives("debit")]), 'meta.inn', 'debit_data.inn')
-            .leftJoin(db.raw('(??) as another_data', [getActives("another")]), 'meta.inn', 'another_data.inn')
+            .leftJoin(db.raw('(??) as resolutions_data', [subqueries.getResolutions]), 'meta.inn', 'resolutions_data.inn')
+            .leftJoin(db.raw('(??) as transport_data', [subqueries.getActives("transport")]), 'meta.inn', 'transport_data.inn')
+            .leftJoin(db.raw('(??) as nedvizh_data', [subqueries.getActives("property")]), 'meta.inn', 'nedvizh_data.inn')
+            .leftJoin(db.raw('(??) as debit_data', [subqueries.getActives("debit")]), 'meta.inn', 'debit_data.inn')
+            .leftJoin(db.raw('(??) as another_data', [subqueries.getActives("another")]), 'meta.inn', 'another_data.inn')
             .where({
                 'meta.region': regionCode,
                 'resolutions_data.is_derivative_debt': is_derivative_debt,
@@ -85,8 +85,71 @@ export const actives = {
             .select(db.ref("resolutions.exec_number").as("exec_number"))
             .select(db.ref("resolutions.exec_date").as("exec_date"))
             .where("resolutions.inn", inn)
+    },
+    getActivesStatistics(inn) {
+        const result = {
+            transport: db("transport").count({ count: "id" }).sum({ cost: db.raw("IFNULL(cost, 0.00)") }).where("inn", inn).andWhere("status", "<>", 2),
+            realty: db("property").count({ count: "id" }).sum({ cost: db.raw("IFNULL(cost, 0.00)") }).where("inn", inn).andWhere("status", "<>", 2).andWhere("type_id", 2),
+            ground: db("property").count({ count: "id" }).sum({ cost: db.raw("IFNULL(cost, 0.00)") }).where("inn", inn).andWhere("status", "<>", 2).andWhere("type_id", 4),
+            debit: db("debit").count({ count: "id" }).sum({ cost: db.raw("IFNULL(total_sum, 0.00)") }).where("inn", inn),
+            another: db("another").count({ count: "id" }).sum({ cost: db.raw("IFNULL(cost, 0.00)") }).where("inn", inn)
+        }
+        return result
+    },
+    getDebt(inn) {
+        return db("debit")
+            .select("id")
+            .select("date")
+            .select("debitor_names")
+            .select("debitor_inn")
+            .select("total_sum")
+            .where("inn", inn)
+    },
+    getActives(inn, nameActive) {
+        if (nameActive === "transport")
+            return subqueries
+                .getActivesDetails("transport")
+                .select({ number: "state_number" })
+                .where("inn", inn)
+                .andWhere("status", "<>", 2)
+        else if (nameActive === "property")
+            return subqueries
+                .getActivesDetails("property")
+                .select("share_size")
+                .select("registration_start_date")
+                .select("registration_end_date")
+                .select({ number: "cadastral_number" })
+                .where("inn", inn)
+                .andWhere("status", "<>", 2)
+                .andWhere("type_id", 2)
+        else if (nameActive === "ground")
+            return subqueries
+                .getActivesDetails("property")
+                .select("share_size")
+                .select("registration_start_date")
+                .select("registration_end_date")
+                .select({ number: "cadastral_number" })
+                .where("inn", inn)
+                .andWhere("status", "<>", 2)
+                .andWhere("type_id", 4)
+        else if (nameActive === "debit")
+            return subqueries.getActivesDetails("debit")
+                .select("dz_foreclose_date")
+                .select("dz_foreclose_sum")
+                .select("dz_cancel_foreclose_date")
+                .select("dz_cancel_foreclose_sum")
+                .select("debitor_address")
+                .where("inn", inn)
+        else if (nameActive === "another")
+            return subqueries
+                .getActivesDetails("another")
+                .where("inn", inn)
     }
 }
+
+
+
+
 
 
 
@@ -117,7 +180,7 @@ export const download = {
 
 
 
-        
+
     },
     getStatisticsIP(regionCode, innList) {
         return db("meta")
@@ -143,6 +206,6 @@ export const download = {
         `)).as("status_ip"))
             .leftJoin("resolutions", 'meta.inn', 'resolutions.inn')
             .whereIn("meta.inn", innList)
-            .where("meta.region", regionCode)
+            .andWhere("meta.region", regionCode)
     }
 }

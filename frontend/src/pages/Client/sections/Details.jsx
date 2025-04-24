@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router";
 import styled from "styled-components";
-import {Container, Sidebar, Main} from "./Sidebar.jsx"
-import { activesAPI } from "../../api/index.js";
+import { Main } from "../Sidebar.jsx"
 
 
 
@@ -17,11 +16,8 @@ export default function() {
 
 
     return (
-        <Container>
-            <Sidebar sections={["Транспорт", "Недвижимость", "Земельные участки", "Дебиторская задолженность", "Иные активы"]} />
-            <Main>
-                
-            </Main>
-        </Container>
+        <Main>
+            
+        </Main>
     )
 }

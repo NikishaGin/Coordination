@@ -119,21 +119,21 @@ export const Header = () => {
     const handleMouseLeave = () => setOpenDropdown(null);
 
     const archiveItems = [
-        { to: '/coordination', label: 'Взыскание по 47 ст.' },
-        { to: '/derivative', label: 'Производный долг' },
+        { to: '/coordination-archive', label: 'Взыскание по 47 ст.' },
+        { to: '/derivative-archive', label: 'Производный долг' },
     ];
 
     const libraryItems = [
-        { to: '/library1', label: 'Правовая документация' },
-        { to: '/library2', label: 'Положительная практика' },
+        { to: '/library-documentation', label: 'Правовая документация' },
+        { to: '/library-practice', label: 'Положительная практика' },
     ];
 
     return (
         <Container>
             <Logo/>
             <Navigation>
-                <NavItem path={'coordination'} title={'Взыскание по 47 ст.'}/>
-                <NavItem path={'derivative'} title={'Производный долг'}/>
+                <NavItem path={'/coordination'} title={'Взыскание по 47 ст.'}/>
+                <NavItem path={'/derivative'} title={'Производный долг'}/>
 
                 {/* Контейнер для кнопки и выпадающего меню */}
                 <DropdownNavItem
@@ -152,8 +152,8 @@ export const Header = () => {
                     onMouseLeave={handleMouseLeave}
                 />
 
-                <NavItem path={'directory'} title={'Справочник ГМУ ФССП'}/>
-                <NavItem path={'feedback'} title={'Обратная связь'}/>
+                {/* <NavItem path={'directory'} title={'Справочник ГМУ ФССП'}/>
+                <NavItem path={'feedback'} title={'Обратная связь'}/> */}
             </Navigation>
         </Container>
     );

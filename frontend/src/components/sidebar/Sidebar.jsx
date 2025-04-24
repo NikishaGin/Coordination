@@ -78,7 +78,7 @@ export const ArrowIcon = styled.svg`
   pointer-events: none; // Иконка не реагирует на клики
 `;
 
-export const Sidebar = () => {
+export const Sidebar = ({ filter }) => {
     return (
         <Container>
             <Wrapper>

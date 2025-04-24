@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router";
 import styled from "styled-components";
-import {Container, Main} from "./Sidebar.jsx"
+import { Main } from "../Sidebar.jsx"
 
 
 
@@ -16,10 +16,8 @@ export default function() {
 
 
     return (
-        <Container>
-            <Main>
-                
-            </Main>
-        </Container>
+        <Main>
+            
+        </Main>
     )
 }

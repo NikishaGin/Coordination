@@ -29,7 +29,11 @@ export const SelectRegion = () => {
                     Выберите регион
                 </option>
                 {/* Остальные опции */}
-                {listRegions.map(item => <option key={item.regionCode} value={item.regionCode}>{item.regionCode} - {item.regionName}</option>)}
+                {listRegions.map(item => (
+                    <option key={item.regionCode} value={item.regionCode}>
+                        {(item.regionName) ? `${item.regionCode} - ${item.regionName}` : item.regionCode}
+                    </option>
+                ))}
             </StyledSelect>
             {/* Иконка стрелки */}
             <ArrowIcon viewBox="0 0 24 24" focusable="false" aria-hidden="true">

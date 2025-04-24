@@ -199,37 +199,39 @@ const Logout = styled.div`
 `;
 
 export const Footer = () => {
-    const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const [isMenuVisible, setIsMenuVisible] = useState(false);
 
-    const toggleMenu = () => {
-        setIsMenuVisible((prev) => !prev);
-    };
-
-    
-      const firstname = useSelector((state) => state.user.firstname);
-      const secondname = useSelector((state) => state.user.secondname);
-      const lastname = useSelector((state) => state.user.lastname);
+  const toggleMenu = () => {
+    setIsMenuVisible((prev) => !prev);
+  };
 
 
-    return (
-        <Container>
-            <UserInfo>
-               {secondname} {firstname} {lastname}
-                <IconButton onClick={toggleMenu}>
-                    <Icon
-                        viewBox="0 0 24 24"
-                        focusable="false"
-                        aria-hidden="true"
-                        data-testid="MoreVertIcon"
-                    >
-                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"></path>
-                    </Icon>
-                </IconButton>
-                {/* Выпадающее меню */}
-                <DropdownMenu isVisible={isMenuVisible}>
-                    <Arrow />
-                    <ul>
-                        <li>
+  const firstname = useSelector((state) => state.user.firstname);
+  const secondname = useSelector((state) => state.user.secondname);
+  const lastname = useSelector((state) => state.user.lastname);
+
+
+  return (
+    <Container>
+      <UserInfo>
+        {secondname} {firstname} {lastname}
+        <IconButton
+          onMouseEnter={toggleMenu}
+          onMouseLeave={toggleMenu}
+        >
+          <Icon
+            viewBox="0 0 24 24"
+            focusable="false"
+            aria-hidden="true"
+            data-testid="MoreVertIcon"
+          >
+            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"></path>
+          </Icon>
+          {/* Выпадающее меню */}
+          <DropdownMenu isVisible={isMenuVisible}>
+            <Arrow />
+            <ul>
+              {/* <li>
                             <MenuButton>
                                 <svg
                                     className="MuiSvgIcon-root"
@@ -242,39 +244,45 @@ export const Footer = () => {
                                 </svg>
                                 Админка
                             </MenuButton>
-                        </li>
-                        <li>
-                            <MenuButton>
-                                <svg
-                                    className="MuiSvgIcon-root"
-                                    focusable="false"
-                                    aria-hidden="true"
-                                    viewBox="0 0 24 24"
-                                    data-testid="BarChartIcon"
-                                >
-                                    <path d="M4 11h5v8H4zm0-5h5v3H4zm11 5h5v5h-5zm0-8h5v3h-5z"></path>
-                                </svg>
-                                Статистика
-                            </MenuButton>
-                        </li>
-                    </ul>
-                    <Divider />
-                    <div style={{ padding: '8px', display: 'flex', justifyContent: 'flex-end' }}>
-                        <MenuButton>
-                            <svg
-                                className="MuiSvgIcon-root"
-                                focusable="false"
-                                aria-hidden="true"
-                                viewBox="0 0 24 24"
-                                data-testid="LogoutIcon"
-                            >
-                                <path d="m17 7-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4z"></path>
-                            </svg>
-                            <Logout onClick={resetStore}>Выход</Logout>
-                        </MenuButton>
-                    </div>
-                </DropdownMenu>
-            </UserInfo>
-        </Container>
-    );
+                        </li> */}
+              <li>
+                <MenuButton>
+                  Сервисный режим
+                </MenuButton>
+              </li>
+              <li>
+                <MenuButton>
+                  <svg
+                    className="MuiSvgIcon-root"
+                    focusable="false"
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                    data-testid="BarChartIcon"
+                  >
+                    <path d="M4 11h5v8H4zm0-5h5v3H4zm11 5h5v5h-5zm0-8h5v3h-5z"></path>
+                  </svg>
+                  Статистика
+                </MenuButton>
+              </li>
+            </ul>
+            <Divider />
+            <div style={{ padding: '8px', display: 'flex', justifyContent: 'flex-end' }}>
+              <MenuButton>
+                <svg
+                  className="MuiSvgIcon-root"
+                  focusable="false"
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  data-testid="LogoutIcon"
+                >
+                  <path d="m17 7-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4z"></path>
+                </svg>
+                <Logout onClick={resetStore}>Выход</Logout>
+              </MenuButton>
+            </div>
+          </DropdownMenu>
+        </IconButton>
+      </UserInfo>
+    </Container>
+  );
 };
