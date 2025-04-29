@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { TableContainer, Tr } from "../../../../../components/tables/Table.jsx";
 import { useParams } from "react-router";
 import { activesAPI } from "../../../../../api/index.js";
+import {formatNumber, formatDate} from "../../../../../utils/formatData.js"
 
 
 const Container = styled(TableContainer)`
@@ -43,11 +44,11 @@ export default function () {
                     {resolutions.map(data => (
                         <Tr>
                             <td>{data.resolutions_number}</td>
-                            <td>{data.resolutions_date}</td>
-                            <td>{data.resolutions_sum}</td>
-                            <td>{data.cur_debt}</td>
+                            <td>{formatDate(data.resolutions_date)}</td>
+                            <td>{formatNumber(data.resolutions_sum)}</td>
+                            <td>{formatNumber(data.cur_debt)}</td>
                             <td>{data.exec_number}</td>
-                            <td>{data.exec_date}</td>
+                            <td>{formatDate(data.exec_date)}</td>
                             {/* <td></td> */}
                         </Tr>
                     ))}

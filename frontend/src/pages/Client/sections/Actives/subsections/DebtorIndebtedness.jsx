@@ -13,5 +13,5 @@ export default function () {
         activesAPI.getActives(inn, "debit").then(data => setActives(data.data)).catch(console.log)
     }, [])
 
-    return <Template headers={["Наименование", "Дата ходатайства", "Стоимость, ₽"]} data={actives} />
+    return <Template nameActive="debit" data={actives} />
 }

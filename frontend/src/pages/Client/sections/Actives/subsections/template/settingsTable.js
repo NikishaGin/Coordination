@@ -1,194 +1,373 @@
-export const optionsMap = {
-    fnsLizing: [
-        ["Является", "1"],
-        ["Не является", "2"],
-        ["Не является, нет залога", "0"]
-    ],
-    arrest: [
-        ["Установлено", "1"],
-        ["Не установлено", "0"]
-    ],
-    verify: [
-        ["Да", "1"],
-        ["Нет", "0"]
-    ],
-    status: [
-        ["Арест", "arrest"],
-        ["Оценка", "grade"],
-        ["Реализация", "sale"],
-        ["Розыск", "wanted"],
-        ["Обжалование в суде испол. действия", "appeal"],
-        ["Лизинг (залог иного лица)", "lizing"],
-        ["Иное", "other"]
-    ]
-};
-
-
-
-/*    Редактирование наименования есть только в "Иных активах"
-[
-    "Наименование объекта"
-],
+/*
+type: undefined,
+type: "text",
+type: "textarea",
+type: "date",
+type: "number",
+type: "select", 
 */
 
 
 
-const headers = [
+export default nameActive => [
     [
-        "Наименование",
-        "Государственный номер",
-        "Стоимость, ₽"
+        {
+            name: "Наименование",
+            field: "name",
+            type: (nameActive == "another") ? "textarea" : undefined,
+            editable: (nameActive == "another"),
+            width: "450px"
+        },
+        ...((["transport", "property", "ground"].includes(nameActive)) ?
+            [
+                {
+                    name: (nameActive == "transport") ? "Государственный номер" : "Кадастровый номер",
+                    field: "number",
+                    type: "text",
+                    editable: false
+                }
+            ] : []),
+        ...((nameActive == "debit") ?
+            [
+                {
+                    name: "Дата ходатайства",
+                    field: "date",
+                    type: "date",
+                    editable: false
+                }
+            ] : []),
+        {
+            name: "Стоимость, ₽",
+            field: "cost",
+            type: "number",
+            editable: false
+        },
     ],
     [
-        "Верифицирован объект",
-        "Статус объекта",
-        "Иной статус" // при "Статус объекта" = "Иное"
+        {
+            name: "Верифицирован объект",
+            field: "is_verified",
+            type: "select",
+            editable: true,
+            options: [
+                {
+                    text: "Да",
+                    value: "1"
+                },
+                {
+                    text: "Нет",
+                    value: "0"
+                }
+            ]
+        },
+        {
+            name: "Статус объекта",
+            field: "obj_status",
+            type: "select",
+            editable: true,
+            width: "500px",
+            options: [
+                {
+                    text: "Арест",
+                    value: "arrest"
+                },
+                {
+                    text: "Оценка",
+                    value: "grade"
+                },
+                {
+                    text: "Реализация",
+                    value: "sale"
+                },
+                {
+                    text: "Розыск",
+                    value: "wanted"
+                },
+                {
+                    text: "Обжалование в суде испол. действия",
+                    value: "appeal"
+                },
+                {
+                    text: "Лизинг (залог иного лица)",
+                    value: "lizing"
+                },
+                {
+                    text: "Иное",
+                    value: "other"
+                },
+            ]
+        },
+        {
+            name: "Иной статус", // при "Статус объекта" = "Иное"
+            field: "obj_status_manual",
+            type: "text",
+            editable: true,
+        }
+    ],
+    ...(
+        (["property", "ground"].includes(nameActive)) ?
+            [
+                [
+                    {
+                        name: "Размер доли в праве",
+                        field: "share_size",
+                        type: "number",
+                        editable: true
+                    },
+                    {
+                        name: "Дата начала регистрации",
+                        field: "registration_start_date",
+                        type: "date",
+                        editable: true
+                    },
+                    {
+                        name: "Дата окончания регистрации",
+                        field: "registration_end_date",
+                        type: "date",
+                        editable: true
+                    },
+                ]
+            ] :
+            []
+    ),
+    [
+        {
+            name: "Арест имущества",
+            field: "arrest_propperty",
+            type: "date",
+            editable: true
+        },
+        {
+            name: "Сумма ареста, ₽",
+            field: "arrest_sum",
+            type: "number",
+            editable: true
+        },
     ],
     [
-        "Размер доли в праве",
-        "Дата начала регистрации",
-        "Дата окончания регистрации"
+        {
+            name: "Заведение розыскного дела",
+            field: "wanted_open",
+            type: "date",
+            editable: true
+        },
+        {
+            name: "Прекращение розыскного дела",
+            field: "wanted_close",
+            type: "date",
+            editable: true
+        },
+        {
+            name: "Результат розыска",
+            field: "wanted_result",
+            type: "select",
+            editable: true,
+            options: [
+                {
+                    text: "Установлено",
+                    value: "1"
+                },
+                {
+                    text: "Не установлено",
+                    value: "0"
+                }
+            ]
+        },
     ],
     [
-        "Арест имущества",
-        "Сумма ареста"
+        {
+            name: "Передана на оценку",
+            field: "evaluation_submit",
+            type: "date",
+            editable: true
+        },
+        {
+            name: "Принятие результатов оценки",
+            field: "evaluation_accept",
+            type: "date",
+            editable: true
+        },
+        {
+            name: "Сумма оценки, ₽",
+            field: "evaluation_sum",
+            type: "number",
+            editable: true
+        },
     ],
     [
-        "Заведение розыскного дела",
-        "Прекращение розыскного дела",
-        "Результат розыска"
+        {
+            name: "Передана на реализацию",
+            field: "realization_submit",
+            type: "date",
+            editable: true
+        },
+        {
+            name: "Сумма переданного имущества, ₽",
+            field: "realization_sum_1",
+            type: "number",
+            editable: true
+        },
+        {
+            name: "Дата первых торгов",
+            field: "realization_date_1",
+            type: "date",
+            editable: true
+        },
+        {
+            name: "Отчет о реализации",
+            field: "realization_result_1",
+            type: "date",
+            editable: true
+        },
     ],
     [
-        "Передана на оценку",
-        "Принятие результатов оценки",
-        "Сумма оценки"
+        {
+            name: "Сумма реализованного имущества, ₽",
+            field: "realization_property_sum",
+            type: "number",
+            editable: true
+        },
+        {
+            name: "Уведомление о нереализации (1 этап)",
+            field: "not_realization_notification",
+            type: "date",
+            editable: true
+        },
+        {
+            name: "Постановление о снижении цены",
+            field: "price_reduction_resolution",
+            type: "date",
+            editable: true
+        },
+        {
+            name: "Сумма снижения цены, ₽",
+            field: "price_reduction_sum",
+            type: "number",
+            editable: true
+        },
     ],
+    ...((nameActive != "another") ?
+        [
+            [
+                {
+                    name: "Сумма реализованного имущества, ₽",
+                    field: "realization_sum_2",
+                    type: "number",
+                    editable: true
+                },
+                {
+                    name: "Уведомление о нереализации (2 этап)",
+                    field: "not_realization_notification_2",
+                    type: "date",
+                    editable: true
+                },
+                {
+                    name: "Дата вторых торгов",
+                    field: "realization_date_2",
+                    type: "date",
+                    editable: true
+                },
+                {
+                    name: "Отчет о реализации",
+                    field: "realization_result_2",
+                    type: "date",
+                    editable: true
+                },
+            ],
+            [
+                {
+                    name: "Акт передачи имущества должнику",
+                    field: "property_to_debtor_act",
+                    type: "date",
+                    editable: true
+                },
+                {
+                    name: "Сумма возврата имущества должнику, ₽",
+                    field: "property_to_debtor_sum",
+                    type: "number",
+                    editable: true
+                },
+            ],
+        ] : []),
+    ...((nameActive == "debit") ?
+        [
+            [
+                {
+                    name: "Обращение взыскания на ДЗ",
+                    field: "dz_foreclose_date",
+                    type: "date",
+                    editable: true
+                },
+                {
+                    name: "Сумма обращения на взыскание ДЗ, ₽",
+                    field: "dz_foreclose_sum",
+                    type: "number",
+                    editable: true
+                },
+                {
+                    name: "Отмена обращения на взыскание ДЗ",
+                    field: "dz_cancel_foreclose_date",
+                    type: "date",
+                    editable: true
+                },
+                {
+                    name: "Основание отмены обращения на ДЗ, ₽",
+                    field: "dz_cancel_foreclose_sum",
+                    type: "number",
+                    editable: true
+                },
+                {
+                    name: "Адрес дебитора",
+                    field: "debitor_address",
+                    type: "textarea",
+                    editable: true
+                }
+            ],
+        ] : []),
     [
-        "Передана на реализацию",
-        "Сумма переданного имущества",
-        "Дата первых торгов",
-        "Отчет о реализации"
+        {
+            name: "Является ли ФНС залогодержателем",
+            field: "is_fns_lizing",
+            type: "select",
+            editable: true,
+            options: [
+                {
+                    text: "Является",
+                    value: "1"
+                },
+                {
+                    text: "Не является",
+                    value: "2"
+                },
+                {
+                    text: "Не является, нет залога",
+                    value: "0"
+                }
+            ]     //   (is_fns_lizing, 	есть ли залог перед ФНС: 0 - нет залога, 1 залог перед ФНС, 2 - залог не перед ФНС)
+        },
+        {
+            name: "Наименование залогодержателя (лизингодателя)",
+            field: "lizing_name",
+            type: "textarea",
+            editable: true
+        },
+        {
+            name: "Дата обременения",
+            field: "encumbrance_date",
+            type: "date",
+            editable: true
+        },
+        {
+            name: "Вид обременения",   // при "Является ли ФНС залогодержателем" = "Не является"
+            field: "encumbrance_type",
+            type: "text",
+            editable: true
+        }
     ],
-    [
-        "Сумма реализованного имущества",
-        "Уведомление о нереализации (1 этап)",
-        "Постановление о снижении цены",
-        "Сумма снижения цены"
-    ],
-    [
-        "Сумма реализованного имущества",
-        "Уведомление о нереализации (2 этап)",
-        "Дата вторых торгов",
-        "Отчет о реализации"
-    ],
-    [
-        "Акт передачи имущества должнику",
-        "Сумма возврата имущества должнику"
-    ],
-    [
-        "Обращение взыскания на ДЗ",
-        "Сумма обращения на взыскание ДЗ",
-        "Отмена обращения на взыскание ДЗ",
-        "Основание отмены обращения на ДЗ"
-    ],
-    [
-        "Является ли ФНС залогодержателем",
-        "Наименование залогодержателя(лизингодателя)",
-        "Дата обременения",
-        "Вид обременения"   // при "Является ли ФНС залогодержателем" = "Не является"   (is_fns_lizing, 	есть ли залог перед ФНС: 0 - нет залога, 1 залог перед ФНС, 2 - залог не перед ФНС)
-    ],
-    "Комментарий"
+    {
+        name: "Комментарий",
+        field: "comment",
+        type: "textarea",
+        editable: true
+    }
 ]
-
-
-const feilds = [
-    ["name", "number", "cost"],
-    [
-        [
-            "is_verified",
-            "obj_status",
-            "obj_status_manual"
-        ],
-        [
-            "share_size",
-            "registration_start_date",
-            "registration_end_date"
-        ],
-        [
-            "arrest_propperty",
-            "arrest_sum"
-        ],
-        [
-            "wanted_open",
-            "wanted_close",
-            "wanted_result"
-        ],
-        [
-            "evaluation_submit",
-            "evaluation_accept",
-            "evaluation_sum"
-        ],
-        [
-            "realization_submit",
-            "realization_sum",
-            "realization_date",
-            "realization_report"
-        ],
-        [
-            "realization_property_sum_1",
-            "not_realization_notification_1",
-            "price_reduction_resolution",
-            "price_reduction_sum"
-        ],
-        [
-            "realization_property_sum_2",
-            "not_realization_notification_2",
-            "date_2",
-            "report_2"
-        ],
-        [
-            "property_to_debtor_act",
-            "property_to_debtor_sum",
-        ],
-        [
-            "dz_foreclose_date",
-            "dz_foreclose_sum",
-            "dz_cancel_foreclose_date",
-            "dz_cancel_foreclose_sum",
-            "debitor_address",
-        ],
-        [
-            "lizing_name",
-            "is_fns_lizing",
-            "encumbrance_type",
-            "encumbrance_date",
-        ],
-        "comment"
-    ]
-]
-
-
-
-export function getHeadersAndFieldsByActive(nameActive) {
-    const filteredHeaders = headers.filter((_, index) => {
-        if (index == 2)
-            return ["property", "ground"].includes(nameActive)
-        else if ([8, 9].includes(index))
-            return (nameActive != "another")
-        else if (index == 10)
-            return nameActive == "debit"
-        else
-            return true
-    })
-    const filteredFields = feilds[1].filter((_, index) => {
-        if (index == 2)
-            return ["property", "ground"].includes(nameActive)
-        else if ([8, 9].includes(index))
-            return (nameActive != "another")
-        else if (index == 10)
-            return nameActive == "debit"
-        else
-            return true
-    }).flat()
-    return { headers: filteredHeaders, feilds: [feilds[0], filteredFields] }
-}

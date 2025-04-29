@@ -13,5 +13,5 @@ export default function () {
         activesAPI.getActives(inn, "ground").then(data => setActives(data.data)).catch(console.log)
     }, [])
 
-    return <Template headers={["Наименование", "Кадастровый номер", "Стоимость, ₽"]} data={actives} />
+    return <Template nameActive="ground" data={actives} />
 }

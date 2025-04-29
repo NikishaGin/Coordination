@@ -19,9 +19,6 @@ const globalSlice = createSlice({
         updateUrlHistory(state, action) {
             state.urlHistory = [state.urlHistory[1], action.payload];
         },
-
-
-
         setInputValue(state, action) {
             state.inputValue = action.payload;
         },
@@ -51,4 +48,5 @@ export const {
     setSelectedSubsection,
     resetGlobal
 } = globalSlice.actions;
+
 export default globalSlice.reducer;

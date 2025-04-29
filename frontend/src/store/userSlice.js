@@ -30,4 +30,5 @@ const userSlice = createSlice({
 });
 
 export const { setUserInfo, resetUser } = userSlice.actions;
+
 export default userSlice.reducer;

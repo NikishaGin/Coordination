@@ -6,12 +6,12 @@ import { activesAPI } from "../../../../../api/index.js";
 
 
 export default function () {
-    const [actives, setActives] = useState([])
+    const [data, setActives] = useState([])
     const { inn } = useParams()
 
     useEffect(() => {
         activesAPI.getActives(inn, "transport").then(data => setActives(data.data)).catch(console.log)
     }, [])
 
-    return <Template nameActive="transport" data={actives} />
+    return <Template nameActive="transport" data={data} />
 }

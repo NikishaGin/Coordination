@@ -89,7 +89,7 @@ export const actives = {
     getActivesStatistics(inn) {
         const result = {
             transport: db("transport").count({ count: "id" }).sum({ cost: db.raw("IFNULL(cost, 0.00)") }).where("inn", inn).andWhere("status", "<>", 2),
-            realty: db("property").count({ count: "id" }).sum({ cost: db.raw("IFNULL(cost, 0.00)") }).where("inn", inn).andWhere("status", "<>", 2).andWhere("type_id", 2),
+            property: db("property").count({ count: "id" }).sum({ cost: db.raw("IFNULL(cost, 0.00)") }).where("inn", inn).andWhere("status", "<>", 2).andWhere("type_id", 2),
             ground: db("property").count({ count: "id" }).sum({ cost: db.raw("IFNULL(cost, 0.00)") }).where("inn", inn).andWhere("status", "<>", 2).andWhere("type_id", 4),
             debit: db("debit").count({ count: "id" }).sum({ cost: db.raw("IFNULL(total_sum, 0.00)") }).where("inn", inn),
             another: db("another").count({ count: "id" }).sum({ cost: db.raw("IFNULL(cost, 0.00)") }).where("inn", inn)

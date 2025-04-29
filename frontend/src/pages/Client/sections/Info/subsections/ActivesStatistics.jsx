@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { TableContainer, Tr } from "../../../../../components/tables/Table.jsx";
 import { useParams } from "react-router";
 import { activesAPI } from "../../../../../api/index.js";
+import {formatNumber} from "../../../../../utils/formatData.js"
 
 
 
@@ -28,32 +29,32 @@ export default function () {
                     <Tr>
                         <td>Транспорт</td>
                         <td>{actives.transport?.count}</td>
-                        <td>{actives.transport?.cost}</td>
+                        <td>{formatNumber(actives.transport?.cost) ?? "-"}</td>
                     </Tr>
                     <Tr>
                         <td>Земля</td>
                         <td>{actives.ground?.count}</td>
-                        <td>{actives.ground?.cost}</td>
+                        <td>{formatNumber(actives.ground?.cost) ?? "-"}</td>
                     </Tr>
                     <Tr>
                         <td>Недвижимость</td>
-                        <td>{actives.realty?.count}</td>
-                        <td>{actives.realty?.cost}</td>
+                        <td>{actives.property?.count}</td>
+                        <td>{formatNumber(actives.property?.cost) ?? "-"}</td>
                     </Tr>
                     <Tr>
                         <td>Дебиторская задолженность</td>
                         <td>{actives.debit?.count}</td>
-                        <td>{actives.debit?.cost}</td>
+                        <td>{formatNumber(actives.debit?.cost) ?? "-"}</td>
                     </Tr>
                     <Tr>
                         <td>Прочие активы</td>
                         <td>{actives.another?.count}</td>
-                        <td>{actives.another?.cost}</td>
+                        <td>{formatNumber(actives.another?.cost) ?? "-"}</td>
                     </Tr>
                     <Tr>
                         <td></td>
                         <td></td>
-                        <td>{actives.total_sum}</td>
+                        <td>{formatNumber(actives.total_sum)}</td>
                     </Tr>
                 </tbody>
             </table>

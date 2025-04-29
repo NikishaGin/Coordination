@@ -1,7 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { getHeadersAndFieldsByActive } from "./settingsTable.js";
-
 
 
 
@@ -49,7 +47,7 @@ const SelectFieldsItem = styled.li`
   padding: 7px;
   padding-left: ${({ section }) => section ? "40px" : "7px"};
 
-  &:hover {
+  &:hover, &:has(input[type="checkbox"]:checked):hover {
     background-color: rgb(173, 228, 255);    
   }
 
@@ -73,27 +71,24 @@ const SelectFieldsItem = styled.li`
 `
 
 
-export default function ({ nameActive, selectedColumn, setSelectedColumn }) {
+export default function ({ config, selectedColumn, setSelectedColumn }) {
     const [openSelect, setOpenSelect] = useState(false)
 
-    const {headers} = getHeadersAndFieldsByActive(nameActive)
-    const listHeaderName = headers.slice(1).flat()
 
-    const handleSelectColumns = indexColumns => {
-        if (Array.isArray(indexColumns))            
-            if (indexColumns.every(index => selectedColumn.includes(index)))
-                setSelectedColumn(prevValue => prevValue.filter(index => !indexColumns.includes(index)))
+    const handleSelectColumns = selectedFields => {
+        if (Array.isArray(selectedFields))
+            if (selectedFields.every(field => selectedColumn.includes(field)))
+                setSelectedColumn(prevValue => prevValue.filter(field => !selectedFields.includes(field)))
             else
-                setSelectedColumn(prevValue => [...new Set([...prevValue, ...indexColumns])])
-        else if (selectedColumn.includes(indexColumns))
-            setSelectedColumn(prevValue => prevValue.filter(index => index != indexColumns))
+                setSelectedColumn(prevValue => [...new Set([...prevValue, ...selectedFields])])
+        else if (selectedColumn.includes(selectedFields))
+            setSelectedColumn(prevValue => prevValue.filter(field => field != selectedFields))
         else
-            setSelectedColumn(prevValue => [...prevValue, indexColumns])
+            setSelectedColumn(prevValue => [...prevValue, selectedFields])
     }
 
 
     return (
-
         <SelectFields
             visible={openSelect}
             onMouseEnter={() => setOpenSelect(true)}
@@ -104,34 +99,38 @@ export default function ({ nameActive, selectedColumn, setSelectedColumn }) {
                 <path d="M7 14l5-5 5 5z" />
             </svg>
             <ul>
-                <SelectFieldsItem onClick={() => handleSelectColumns(Array.from({ length: listHeaderName.length }, (_, i) => i))}>
-                    <input type="checkbox" checked={selectedColumn.length == listHeaderName.length} />
+                <SelectFieldsItem onClick={() => handleSelectColumns(config.flat().map(item => item.field))}>
+                    <input type="checkbox" checked={config.flat().every(item => selectedColumn.includes(item.field))} />
                     <label><b>Показать все столбцы</b></label>
                 </SelectFieldsItem>
                 <hr />
-                {headers.slice(1).map(nameHeader => {
-                    if (Array.isArray(nameHeader)) {
-                        const listIndexes = nameHeader.map(name => listHeaderName.indexOf(name))
+
+
+
+                {config.map(itemGroup => {
+                    if (Array.isArray(itemGroup)) {
                         return (
                             <>
-                                <SelectFieldsItem onClick={() => handleSelectColumns(listIndexes)}>
-                                    <input type="checkbox" checked={listIndexes.every(index => selectedColumn.includes(index))} />
+                                <SelectFieldsItem onClick={() => handleSelectColumns(itemGroup.map(item => item.field))}>
+                                    <input type="checkbox" checked={itemGroup.every(item => selectedColumn.includes(item.field))} />
                                     <label><b>Выбрать все столбцы группы</b></label>
                                 </SelectFieldsItem>
-                                {nameHeader.map(name => {
-                                    const index = listHeaderName.indexOf(name)
-                                    return <SelectFieldsItem section={true} onClick={() => handleSelectColumns(index)}>
-                                        <input type="checkbox" checked={selectedColumn.includes(index)} />
-                                        <label>{name}</label>
-                                    </SelectFieldsItem>
+                                {itemGroup.map(item => {
+                                    return (
+                                        <SelectFieldsItem section={true} onClick={() => handleSelectColumns(item.field)}>
+                                            <input type="checkbox" checked={selectedColumn.includes(item.field)} />
+                                            <label>{item.name}</label>
+                                        </SelectFieldsItem>
+                                    )
                                 })}
                             </>
                         )
                     } else {
-                        const index = listHeaderName.indexOf(nameHeader)
-                        return <SelectFieldsItem onClick={() => handleSelectColumns(index)}>
-                            <input type="checkbox" checked={selectedColumn.includes(index)} /><label>{nameHeader}</label>
-                        </SelectFieldsItem>
+                        return (
+                            <SelectFieldsItem onClick={() => handleSelectColumns(itemGroup.field)}>
+                                <input type="checkbox" checked={selectedColumn.includes(itemGroup.field)} /><label>{itemGroup.name}</label>
+                            </SelectFieldsItem>
+                        )
                     }
                 })}
             </ul>

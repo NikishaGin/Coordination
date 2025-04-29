@@ -5,6 +5,7 @@ import { TableContainer, Tr } from "../tables/Table.jsx";
 import { ButtonContainer, Button } from "../buttons/Button.jsx";
 import { activesAPI, downloadAPI } from "../../api/index.js";
 import downloadExcel from "../../utils/downloadExcel.js"
+import {formatNumber} from "../../utils/formatData.js"
 import { useSelector } from "react-redux";
 
 
@@ -275,19 +276,19 @@ export const Main = () => {
                 <td>{rowIndex + 1}</td>
                 <td>{row.inn}</td>
                 <td>{row.name}</td>
-                <td>{row.post_sum}</td>
-                <td>{row.cur_debt}</td>
+                <td>{formatNumber(row.post_sum)}</td>
+                <td>{formatNumber(row.cur_debt)}</td>
                 <td>{row.category}</td>
-                <td>{row.total_sum}</td>
+                <td>{formatNumber(row.total_sum)}</td>
                 <td>{row.status_ip}</td>
                 <td>{row.sosp_code}</td>
-                <td>{row.arrest}</td>
-                <td>{row.evaluation}</td>
-                <td>{row.realization_property}</td>
-                <td>{row.price_reduction}</td>
-                <td>{row.realization_sum_2}</td>
-                <td>{row.return_sum}</td>
-                <td>{row.debitor}</td>
+                <td>{formatNumber(row.arrest)}</td>
+                <td>{formatNumber(row.evaluation)}</td>
+                <td>{formatNumber(row.realization_property)}</td>
+                <td>{formatNumber(row.price_reduction)}</td>
+                <td>{formatNumber(row.realization_sum_2)}</td>
+                <td>{formatNumber(row.return_sum)}</td>
+                <td>{formatNumber(row.debitor)}</td>
               </Tr>
             ))}
           </tbody>

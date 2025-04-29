@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { TableContainer, Tr } from "../../../../../components/tables/Table.jsx";
 import { ButtonContainer, Button } from "../../../../../components/buttons/Button.jsx";
-import handlePriceInput from "../../../../../utils/handlePriceInput.js"
+import Input from "../../../../../components/inputs/Input.jsx"
 import { useParams } from "react-router";
 import { activesAPI } from "../../../../../api/index.js";
 
@@ -22,16 +22,6 @@ const Container = styled(TableContainer)`
     }
 `
 
-const Input = styled.input`
-    width: 100%;
-    padding: 3px;
-    border: ${({ view }) => (view) ? "1px solid hsl(210, 100%, 30%);" : "1px solid transparent"};
-    background-color: transparent;
-    font-family: Arial, sans-serif;
-    font-size: 14px;
-    color: white;
-    text-align: center;
-`
 
 const ButtonBox = styled.div`
     display: flex;
@@ -51,20 +41,10 @@ export default function () {
     const tableRef = useRef(null);
     const { inn } = useParams()
 
-    //  Исправить начальное состояние в Sidebar.jsx
 
     useEffect(() => {
         activesAPI.getDebt(inn).then(data => setDebit(data.data)).catch(console.log)
     }, [])
-
-
-    const handleKeyPress = (event) => {
-        // Разрешаем только цифры и специальные клавиши (например, Backspace)
-        if (!/^\d$/.test(event.key) && event.key !== "Backspace") {
-            event.preventDefault(); // Блокируем ввод недопустимых символов
-        }
-    };
-
 
 
     const onChangeHandler = (id, field, value, type) => {
@@ -121,7 +101,8 @@ export default function () {
                         </tr>
                     </thead>
                     <tbody>
-                        {[...debit, ...newDebit.map(id => ({ id }))].map((row, index) => {
+                        {
+                        [...debit, ...newDebit.map(id => ({ id }))].map((row, index) => {
                             const data = changedDebit[row.id] || row
                             return (
                                 <Tr
@@ -131,14 +112,15 @@ export default function () {
                                 >
                                     <td>
                                         <Input
+                                            type="inn"
                                             value={data.debitor_inn}
                                             onChange={event => onChangeHandler(data.id, "debitor_inn", event.target.value, data.type)}
-                                            onKeyPress={handleKeyPress}
                                             view={viewInput === index}
                                         />
                                     </td>
                                     <td>
                                         <Input
+                                            type="text"
                                             value={data.debitor_names}
                                             onChange={event => onChangeHandler(data.id, "debitor_names", event.target.value, data.type)}
                                             view={viewInput === index}
@@ -154,12 +136,9 @@ export default function () {
                                     </td>
                                     <td>
                                         <Input
+                                            type="number"
                                             value={data.total_sum}
                                             onChange={event => onChangeHandler(data.id, "total_sum", event.target.value, data.type)}
-                                            onKeyPress={handlePriceInput.handleKeyPress}
-                                            onKeyDown={handlePriceInput.handleKeyDown}
-                                            onInput={handlePriceInput.handleInput}
-                                            onPaste={handlePriceInput.handlePaste}
                                             view={viewInput === index}
                                         />
                                     </td>

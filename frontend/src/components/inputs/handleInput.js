@@ -1,7 +1,6 @@
-export default {
+export const handlesInputNumber = {
     handleKeyPress(event) {
         let keyCode = event.charCode || event.keyCode;
-        console.log(keyCode)
         if ((keyCode == 44) || (keyCode == 46)) {
             if (event.target.value.length == 0)
                 event.target.value = "0,00";
@@ -44,13 +43,31 @@ export default {
 
     handlePaste(event) {
         event.preventDefault();
-        let value = event.target.originalEvent.clipboardData.getData('text');
+        let value = event.clipboardData.getData('text');
         value = value.replace(/,/g, ".").replace(/\s*|\t|\r|\n/gm, "");
         let lenStr = value.length;
         let commaPos = (value.indexOf(".") > 0) ? value.indexOf(".") : lenStr;
         lenStr = commaPos + 3;
-        value = value.slice(0, Math.min(lenStr, value.length));    
+        value = value.slice(0, Math.min(lenStr, value.length));
         value = parseFloat(value);
         event.target.value = (!isNaN(value)) ? value.toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "";
     }
-};
+}
+
+
+
+export const handlesInputInn = {
+    handleKeyPress(event) {
+        if (!/^\d$/.test(event.key) && (event.key !== "Backspace") || (event.target.value.length == 12)) {
+            event.preventDefault();
+        }
+    },
+
+    handlePaste(event) {
+        event.preventDefault();
+        const value = event.clipboardData.getData('text').replace(/\s*|\t|\r|\n/gm, "");
+        if (/^\d*$/.test(value) && (value.length <= 12))
+            event.target.value = value
+    }
+}
+

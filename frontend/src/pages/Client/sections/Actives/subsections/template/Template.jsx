@@ -3,7 +3,9 @@ import styled from "styled-components";
 import { ButtonContainer, Button } from "../../../../../../components/buttons/Button.jsx";
 import { TableContainer, Tr } from "../../../../../../components/tables/Table.jsx";
 import SelectFields from "./SelectFields.jsx"
-import { getHeadersAndFieldsByActive } from "./settingsTable.js";
+import configTables from "./settingsTable.js";
+import { formatNumber, formatDate, transformDateForInput } from "../../../../../../utils/formatData.js"
+import Input from "../../../../../../components/inputs/Input.jsx";
 
 
 
@@ -16,32 +18,14 @@ const Container = styled(TableContainer)`
         white-space: normal;
     }
 
-    & th:nth-child(1), & td:nth-child(1) {
-        width: 900px;
-        max-width: 900px;
-    }
-
     & td:nth-child(1) {
-        overflow: hidden; 
-        text-overflow: ellipsis;
+        //overflow: hidden; 
+        //text-overflow: ellipsis;
 
         //white-space: normal !important;
         //word-break: break-word;
     }
 `
-
-
-const Input = styled.input`
-    width: 100%;
-    padding: 3px;
-    border: ${({ view }) => (view) ? "1px solid hsl(210, 100%, 30%);" : "1px solid transparent"};
-    background-color: transparent;
-    font-family: Arial, sans-serif;
-    font-size: 14px;
-    color: white;
-    text-align: center;
-`
-
 
 const ButtonBox = styled.div`
     display: flex;
@@ -53,15 +37,32 @@ const ButtonBox = styled.div`
 
 export default function ({ nameActive, data }) {
     const [selectedColumn, setSelectedColumn] = useState([])
-    const {headers, feilds} = getHeadersAndFieldsByActive(nameActive)
-    const listHeaderName = headers.slice(1).flat()
+    const [viewInput, setViewInput] = useState(-1)
+    const [changedValue, setChangedValue] = useState({})
+    const config = configTables(nameActive)
 
-    console.log(headers)
-    console.log(feilds)
 
-    useEffect(() => {
-        console.log(feilds)
-    }, [])
+    const onChangeHandler = (id, field, value) => {
+        setChangedValue(prevValue => {
+            return {
+                ...prevValue,
+                [id]: {
+                    ...prevValue[id],
+                    [field]: value
+                }
+            }
+        })
+    }
+
+
+    const resetChange = () => {
+        setChangedValue({})
+    }
+
+    const saveChange = () => {
+        console.log(changedDebit)
+    }
+
 
     return (
         <>
@@ -69,15 +70,23 @@ export default function ({ nameActive, data }) {
                 <table>
                     <thead>
                         <tr>
-                            {headers[0].map(nameHeader => <th>{nameHeader}</th>)}
-                            {selectedColumn.sort((a, b) => a - b).map(index => <th>{listHeaderName[index]}</th>)}
+                            {[...config[0], ...config.flat().filter(({ field }) => selectedColumn.includes(field))].map(({ name }) => <th>{name}</th>)}
                         </tr>
                     </thead>
                     <tbody>
-                        {data.map(row => (
-                            <Tr>
-                                {feilds[0].map(field => <td>{row[field] ?? ""}</td>)}
-                                {selectedColumn.sort((a, b) => a - b).map(index => <td>{row[feilds[1][index]] ?? ""}</td>)}
+                        {data.map((row, index) => (
+                            <Tr
+                                key={index}
+                                onMouseEnter={() => setViewInput(index)}
+                                onMouseLeave={() => setViewInput(-1)}
+                            >
+                                {[...config[0], ...config.flat().filter(({ field }) => selectedColumn.includes(field))].map(item => {
+                                    if (item.editable) {
+                                        return <td width={item.width}><Input type={item.type} value={row[item.field]} options={item.options} view={viewInput === index} /></td>
+                                    } else
+                                        return <td width={item.width}>{row[item.field]}</td>
+
+                                })}
                             </Tr>
                         ))}
                     </tbody>
@@ -85,11 +94,11 @@ export default function ({ nameActive, data }) {
             </Container>
             <ButtonBox>
                 <ButtonContainer>
-                    <SelectFields nameActive={nameActive} selectedColumn={selectedColumn} setSelectedColumn={setSelectedColumn} />
+                    <SelectFields config={config.slice(1)} selectedColumn={selectedColumn} setSelectedColumn={setSelectedColumn} />
                 </ButtonContainer>
                 <ButtonContainer>
-                    <Button>Сбросить изменения</Button>
-                    <Button>Сохранить</Button>
+                    <Button onClick={resetChange}>Сбросить изменения</Button>
+                    <Button onClick={saveChange}>Сохранить</Button>
                 </ButtonContainer>
             </ButtonBox>
         </>
