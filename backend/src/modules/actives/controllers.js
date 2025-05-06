@@ -1,4 +1,6 @@
 import { actives } from "../../queries/selectors.js"
+import * as updates from "../../queries/updates.js"
+import userIdentification from "../user/controllers.js"
 
 
 export function getTables(request, response) {
@@ -66,4 +68,38 @@ export function getActives(request, response) {
         .then(data => response.end(JSON.stringify(data)))
         .catch(console.log)
 
+}
+
+
+export function createNewActives(request, response) {
+    const token = request.headers.authorization
+    const userInfo = userIdentification(token).userInfo
+    const nameActive = request.params.nameActive
+    const inn = request.params.inn
+    const data = request.body
+    updates.createNewActives(nameActive,  data, {inn, id: userInfo.id, role: userInfo.role})
+        .then(([id]) => {
+            const newId = Array.isArray(data) ? Array.from({ length: data.length }, (_, i) => id + i) : id
+            const result = (Array.isArray(newId) && (newId.length == 1)) ? newId[0] : newId
+            response.end(JSON.stringify(result))
+        })
+        .catch(console.log)
+}
+
+
+export function updateActives(request, response) {
+    const token = request.headers.authorization
+    const userInfo = userIdentification(token).userInfo
+    const nameActive = request.params.nameActive
+    const inn = request.params.inn
+    const data = request.body
+    updates
+        .updateActives(nameActive, data, {inn, id: userInfo.id, role: userInfo.role})
+        .then(d => {
+            console.log(d)
+
+            
+            response.end(JSON.stringify(""))
+        })
+        .catch(console.log)
 }

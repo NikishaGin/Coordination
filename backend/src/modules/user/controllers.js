@@ -12,6 +12,7 @@ function auth(userInfo, password) {
     const passwordHash = userInfo.password.replace(/^\$2y\$/, "$2a$")
     if (bcrypt.compareSync(password, passwordHash)) {
         const info = { ...userInfo, password: undefined }
+        
         const token = jwt.sign(info, SECRET_KEY, { expiresIn: "72h" })
         return { code: 0, userInfo: { ...info, token } }
     } else
@@ -19,11 +20,28 @@ function auth(userInfo, password) {
 }
 
 
+function userIdentification(token) {
+    let result
+    try {
+        const userInfo = jwt.verify(token, SECRET_KEY)
+        result = {
+            isVerify: true,
+            userInfo
+        }
+    } catch {
+        result = { isVerify: false }
+    }
+    return result    
+}
+
+
+
 export function loginUser(request, response) {
     const login = request.body.login
     const password = request.body.password
     db("users")
         .select([
+            "id",
             "password",
             db.ref("name").as("firstname"),
             db.ref("surname").as("secondname"),
@@ -39,15 +57,10 @@ export function loginUser(request, response) {
 
 export function verifyUser(request, response) {
     const token = request.headers.authorization
-    let result
-    try {
-        const data = jwt.verify(token, SECRET_KEY)
-        result = {
-            isVerify: true,
-            exp: data.exp
-        }
-    } catch {
-        result = { isVerify: false }
+    const data = userIdentification(token)
+    const result = {
+        isVerify: data.isVerify,
+        exp: data.userInfo?.exp
     }
     response.end(JSON.stringify(result))
 }
@@ -58,3 +71,6 @@ export function destroyUser(request, response) {
 
 }
 */
+
+
+export default userIdentification

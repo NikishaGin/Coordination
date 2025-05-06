@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { ButtonContainer, Button } from "../../../../../../components/buttons/Button.jsx";
 import { TableContainer, Tr } from "../../../../../../components/tables/Table.jsx";
@@ -18,6 +18,16 @@ const Container = styled(TableContainer)`
         white-space: normal;
     }
 
+    & th:nth-child(2), & td:nth-child(2) {
+        width: 100px;
+    }
+
+
+    & th:nth-child(3), & td:nth-child(3) {
+        width: 110px;
+    }
+
+
     & td:nth-child(1) {
         //overflow: hidden; 
         //text-overflow: ellipsis;
@@ -36,11 +46,30 @@ const ButtonBox = styled.div`
 
 
 export default function ({ nameActive, data }) {
+    const [formatedData, setFormatedData] = useState([])
     const [selectedColumn, setSelectedColumn] = useState([])
-    const [viewInput, setViewInput] = useState(-1)
     const [changedValue, setChangedValue] = useState({})
+    const [viewInput, setViewInput] = useState(-1)
+    const tableRef = useRef(null);
     const config = configTables(nameActive)
 
+    useEffect(() => {
+        setFormatedData(data.map(row => {
+            return {
+                id: row.id,
+                ...config.flat().reduce((obj, { field, type, editable }) => {
+                    if ((type == "date") && editable)
+                        return { ...obj, [field]: transformDateForInput(row[field]) }
+                    else if ((type == "date") && !editable)
+                        return { ...obj, [field]: formatDate(row[field]) }
+                    else if (type == "number")
+                        return { ...obj, [field]: formatNumber(row[field]) }
+                    else
+                        return { ...obj, [field]: row[field] }
+                }, {})
+            }
+        }))
+    }, [data])
 
     const onChangeHandler = (id, field, value) => {
         setChangedValue(prevValue => {
@@ -57,16 +86,24 @@ export default function ({ nameActive, data }) {
 
     const resetChange = () => {
         setChangedValue({})
+        const timer = setTimeout(() => {
+            tableRef.current.scrollTo({
+                top: 0,
+                left: 0,
+                behavior: 'smooth'
+            })
+        }, 0)
+        return () => clearTimeout(timer)
     }
 
     const saveChange = () => {
-        console.log(changedDebit)
+        console.log(changedValue)
     }
 
 
     return (
         <>
-            <Container hHeader="350px">
+            <Container hHeader="350px" ref={tableRef}>
                 <table>
                     <thead>
                         <tr>
@@ -74,21 +111,28 @@ export default function ({ nameActive, data }) {
                         </tr>
                     </thead>
                     <tbody>
-                        {data.map((row, index) => (
-                            <Tr
-                                key={index}
-                                onMouseEnter={() => setViewInput(index)}
-                                onMouseLeave={() => setViewInput(-1)}
-                            >
-                                {[...config[0], ...config.flat().filter(({ field }) => selectedColumn.includes(field))].map(item => {
-                                    if (item.editable) {
-                                        return <td width={item.width}><Input type={item.type} value={row[item.field]} options={item.options} view={viewInput === index} /></td>
-                                    } else
-                                        return <td width={item.width}>{row[item.field]}</td>
+                        {formatedData.map((row, index) => {
+                            const data = {
+                                ...row,
+                                ...changedValue[row.id]
+                            }
 
-                                })}
-                            </Tr>
-                        ))}
+                            return (
+                                <Tr
+                                    key={index}
+                                    onMouseEnter={() => setViewInput(index)}
+                                    onMouseLeave={() => setViewInput(-1)}
+                                >
+                                    {[...config[0], ...config.flat().filter(({ field }) => selectedColumn.includes(field))].map(item => {
+                                        if (item.editable) {
+                                            return <td width={item.width}><Input type={item.type} value={data[item.field]} onChange={event => onChangeHandler(data.id, item.field, event.target.value)} options={item.options} view={viewInput === index} /></td>
+                                        } else
+                                            return <td width={item.width}>{data[item.field]}</td>
+
+                                    })}
+                                </Tr>
+                            )
+                        })}
                     </tbody>
                 </table>
             </Container>

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import styled from "styled-components";
+import { SnackbarProvider, enqueueSnackbar } from 'notistack'
 import { TableContainer, Tr } from "../tables/Table.jsx";
 import { ButtonContainer, Button } from "../buttons/Button.jsx";
 import { activesAPI, downloadAPI } from "../../api/index.js";
 import downloadExcel from "../../utils/downloadExcel.js"
-import {formatNumber} from "../../utils/formatData.js"
+import { formatNumber } from "../../utils/formatData.js"
 import { useSelector } from "react-redux";
 
 
@@ -130,24 +131,6 @@ span {
   }
 `;
 
-const Message = styled.div`
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 610px;
-  height: 35px;
-  border-radius: 15px;
-  background-color: rgb(94, 111, 143);
-  box-shadow: inset -3px -3px 3px 0 rgba(0,0,0,.5), 
-              3px 3px 5px rgba(0, 0, 0, 0.3);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  opacity: ${({visible}) => (visible) ? 1 : 0};
-  transition: opacity 2s linear;
-`
-
 
 const headings = [
   "",
@@ -174,8 +157,6 @@ const headings = [
 export const Main = () => {
   const [tableData, setTableData] = useState([]);
   const [selectedInn, setSelectedInn] = useState([]);
-  const [showMessage, setShowMessage] = useState(false);
-
   const inputValue = useSelector((state) => state.global.inputValue);
   const selectedRegion = useSelector((state) => state.global.selectedRegion);
 
@@ -217,17 +198,14 @@ export const Main = () => {
 
 
   const downloadStatistics = flagButton => {
-    if (selectedInn.length > 0) { 
+    if (selectedInn.length > 0) {
       if (flagButton) {
         downloadAPI.getStatistics(false, selectedRegion, selectedInn).then().catch(console.log)
       } else {
         downloadAPI.getStatisticsIP(false, selectedRegion, selectedInn).then(downloadExcel).catch(console.log)
       }
-    } else {
-      setShowMessage(true)
-      const timer = setTimeout(() => setShowMessage(false), 3000);
-      return () => clearTimeout(timer)
-    }
+    } else 
+      enqueueSnackbar("Выберете регион и строки, которые необходимо включить в статистику", {variant: "info"})
   }
 
 
@@ -308,7 +286,11 @@ export const Main = () => {
           Статистика по ИП
         </Button>
       </ButtonContainer>
-      {/* <Message visible={showMessage}>Выберете регион и строки, которые необходимо включить в статистику</Message> */}
+      <SnackbarProvider
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        maxSnack={1}
+        autoHideDuration={5000}
+      />
     </Container>
   );
 };

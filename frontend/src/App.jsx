@@ -15,7 +15,7 @@ export default function App() {
 
   useEffect(() => {
     if (token && (token.length > 0)) {
-      userAPI.verifyUser(token)
+      userAPI.verifyUser()
         .then(data => {
           setIsAuth(data.data.isVerify)
           if (data.data.isVerify) {

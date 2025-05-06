@@ -21,7 +21,7 @@ const userSlice = createSlice({
                 state[key] = action.payload[key]
             })
         },
-        resetUser(state, action) {
+        resetUser(state, _) {
             Object.keys(state).forEach(key => {
                 state[key] = initialState[key]
             })

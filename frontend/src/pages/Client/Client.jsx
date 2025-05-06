@@ -154,16 +154,16 @@ export function Client() {
                     <Nav>
                         <NavItem active={nav === "info"} onClick={() => setNav("info")}>Информация о должнике</NavItem>
                         <NavItem active={nav === "actives"} onClick={() => setNav("actives")}>Активы должника</NavItem>
-                        {(isCoordination) && <NavItem active={nav === "hodatai"} onClick={() => setNav("hodatai")}>Направление ходатайства в ГМУ</NavItem>}
-                        {(isCoordination) && <NavItem active={nav === "tno"} onClick={() => setNav("tno")}>Примечание ТНО</NavItem>}
+                        {/* (isCoordination) && <NavItem active={nav === "hodatai"} onClick={() => setNav("hodatai")}>Направление ходатайства в ГМУ</NavItem> */}
+                        {/* (isCoordination) && <NavItem active={nav === "tno"} onClick={() => setNav("tno")}>Примечание ТНО</NavItem> */}
                         {/* <NavItem active={nav === "details"} onClick={() => setNav("details")}>Детализация индикаторов работы </NavItem> */}
                     </Nav>
                 </InfoBlock>
                 {(nav === "info") && <Info />}
                 {(nav === "actives") && <Actives />}
-                {(nav === "hodatai") && <Hodatai />}
+                {/* {(nav === "hodatai") && <Hodatai />}
                 {(nav === "tno") && <Tno />}
-                {(nav === "details") && <Details />}
+                {(nav === "details") && <Details />} */}
             </Container>
         </>
     )

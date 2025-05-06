@@ -76,6 +76,7 @@ export function getActivesDetails(tableName) {
         query = query
             .select({ name: "debitor_names" })
             .select({ cost: "total_sum" })
+            .select("date")
     return query
 }
 

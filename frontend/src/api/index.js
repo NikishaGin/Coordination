@@ -1,4 +1,5 @@
 import axios from "axios"
+import { store } from "../store/store.js"
 
 
 
@@ -7,11 +8,23 @@ const instance = axios.create({
 })
 
 
+// Добавление JWT-токена в заголовок каждого запроса
+instance.interceptors.request.use(config => {
+    const state = store.getState()
+    const token = state.user?.token
+    if (token)
+        config.headers.Authorization = token
+    return config
+})
+
+
+
 // API для управления авторизацией пользователя
 export const userAPI = {
-    loginUser: (login, password) => instance.post("/user/login", { login, password }),        // Авторизация с предоставлением информации о пользователе и JWT-токена
-    verifyUser: token => instance.get("/user/verify", { headers: { authorization: token } })  // Верифекация пользователя - проверка валидности JWT-токена
+    loginUser: (login, password) => instance.post("/user/login", { login, password }), // Авторизация с предоставлением информации о пользователе и JWT-токена
+    verifyUser: () => instance.get("/user/verify")                                     // Верифекация пользователя - проверка валидности JWT-токена
 }
+
 
 // API для получения общей для нескольких страниц информации, такой как список регионов и категории должника
 export const serviceAPI = {
@@ -27,6 +40,8 @@ export const activesAPI = {
     getActivesStatistics: inn => instance.get(`/actives/get-info/${inn}/actives-statistics`),
     getDebt: inn => instance.get(`/actives/get-info/${inn}/debt`),
     getActives: (inn, nameActive) => instance.get(`/actives/get-actives/${inn}/${nameActive}`),
+    createNewActives: (nameActive, inn, data) => instance.post(`/actives/create-new-actives/${nameActive}/${inn}`, data),
+    updateActives: (nameActive, inn, data) => instance.patch(`/actives/update-actives/${nameActive}/${inn}`, data)
 }
 
 

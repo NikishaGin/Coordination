@@ -10,6 +10,7 @@ router.get("/get-info/:inn/resolutions", controllers.getResolutions)
 router.get("/get-info/:inn/actives-statistics", controllers.getActivesStatistics)
 router.get("/get-info/:inn/debt", controllers.getDebt)
 router.get("/get-actives/:inn/:nameActive", controllers.getActives)
-
+router.post("/create-new-actives/:nameActive/:inn", controllers.createNewActives)
+router.patch("/update-actives/:nameActive/:inn", controllers.updateActives)
 
 export default router

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from "react-router";
 import styled from 'styled-components';
 import { useSelector } from "react-redux";
 import resetStore from "../../store/store"
@@ -142,15 +143,15 @@ const MenuButton = styled.button`
   box-sizing: border-box;
   font-family: Inter, 'Inter Fallback', sans-serif;
   font-weight: 500;
-  line-height: 1.75;
+  line-height: 1.45;
   min-width: 64px;
   background-color: var(--variant-textBg, transparent); // Фон кнопки
   color: rgb(245, 246, 250); // Цвет текста
-  text-transform: capitalize; // Первый символ заглавный
+  // text-transform: capitalize; // Первый символ заглавный
   font-size: 0.8125rem;
   width: 100%;
   box-shadow: none;
-  height: 2.25rem;
+  height: 2.5rem;
   outline: 0px;
   margin: 0px auto;
   text-decoration: none;
@@ -172,34 +173,22 @@ const MenuButton = styled.button`
   }
 
   & svg {
-    width: 1.25rem; // Размер иконки
-    height: 1.25rem; // Размер иконки
+    width: 1.85rem; // Размер иконки
+    height: 1.85rem; // Размер иконки
     fill: currentColor; // Наследует цвет из свойства color
     margin-right: 8px; // Отступ между иконкой и текстом
   }
 `;
 
-const Logout = styled.div`
-  text-decoration: none; // Убираем подчеркивание
-  color: inherit; // Наследуем цвет текста от родителя
-  font-family: inherit; // Наследуем шрифт
-  font-size: inherit; // Наследуем размер шрифта
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px; // Отступ между иконкой и текстом
 
-  &:hover {
-    text-decoration: none; // Убираем подчеркивание при наведении
-  }
 
-  &:active {
-    text-decoration: none; // Убираем подчеркивание при клике
-  }
-`;
+
+
+
 
 export const Footer = () => {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const navigate = useNavigate()
 
   const toggleMenu = () => {
     setIsMenuVisible((prev) => !prev);
@@ -209,6 +198,12 @@ export const Footer = () => {
   const firstname = useSelector((state) => state.user.firstname);
   const secondname = useSelector((state) => state.user.secondname);
   const lastname = useSelector((state) => state.user.lastname);
+
+
+  const logout = () => {
+    resetStore()
+    navigate("/login", { replace: true });
+  }
 
 
   return (
@@ -247,11 +242,6 @@ export const Footer = () => {
                         </li> */}
               <li>
                 <MenuButton>
-                  Сервисный режим
-                </MenuButton>
-              </li>
-              <li>
-                <MenuButton>
                   <svg
                     className="MuiSvgIcon-root"
                     focusable="false"
@@ -259,7 +249,17 @@ export const Footer = () => {
                     viewBox="0 0 24 24"
                     data-testid="BarChartIcon"
                   >
-                    <path d="M4 11h5v8H4zm0-5h5v3H4zm11 5h5v5h-5zm0-8h5v3h-5z"></path>
+                    <path d="M22.61 18.99l-9.08-9.08c.93-2.34.45-5.1-1.44-7C9.79.61 6.21.4 3.66 2.26L7.5 6.11 6.08 7.52 2.25 3.69C.39 6.23.6 9.82 2.9 12.11c1.86 1.86 4.57 2.35 6.89 1.48l9.11 9.11c.39.39 1.02.39 1.41 0l2.3-2.3c.4-.38.4-1.01 0-1.41zm-3 1.6l-9.46-9.46c-.61.45-1.29.72-2 .82-1.36.2-2.79-.21-3.83-1.25C3.37 9.76 2.93 8.5 3 7.26l3.09 3.09 4.24-4.24-3.09-3.09c1.24-.07 2.49.37 3.44 1.31 1.08 1.08 1.49 2.57 1.24 3.96-.12.71-.42 1.37-.88 1.96l9.45 9.45-.88.89z" />
+                  </svg>
+                  Сервисный режим
+                </MenuButton>
+              </li>
+              <li>
+                <MenuButton>
+                <svg 
+                  viewBox="0 0 24 24" 
+                  >
+                    <g><rect fill="none" height="24" width="24"/><g><path d="M19,3H5C3.9,3,3,3.9,3,5v14c0,1.1,0.9,2,2,2h14c1.1,0,2-0.9,2-2V5C21,3.9,20.1,3,19,3z M19,19H5V5h14V19z"/><rect height="5" width="2" x="7" y="12"/><rect height="10" width="2" x="15" y="7"/><rect height="3" width="2" x="11" y="14"/><rect height="2" width="2" x="11" y="10"/></g></g>
                   </svg>
                   Статистика
                 </MenuButton>
@@ -267,7 +267,7 @@ export const Footer = () => {
             </ul>
             <Divider />
             <div style={{ padding: '8px', display: 'flex', justifyContent: 'flex-end' }}>
-              <MenuButton>
+              <MenuButton onClick={logout}>
                 <svg
                   className="MuiSvgIcon-root"
                   focusable="false"
@@ -277,7 +277,7 @@ export const Footer = () => {
                 >
                   <path d="m17 7-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4z"></path>
                 </svg>
-                <Logout onClick={resetStore}>Выход</Logout>
+                Выход
               </MenuButton>
             </div>
           </DropdownMenu>

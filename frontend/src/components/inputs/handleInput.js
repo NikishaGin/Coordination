@@ -57,8 +57,20 @@ export const handlesInputNumber = {
 
 
 export const handlesInputInn = {
-    handleKeyPress(event) {
-        if (!/^\d$/.test(event.key) && (event.key !== "Backspace") || (event.target.value.length == 12)) {
+    handleKeyDown(event) {
+        // const allowedCodes = [
+        //     "Digit0", "Digit1", "Digit2", "Digit3", "Digit4",
+        //     "Digit5", "Digit6", "Digit7", "Digit8", "Digit9",
+        //     "Numpad0", "Numpad1", "Numpad2", "Numpad3", "Numpad4",
+        //     "Numpad5", "Numpad6", "Numpad7", "Numpad8", "Numpad9",
+        //     "Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"
+        // ]
+
+        // if (!allowedCodes.includes(event.code) || event.target.value.length == 12)
+        //     event.preventDefault()
+
+        let keyCode = event.charCode || event.keyCode;       
+        if (!([8, 46].includes(keyCode) || (48 <= keyCode) && (keyCode <= 57))) {
             event.preventDefault();
         }
     },
