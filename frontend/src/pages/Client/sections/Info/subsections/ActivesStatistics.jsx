@@ -3,7 +3,21 @@ import { TableContainer, Tr } from "../../../../../components/tables/Table.jsx";
 import { useParams } from "react-router";
 import { activesAPI } from "../../../../../api/index.js";
 import {formatNumber} from "../../../../../utils/formatData.js"
+import styled from "styled-components";
 
+
+
+const Container = styled(TableContainer)`
+    height: calc(100vh - 250px);
+    
+    & table {
+        display: table;
+    }
+    
+    & th {
+        white-space: normal;
+    }
+`
 
 
 export default function () {

@@ -10,6 +10,8 @@ import Input from "../../../../../../components/inputs/Input.jsx";
 
 
 const Container = styled(TableContainer)`
+    height: calc(100vh - 250px - 60px);
+    
     & table {
         display: table;
     }

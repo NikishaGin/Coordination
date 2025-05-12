@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import styled from 'styled-components';
+import {handlesInputNumber} from "../inputs/handleInput.js"
 import {CustomSelect} from "./CustomSelect.jsx";
 
 // Стиль для инпута
@@ -63,9 +64,12 @@ export const SumFilter = (props) => {
             />
             <Input
                 type="text"
-                placeholder="Введите сумму"
-                value={value}
+                placeholder="Сумма от (руб.)"
                 onChange={handleChange}
+                onKeyPress={handlesInputNumber.handleKeyPress}
+                onKeyDown={handlesInputNumber.handleKeyDown}
+                onInput={handlesInputNumber.handleInput}
+                onPaste={handlesInputNumber.handlePaste}
             />
         </>
     );

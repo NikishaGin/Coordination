@@ -56,7 +56,8 @@ export default function({ type, width, options, value, view, error, onChange }) 
         return <InputStyle 
                     type="text" 
                     value={value ?? ""} 
-                    view={view} error={error} 
+                    view={view}
+                    error={error}
                     onChange={onChange} 
                     style={{ width: "110px" }}
                     onKeyDown={handlesInputInn.handleKeyDown}

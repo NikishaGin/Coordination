@@ -177,6 +177,7 @@ where
 export const download = {
     getStatistics(regionCode, innList) {
 
+        actives.getTables()
 
 
 

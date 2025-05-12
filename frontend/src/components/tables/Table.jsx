@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 export const TableContainer = styled.div`
   width: 100%; 
-  height: calc(100vh - ${({ hHeader }) => hHeader});
+  height: calc(100vh - 185px);
   overflow-x: auto;
   overflow-y: auto;
   border: 1px solid rgba(51, 60, 77, 0.6);

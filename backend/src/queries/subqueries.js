@@ -9,8 +9,12 @@ export const getResolutions = db('resolutions')
     .sum({ is_stop: db.raw('IF(stop_date IS NULL, 0, 1)') })
     .sum({ is_pending: db.raw('IF(pending_date IS NULL, 0, 1)') })
     .sum({ is_terminate: db.raw('IF(terminate_date IS NULL, 0, 1)') })
+
+
     .sum({ is_archive: 'is_archive' })
     .sum({ is_derivative_debt: 'is_derivative_debt' })
+
+    
     .max({ max_exec_date: 'exec_date' })
     .groupBy('inn')
 

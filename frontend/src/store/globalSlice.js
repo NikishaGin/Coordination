@@ -2,8 +2,10 @@ import { createSlice } from "@reduxjs/toolkit";
 
 // Начальное состояние
 const initialState = {
-    inputValue: "", // Значение инпута
-    selectedRegion: null, // Выбранный регион
+    filters: {
+        selectedRegion: null, // Выбранный регион
+        inputValueInn: "", // Значение инпута
+    },
     urlHistory: ["", ""],
     detailInfo: {    // Раздел и подраздел 
         section: "",
@@ -19,11 +21,11 @@ const globalSlice = createSlice({
         updateUrlHistory(state, action) {
             state.urlHistory = [state.urlHistory[1], action.payload];
         },
-        setInputValue(state, action) {
-            state.inputValue = action.payload;
-        },
         setSelectedRegion(state, action) {
-            state.selectedRegion = action.payload;
+            state.filters.selectedRegion = action.payload;
+        },
+        setInputValueInn(state, action) {
+            state.filters.inputValueInn = action.payload;
         },
         setSelectedSection(state, action) {
             state.detailInfo.section = action.payload;
@@ -31,7 +33,7 @@ const globalSlice = createSlice({
         setSelectedSubsection(state, action) {
             state.detailInfo.subsection = action.payload;
         },
-        resetGlobal(state, action) {
+        resetGlobal(state) {
             Object.keys(state).forEach(key => {
                 state[key] = initialState[key]
             })
@@ -42,7 +44,7 @@ const globalSlice = createSlice({
 // Экспортируем действия и редьюсер
 export const { 
     updateUrlHistory,
-    setInputValue,
+    setInputValueInn,
     setSelectedRegion,
     setSelectedSection,
     setSelectedSubsection,

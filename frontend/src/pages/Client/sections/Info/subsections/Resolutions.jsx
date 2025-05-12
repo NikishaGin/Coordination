@@ -7,6 +7,8 @@ import {formatNumber, formatDate} from "../../../../../utils/formatData.js"
 
 
 const Container = styled(TableContainer)`
+    height: calc(100vh - 250px);
+    
     & table {
         display: table;
     }
@@ -27,7 +29,7 @@ export default function () {
 
 
     return (
-        <Container hHeader="285px">
+        <Container hHeader="250px">
             <table>
                 <thead>
                     <tr>

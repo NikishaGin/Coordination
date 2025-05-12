@@ -11,6 +11,8 @@ import { activesAPI } from "../../../../../api/index.js";
 
 
 const Container = styled(TableContainer)`
+    height: calc(100vh - 250px - 60px);
+    
     & table {
         display: table;
     }
@@ -149,12 +151,14 @@ export default function () {
             const updatedData = Object.fromEntries(changesArr)
     
 
-            console.log(updatedData)
-
     
             const insertedEntries = Object.entries(changedDebit).filter(([ _, changeInfo ])=> changeInfo.type === "insert")
             
 
+
+            
+            console.log(updatedData)
+            console.log(insertedEntries)
 
 
 

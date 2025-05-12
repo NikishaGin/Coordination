@@ -8,7 +8,7 @@ import {setSelectedRegion} from "../../store/globalSlice.js";
 export const SelectRegion = () => {
     const dispatch = useDispatch(); // Получаем функцию dispatch
     const [listRegions, setListRegions] = useState([]);
-    const selectedRegion = useSelector((state) => state.global.selectedRegion);
+    const selectedRegion = useSelector((state) => state.global.filters.selectedRegion);
 
     useEffect(() => {
         serviceAPI.getRegions("Index")

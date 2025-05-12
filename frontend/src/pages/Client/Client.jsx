@@ -11,15 +11,12 @@ import { useSelector } from "react-redux";
 import { activesAPI } from "../../api/index.js";
 
 
-// 250px
-// 330px
-
 
 const Container = styled.div`
   height: 100vh;
   display: grid;
   grid-template-columns: 330px minmax(0, 100%);
-  grid-template-rows: 250px 1fr;
+  grid-template-rows: 220px 1fr;
 
   & > :first-child {
     grid-column: 1 / span 2;
@@ -28,7 +25,6 @@ const Container = styled.div`
   & > :nth-child(2):nth-last-child(1) {
     grid-column: 1 / span 2;
   }
-  
 `
 
 /*

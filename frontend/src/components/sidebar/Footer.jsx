@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from "react-router";
 import styled from 'styled-components';
-import { useSelector } from "react-redux";
+// import { useSelector } from "react-redux";
 import resetStore from "../../store/store"
 
 
@@ -188,16 +188,12 @@ const MenuButton = styled.button`
 
 export const Footer = () => {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const [timer, setTimer] = useState(undefined);
   const navigate = useNavigate()
 
-  const toggleMenu = () => {
-    setIsMenuVisible((prev) => !prev);
-  };
-
-
-  const firstname = useSelector((state) => state.user.firstname);
-  const secondname = useSelector((state) => state.user.secondname);
-  const lastname = useSelector((state) => state.user.lastname);
+  // const firstname = useSelector((state) => state.user.firstname);
+  // const secondname = useSelector((state) => state.user.secondname);
+  // const lastname = useSelector((state) => state.user.lastname);
 
 
   const logout = () => {
@@ -209,11 +205,20 @@ export const Footer = () => {
   return (
     <Container>
       <UserInfo>
-        {secondname} {firstname} {lastname}
         <IconButton
-          onMouseEnter={toggleMenu}
-          onMouseLeave={toggleMenu}
+          onClick={() => setIsMenuVisible(prevValue => !prevValue)}
+          onMouseEnter={() => {
+            clearTimeout(timer)
+            setIsMenuVisible(isMenuVisible)
+          }}
+          onMouseLeave={() => setTimer(setTimeout(() => setIsMenuVisible(false), 500))}
         >
+
+
+
+
+
+
           <Icon
             viewBox="0 0 24 24"
             focusable="false"
@@ -226,20 +231,6 @@ export const Footer = () => {
           <DropdownMenu isVisible={isMenuVisible}>
             <Arrow />
             <ul>
-              {/* <li>
-                            <MenuButton>
-                                <svg
-                                    className="MuiSvgIcon-root"
-                                    focusable="false"
-                                    aria-hidden="true"
-                                    viewBox="0 0 24 24"
-                                    data-testid="AdminPanelSettingsIcon"
-                                >
-                                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 16H7V5h10v14z"></path>
-                                </svg>
-                                Админка
-                            </MenuButton>
-                        </li> */}
               <li>
                 <MenuButton>
                   <svg
@@ -255,10 +246,8 @@ export const Footer = () => {
                 </MenuButton>
               </li>
               <li>
-                <MenuButton>
-                <svg 
-                  viewBox="0 0 24 24" 
-                  >
+                <MenuButton onClick={() => navigate("/statistics")}>
+                  <svg viewBox="0 0 24 24">
                     <g><rect fill="none" height="24" width="24"/><g><path d="M19,3H5C3.9,3,3,3.9,3,5v14c0,1.1,0.9,2,2,2h14c1.1,0,2-0.9,2-2V5C21,3.9,20.1,3,19,3z M19,19H5V5h14V19z"/><rect height="5" width="2" x="7" y="12"/><rect height="10" width="2" x="15" y="7"/><rect height="3" width="2" x="11" y="14"/><rect height="2" width="2" x="11" y="10"/></g></g>
                   </svg>
                   Статистика

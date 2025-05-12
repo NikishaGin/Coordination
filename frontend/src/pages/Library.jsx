@@ -1,6 +1,5 @@
 import React from 'react';
 import styled from "styled-components";
-import {Footer} from "../components/sidebar/Footer.jsx";
 
 
 
@@ -17,11 +16,8 @@ const Container = styled.div`
 export function Library() {
 
 
-    return <>
-            <Container>
-                <div></div>
-                <Footer/>
-            </Container>
-    
-    </>
+    return (
+        <>
+        </>
+    )
 }

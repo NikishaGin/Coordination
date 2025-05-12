@@ -157,8 +157,8 @@ const headings = [
 export const Main = () => {
   const [tableData, setTableData] = useState([]);
   const [selectedInn, setSelectedInn] = useState([]);
-  const inputValue = useSelector((state) => state.global.inputValue);
-  const selectedRegion = useSelector((state) => state.global.selectedRegion);
+  const inputValueInn = useSelector((state) => state.global.filters.inputValueInn);
+  const selectedRegion = useSelector((state) => state.global.filters.selectedRegion);
 
   const navigate = useNavigate()
 
@@ -170,8 +170,8 @@ export const Main = () => {
       .catch(console.log);
   }, [selectedRegion]);
 
-  const filteredData = inputValue
-    ? tableData.filter((row) => row.inn.toString().includes(inputValue))
+  const filteredData = inputValueInn
+    ? tableData.filter((row) => row.inn.toString().includes(inputValueInn))
     : tableData;
 
 
@@ -219,7 +219,7 @@ export const Main = () => {
         <Li>залог перед ФНС</Li>
         <Li>обновление данных произведено за последние 7 дней</Li>
       </Ul>
-      <TableContainer hHeader="185px">
+      <TableContainer>
         <table>
           <thead>
             <tr>

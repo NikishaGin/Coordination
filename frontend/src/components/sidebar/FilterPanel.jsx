@@ -41,13 +41,12 @@ export const FilterPanel = () => {
     const [category, setCategory] = useState('');
 
     const handleApply = () => {
-        console.log('Применить:', { statusIP, category });
+
     };
 
     const handleReset = () => {
         setStatusIP('');
         setCategory('');
-        console.log('Сбросить');
     };
 
     const [valueButton, setValueButton] = useState('status');
