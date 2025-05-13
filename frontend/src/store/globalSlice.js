@@ -2,36 +2,40 @@ import { createSlice } from "@reduxjs/toolkit";
 
 // Начальное состояние
 const initialState = {
+    selectedRegion: null,
     filters: {
-        selectedRegion: null, // Выбранный регион
-        inputValueInn: "", // Значение инпута
+        inputValueInn: "",
+        status_ip: "",
+        category: "",
+        name_filtered_field: "",
+        sum: ""
     },
-    urlHistory: ["", ""],
-    detailInfo: {    // Раздел и подраздел 
-        section: "",
-        subsection: ""
-    }
+    urlHistory: ["", ""]
 };
 
 // Создаем slice
 const globalSlice = createSlice({
-    name: "global", // Имя slice
+    name: "global",
     initialState,
     reducers: {
         updateUrlHistory(state, action) {
             state.urlHistory = [state.urlHistory[1], action.payload];
         },
         setSelectedRegion(state, action) {
-            state.filters.selectedRegion = action.payload;
+            state.selectedRegion = action.payload;
         },
         setInputValueInn(state, action) {
             state.filters.inputValueInn = action.payload;
         },
-        setSelectedSection(state, action) {
-            state.detailInfo.section = action.payload;
+        setFilterStatusIp(state, action) {
+            state.filters.status_ip = action.payload;
         },
-        setSelectedSubsection(state, action) {
-            state.detailInfo.subsection = action.payload;
+        setFilterCategory(state, action) {
+            state.filters.category = action.payload;
+        },
+        setFilterSum(state, action) {
+            state.filters.sum = action.payload.sum;
+            state.filters.name_filtered_field = action.payload.name_filtered_field;
         },
         resetGlobal(state) {
             Object.keys(state).forEach(key => {
@@ -46,8 +50,9 @@ export const {
     updateUrlHistory,
     setInputValueInn,
     setSelectedRegion,
-    setSelectedSection,
-    setSelectedSubsection,
+    setFilterStatusIp,
+    setFilterCategory,
+    setFilterSum,
     resetGlobal
 } = globalSlice.actions;
 

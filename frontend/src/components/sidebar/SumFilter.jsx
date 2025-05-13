@@ -36,36 +36,30 @@ const Input = styled.input`
 `;
 
 export const SumFilter = (props) => {
-    const [value, setValue] = useState('');
-
-    // Обработка изменения значения инпута
-    const handleChange = (e) => {
-        const filteredValue = e.target.value.replace(/\D/g, ''); // Удаляем все нецифровые символы
-        setValue(filteredValue);
-    };
 
     return (
         <>
             <CustomSelect
-                value={props.statusIP}
-                onChange={props.setStatusIP}
+                value={props.nameFilteredField}
+                onChange={event => props.setNameFilteredField(event.target.value)}
                 placeholder="Выбор колонки"
                 options={[
-                    {value: 'active', label: 'Сумма по постановлениям'},
-                    {value: 'inactive', label: 'Остаток по постановлениям'},
-                    {value: 'inactive', label: 'Арест имущества'},
-                    {value: 'inactive', label: 'Оценка имущества'},
-                    {value: 'inactive', label: 'Принудительная реализация'},
-                    {value: 'inactive', label: 'Торги 2 этап'},
-                    {value: 'inactive', label: 'Результат принудительной реализации'},
-                    {value: 'inactive', label: 'Сумма возврата имущества плательщику'},
-                    {value: 'inactive', label: 'Обращение взыскания на дебиторскую задолженность'},
+                    {value: 'post_sum', label: 'Сумма по постановлениям'},
+                    {value: 'cur_debt', label: 'Остаток по постановлениям'},
+                    {value: 'arrest', label: 'Арест имущества'},
+                    {value: 'evaluation', label: 'Оценка имущества'},
+                    {value: 'realization_property', label: 'Принудительная реализация'},
+                    {value: 'price_reduction', label: 'Торги 2 этап'},
+                    {value: 'realization_sum_2', label: 'Результат принудительной реализации'},
+                    {value: 'return_sum', label: 'Сумма возврата имущества плательщику'},
+                    {value: 'debitor', label: 'Обращение взыскания на дебиторскую задолженность'},
                 ]}
             />
             <Input
                 type="text"
                 placeholder="Сумма от (руб.)"
-                onChange={handleChange}
+                value={props.sum}
+                onChange={event => props.setSum(event.target.value)}
                 onKeyPress={handlesInputNumber.handleKeyPress}
                 onKeyDown={handlesInputNumber.handleKeyDown}
                 onInput={handlesInputNumber.handleInput}

@@ -4,6 +4,9 @@ import styled from "styled-components";
 import {FilterButtons} from "./FilterButtons.jsx";
 import {StatusFilter} from "./StatusFilter.jsx";
 import {SumFilter} from "./SumFilter.jsx";
+import {useDispatch, useSelector} from "react-redux";
+import { setFilterCategory, setFilterStatusIp, setFilterSum } from "../../store/globalSlice.js";
+
 
 const WrapperFilter = styled.div`
   padding: 10px;
@@ -36,17 +39,34 @@ const ButtonsContainer = styled.div`
 `;
 
 export const FilterPanel = () => {
+    const dispatch = useDispatch();
+    const [statusIP, setStatusIP] = useState(useSelector((state) => state.global.filters.status_ip));
+    const [category, setCategory] = useState(useSelector((state) => state.global.filters.category));
+    const [nameFilteredField, setNameFilteredField] = useState(useSelector((state) => state.global.filters.name_filtered_field));
+    const [sum, setSum] = useState(useSelector((state) => state.global.filters.sum));
 
-    const [statusIP, setStatusIP] = useState('');
-    const [category, setCategory] = useState('');
+
+
 
     const handleApply = () => {
-
+        if (statusIP.length > 0)
+            dispatch(setFilterStatusIp(statusIP));
+        if (category.length > 0)
+            dispatch(setFilterCategory(category));
+        if ((nameFilteredField.length > 0) && sum.length > 0) {
+            const valueSum = parseFloat(sum.replace(/,/g, ".").replace(/\s*|\t|\r|\n/gm, ""))
+            dispatch(setFilterSum({sum: valueSum, name_filtered_field: nameFilteredField}));
+        }
     };
 
     const handleReset = () => {
+        dispatch(setFilterStatusIp(""))
+        dispatch(setFilterCategory(""))
+        dispatch(setFilterSum({sum: "", name_filtered_field: ""}))
         setStatusIP('');
         setCategory('');
+        setNameFilteredField("");
+        setSum("");
     };
 
     const [valueButton, setValueButton] = useState('status');
@@ -65,8 +85,8 @@ export const FilterPanel = () => {
                 setSelectedButton={setValueButton}/>
         </ToggleButtonGroup>
         <SelectsContainer>
-            {valueButton === 'status' && <StatusFilter statusIP={statusIP} setStatusIP={setStatusIP} category={category} setCategory={setCategory}/>}
-            {valueButton === 'sum' && <SumFilter statusIP={statusIP} setStatusIP={setStatusIP}/>}
+            {valueButton === 'status' && <StatusFilter statusIP={statusIP} setStatusIP={setStatusIP} category={category} setCategory={setCategory} />}
+            {valueButton === 'sum' && <SumFilter nameFilteredField={nameFilteredField} setNameFilteredField={setNameFilteredField} sum={sum} setSum={setSum} />}
         </SelectsContainer>
         <ButtonsContainer>
             <FilterButtons title={'Применить'} variant={"primary"} onClick={handleApply}/>

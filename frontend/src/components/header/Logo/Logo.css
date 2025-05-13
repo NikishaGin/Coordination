@@ -1,0 +1,62 @@
+
+.a, .n {
+    fill: none;
+}
+
+.b {
+    fill: #0066b3;
+}
+
+.c {
+    fill: #fff;
+}
+
+.d {
+    clip-path: url(#a);
+}
+
+.e {
+    clip-path: url(#b);
+}
+
+.f {
+    fill: #ed1c24;
+}
+
+.g {
+    clip-path: url(#c);
+}
+
+.h {
+    clip-path: url(#d);
+}
+
+.i {
+    fill: #be1e2d;
+}
+
+.j {
+    clip-path: url(#e);
+}
+
+.k {
+    clip-path: url(#f);
+}
+
+.l {
+    clip-path: url(#g);
+}
+
+.m {
+    fill: #808d9c;
+}
+
+.n {
+    stroke: #fff;
+    stroke-miterlimit: 10;
+    stroke-width: 0.22px;
+}
+
+.o {
+    fill: #fabc42;
+}

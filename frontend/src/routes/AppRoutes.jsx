@@ -19,8 +19,6 @@ export const AppRoutes = ({ isAuth }) => {
 
     useEffect(() => {
         dispatch(updateUrlHistory(location.pathname));
-        console.log(urlHistory);
-
 
         if (/^\/client\/\d{7,}$/.test(urlHistory[0]) && (urlHistory[1] !== location.pathname)) {
             dispatch(resetGlobal());

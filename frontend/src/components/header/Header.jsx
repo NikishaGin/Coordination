@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from "styled-components";
-import {Logo} from "./Logo.jsx";
+import {Logo} from "./Logo/Logo.jsx";
 import {NavItem} from "./NavItem.jsx";
 import {DropdownNavItem} from "./DropdownNavItem.jsx";
 import {NavLink} from "react-router";
@@ -130,7 +130,7 @@ export const Header = () => {
 
     return (
         <Container>
-            <Logo/>
+            <Logo />
             <Navigation>
                 <NavItem path={'/coordination'} title={'Взыскание по 47 ст.'}/>
                 <NavItem path={'/derivative'} title={'Производный долг'}/>

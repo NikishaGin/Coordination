@@ -22,7 +22,7 @@ const Container = styled(TableContainer)`
     }
 
     & th:nth-child(1), & td:nth-child(1) {
-        width: 110px;
+        width: 135px;
     }
 
     & th:nth-child(3), & td:nth-child(3) {
@@ -40,9 +40,6 @@ const ButtonBox = styled.div`
     justify-content: space-between;
 `
 
-// ИНН - с 10 до 12 символов
-
-
 
 
 export default function () {
@@ -51,7 +48,6 @@ export default function () {
     const [newDebit, setNewDebit] = useState([])
     const [viewInput, setViewInput] = useState(-1)
     const [invalidInn, setInvalidInn] = useState([])
-    const [errors, setErrors] = useState([])
     const tableRef = useRef(null);
     const { inn } = useParams()
 
@@ -71,14 +67,14 @@ export default function () {
 
 
     const onChangeHandler = (id, field, value, type) => {
-        if (field == "debitor_inn")
-            setInvalidInn(prevValue => ((value.length > 0) && (value.length < 10)) ? [...new Set([...prevValue, id])] : prevValue.filter(idValue => idValue != id))
+        if (field === "debitor_inn")
+            setInvalidInn(prevValue => (value.length < 10) ? [...new Set([...prevValue, id])] : prevValue.filter(idValue => idValue !== id))
         setChangedDebit(prevValue => {
             const data = { ...prevValue[id]?.data, [field]: value }
-            const isEmptyData = Object.values(data).every(s => s.length == 0)
+            const isEmptyData = Object.values(data).every(s => s.length === 0)
             return {
                 ...prevValue,
-                [id]: ((type != "insert") || (!isEmptyData && type == "insert")) ? {
+                [id]: ((type !== "insert") || (!isEmptyData && type === "insert")) ? {
                     ...prevValue[id],
                     type: (prevValue[id]?.type || type) || "update",
                     data: data
@@ -115,76 +111,36 @@ export default function () {
 
 
     const saveChange = () => {
-        /*
-        0*) Проверяем валлидность ИНН (не менее 10 символов) 
-            и при ошибки подсвечиваем поле ввода
-
-        1)  Извлекаем обновлённые данные
-
-        2)  Извлекаем новые вставленные данные
-
-        3)  Для обновлённых данных отфильтровываем 
-            только те измененные поля, которые реально 
-            изменились, сравнивая с исходными данными
-
-
-
-        4)  Для вставленных данных проверяем, чтобы обязательно 
-            был ИНН и было заполненно ещё какое-то поле
-
-        5) Обновлённые данные нельзя стереть
-        */
-
-                
-        if (invalidInn.length == 0) {
-            const entries = Object.entries(changedDebit)
+        if (invalidInn.length === 0) {
             const getChangedFields = (newObj, oldObj) => {
                 const changedEntries = Object.entries(newObj).filter(([key, value]) => key in oldObj && value !== oldObj[key])
                 return Object.fromEntries(changedEntries);
             }
-            const getRelatedOldObj = key => debit.find(row => row.id == key)
-    
-            const updatedEntries = Object.entries(changedDebit).filter(([ _, changeInfo ])=> changeInfo.type === "update")
+            const getRelatedOldObj = key => debit.find(row => row.id === key)
+            const updatedEntries = Object.entries(changedDebit).filter(([ _, value ])=> value.type === "update")
             const changesArr = updatedEntries
-                .map( ([ id, changeInfo ]) => [ id, getChangedFields(changeInfo.data, getRelatedOldObj(id)) ])
-                .filter(([_, value]) =>  Object.keys(value).length > 0)
+                .map( ([ id, value ]) => [ id, getChangedFields(value.data, getRelatedOldObj(id)) ])
+                .filter(([_, value]) => (Object.keys(value).length > 0))
             const updatedData = Object.fromEntries(changesArr)
-    
 
-    
-            const insertedEntries = Object.entries(changedDebit).filter(([ _, changeInfo ])=> changeInfo.type === "insert")
-            
+            const insertedEntries = Object.entries(changedDebit).filter(([ _, value ])=> value.type === "insert")
+            const existingInn = debit.map(item => item.debitor_inn)
+            insertedEntries.forEach(([id, { data }]) => {
+                setInvalidInn(prevValue => (existingInn.includes(data.debitor_inn)) ? [...new Set([...prevValue, id])] : prevValue.filter(idValue => idValue !== id))
+            })
+            if (invalidInn.length === 0) {
 
+            } else
+                enqueueSnackbar("Дебитор с таким ИНН уже существует!", {variant: "info"})
 
-            
-            console.log(updatedData)
+            console.log(debit)
+
             console.log(insertedEntries)
-
-
-
-
-
-
-
 
             //console.log(updatedData)
             //activesAPI.updateActives("debit", inn, updatedData).catch(console.log)
         } else
             enqueueSnackbar("Неверный формат ИНН. Минимум 10 символов", {variant: "info"})
-
-
-
-
-
-
-
-
-
-
-
-
-        
-
 
     }
 
@@ -217,13 +173,15 @@ export default function () {
                                         onMouseLeave={() => setViewInput(-1)}
                                     >
                                         <td>
-                                            <Input
-                                                type="inn"
-                                                value={data.debitor_inn}
-                                                onChange={event => onChangeHandler(data.id, "debitor_inn", event.target.value, data.type)}
-                                                view={viewInput === data.id}
-                                                error={invalidInn.includes(data.id)}
-                                            />
+                                            {(data.type !== "insert") ? data.debitor_inn : (
+                                                <Input
+                                                    type="inn"
+                                                    value={data.debitor_inn}
+                                                    onChange={event => onChangeHandler(data.id, "debitor_inn", event.target.value, data.type)}
+                                                    view={viewInput === data.id}
+                                                    error={invalidInn.includes(data.id)}
+                                                />
+                                            )}
                                         </td>
                                         <td>
                                             <Input
@@ -255,17 +213,11 @@ export default function () {
                     </tbody>
                 </table>
             </Container>
-
-
-
             <SnackbarProvider
                 anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
                 maxSnack={(invalidInn.length > 0) ? 1 : 3}
                 autoHideDuration={5000}
             />
-
-
-
             <ButtonBox>
                 <ButtonContainer>
                     <Button onClick={appendDebit}>Добавить дебиторскую задолженность</Button>

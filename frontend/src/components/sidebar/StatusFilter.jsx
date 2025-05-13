@@ -5,29 +5,29 @@ export const StatusFilter = (props) => {
     return <>
         <CustomSelect
             value={props.statusIP}
-            onChange={props.setStatusIP}
+            onChange={event => props.setStatusIP(event.target.value)}
             placeholder="Статус ИП"
             options={[
-                {value: "active", label: "На исполнении"},
-                {value: "inactive", label: "Приостановлено"},
-                {value: "inactive", label: "Отложено"},
-                {value: "inactive", label: "Прекращено"},
-                {value: "inactive", label: "Окончено"},
+                "На исполнении",
+                "Приостановлено",
+                "Отложено",
+                "Прекращено",
+                "Окончено",
             ]}
         />
         <CustomSelect
             value={props.category}
-            onChange={props.setCategory}
+            onChange={event => props.setCategory(event.target.value)}
             placeholder="Категория"
             options={[
-                {value: "individual", label: "ДВА"},
-                {value: "legal", label: "ДИД"},
-                {value: "legal", label: "ДВА/ДИД"},
-                {value: "legal", label: "ДИА"},
-                {value: "legal", label: "НДБА"},
-                {value: "legal", label: "ДБА"},
-                {value: "legal", label: "НДБА/ДИД"},
-                {value: "legal", label: "ДБА/ДИД"},
+                "ДВА",
+                "ДИД",
+                "ДВА/ДИД",
+                "ДИА",
+                "НДБА",
+                "ДБА",
+                "НДБА/ДИД",
+                "ДБА/ДИД",
             ]}
         />
     </>

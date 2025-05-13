@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useContext} from 'react';
+import React, {useState, useEffect} from 'react';
 import { ArrowIcon, SelectWrapper, StyledSelect } from './Sidebar.jsx';
 import { serviceAPI } from "../../api/index.js"
 import {useDispatch, useSelector} from "react-redux";
@@ -8,7 +8,7 @@ import {setSelectedRegion} from "../../store/globalSlice.js";
 export const SelectRegion = () => {
     const dispatch = useDispatch(); // Получаем функцию dispatch
     const [listRegions, setListRegions] = useState([]);
-    const selectedRegion = useSelector((state) => state.global.filters.selectedRegion);
+    const selectedRegion = useSelector((state) => state.global.selectedRegion);
 
     useEffect(() => {
         serviceAPI.getRegions("Index")

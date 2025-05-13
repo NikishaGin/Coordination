@@ -142,7 +142,6 @@ const headings = [
   "Категория должника",
   "Сумма активов и дебиторской задолженности",
   "Статус ИП",
-  "Код СОСП",
   "Арест имущества",
   "Оценка имущества",
   "Принудительная реализация",
@@ -157,9 +156,8 @@ const headings = [
 export const Main = () => {
   const [tableData, setTableData] = useState([]);
   const [selectedInn, setSelectedInn] = useState([]);
-  const inputValueInn = useSelector((state) => state.global.filters.inputValueInn);
-  const selectedRegion = useSelector((state) => state.global.filters.selectedRegion);
-
+  const selectedRegion = useSelector((state) => state.global.selectedRegion);
+  const filters = useSelector((state) => state.global.filters);
   const navigate = useNavigate()
 
 
@@ -170,10 +168,21 @@ export const Main = () => {
       .catch(console.log);
   }, [selectedRegion]);
 
-  const filteredData = inputValueInn
-    ? tableData.filter((row) => row.inn.toString().includes(inputValueInn))
-    : tableData;
+  let filteredData = tableData;
 
+  if (filters.inputValueInn)
+    filteredData = filteredData.filter((row) => row.inn.startsWith(filters.inputValueInn))
+
+  if (filters.category)
+    filteredData = filteredData.filter((row) => row.category === filters.category)
+
+  if (filters.status_ip)
+    filteredData = filteredData.filter((row) => row.status_ip === filters.status_ip)
+
+  if (filters.name_filtered_field && filters.sum) {
+    console.log(filteredData);
+    filteredData = filteredData.filter((row) => row[filters.name_filtered_field] >= filters.sum)
+  }
 
   const handleSelectAll = event => {
     if (event.target.checked)
@@ -259,7 +268,6 @@ export const Main = () => {
                 <td>{row.category}</td>
                 <td>{formatNumber(row.total_sum)}</td>
                 <td>{row.status_ip}</td>
-                <td>{row.sosp_code}</td>
                 <td>{formatNumber(row.arrest)}</td>
                 <td>{formatNumber(row.evaluation)}</td>
                 <td>{formatNumber(row.realization_property)}</td>
