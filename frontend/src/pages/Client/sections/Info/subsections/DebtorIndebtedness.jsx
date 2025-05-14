@@ -48,11 +48,12 @@ export default function () {
     const [newDebit, setNewDebit] = useState([])
     const [viewInput, setViewInput] = useState(-1)
     const [invalidInn, setInvalidInn] = useState([])
+    const [insertedExistingInn, setInsertedExistingInn] = useState([])
     const tableRef = useRef(null);
     const { inn } = useParams()
 
+    const existingInn = debit.map(item => item.debitor_inn)
     const tableData = [...debit, ...newDebit].sort((a, b) => a.id - b.id)   //  sort !!!
-
 
     useEffect(() => {
         activesAPI
@@ -67,8 +68,10 @@ export default function () {
 
 
     const onChangeHandler = (id, field, value, type) => {
-        if (field === "debitor_inn")
-            setInvalidInn(prevValue => (value.length < 10) ? [...new Set([...prevValue, id])] : prevValue.filter(idValue => idValue !== id))
+        if (field === "debitor_inn") {
+            setInvalidInn(prevValue => ((0 < value.length) && (value.length < 10)) ? [...new Set([...prevValue, id])] : prevValue.filter(idValue => idValue !== id))
+            setInsertedExistingInn(prevValue => prevValue.filter(inn => inn !== changedDebit[id]?.data?.debitor_inn))
+        }
         setChangedDebit(prevValue => {
             const data = { ...prevValue[id]?.data, [field]: value }
             const isEmptyData = Object.values(data).every(s => s.length === 0)
@@ -107,38 +110,66 @@ export default function () {
         return () => clearTimeout(timer)
     }
 
-
-
-
     const saveChange = () => {
+        if ((Object.keys(changedDebit).length === 0) && (newDebit.length === 0)) return
         if (invalidInn.length === 0) {
             const getChangedFields = (newObj, oldObj) => {
-                const changedEntries = Object.entries(newObj).filter(([key, value]) => key in oldObj && value !== oldObj[key])
+                const changedEntries = Object.entries(newObj)
+                    .filter(([key, value]) => key in oldObj && value !== oldObj[key])
                 return Object.fromEntries(changedEntries);
             }
-            const getRelatedOldObj = key => debit.find(row => row.id === key)
-            const updatedEntries = Object.entries(changedDebit).filter(([ _, value ])=> value.type === "update")
+            const getRelatedOldObj = id => debit.find(row => row.id === parseInt(id))
+            const updatedEntries = Object.entries(changedDebit)
+                .filter(([ _, value ])=> value.type === "update")
             const changesArr = updatedEntries
                 .map( ([ id, value ]) => [ id, getChangedFields(value.data, getRelatedOldObj(id)) ])
                 .filter(([_, value]) => (Object.keys(value).length > 0))
             const updatedData = Object.fromEntries(changesArr)
 
             const insertedEntries = Object.entries(changedDebit).filter(([ _, value ])=> value.type === "insert")
-            const existingInn = debit.map(item => item.debitor_inn)
+            const duplicateInn = []
+            const emptyInn = []
             insertedEntries.forEach(([id, { data }]) => {
-                setInvalidInn(prevValue => (existingInn.includes(data.debitor_inn)) ? [...new Set([...prevValue, id])] : prevValue.filter(idValue => idValue !== id))
+                if (existingInn.includes(data.debitor_inn))
+                    duplicateInn.push(data.debitor_inn)
+                if (!data.debitor_inn)
+                    emptyInn.push(parseInt(id))
             })
-            if (invalidInn.length === 0) {
+            if (emptyInn.length === 0)
+                if (duplicateInn.length === 0) {
+                    const insertedData = insertedEntries.map(([_, value]) => value.data)
+                    let flagUpdate = false
+                    let flagInsert = false
+                    if (Object.keys(updatedData).length > 0) {
+                        activesAPI.updateActives("debit", inn, updatedData).catch(console.log)
+                    }
+                    if (insertedEntries.length > 0) {
+                        activesAPI
+                            .createNewActives("debit", inn, insertedData.map(item => ({...item, inn})))
+                            .then(({data}) => {
+                                setDebit(prevValue => [...prevValue, insertedData.map((item, idx) => ({...item, id: data[idx]}))])
+                                //setNewDebit([])
+                                flagInsert = true
+                            })
+                            .catch(console.log)
+                    }
+                    if (flagUpdate && flagInsert)
+                        enqueueSnackbar("Сохранено", {variant: "info"})
+                    else if (flagUpdate)
+                        enqueueSnackbar("Изменения сохранены, но удалось сохранить новые данные", {variant: "info"})
+                    else if (flagInsert)
+                        enqueueSnackbar("Новые данные сохранены, но не удалось сохранить изменения", {variant: "info"})
+                    else
+                        enqueueSnackbar("Ошибка в сохранении", {variant: "info"})
 
-            } else
-                enqueueSnackbar("Дебитор с таким ИНН уже существует!", {variant: "info"})
-
-            console.log(debit)
-
-            console.log(insertedEntries)
-
-            //console.log(updatedData)
-            //activesAPI.updateActives("debit", inn, updatedData).catch(console.log)
+                } else {
+                    setInsertedExistingInn(prevValue => [...new Set([...prevValue, ...duplicateInn])])
+                    enqueueSnackbar("Дебитор с таким ИНН уже существует", {variant: "info"})
+                }
+            else {
+                setInvalidInn(prevValue => [...new Set([...prevValue, ...emptyInn])])
+                enqueueSnackbar("Заполните обязательное поле - \"ИНН дебитора\"", {variant: "info"})
+            }
         } else
             enqueueSnackbar("Неверный формат ИНН. Минимум 10 символов", {variant: "info"})
 
@@ -171,6 +202,7 @@ export default function () {
                                         key={data.id}
                                         onMouseEnter={() => setViewInput(data.id)}
                                         onMouseLeave={() => setViewInput(-1)}
+                                        isSelected={insertedExistingInn.includes(data.debitor_inn)}
                                     >
                                         <td>
                                             {(data.type !== "insert") ? data.debitor_inn : (
@@ -215,7 +247,7 @@ export default function () {
             </Container>
             <SnackbarProvider
                 anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-                maxSnack={(invalidInn.length > 0) ? 1 : 3}
+                maxSnack={((invalidInn.length > 0) || (insertedExistingInn.length > 0)) ? 1 : 3}
                 autoHideDuration={5000}
             />
             <ButtonBox>

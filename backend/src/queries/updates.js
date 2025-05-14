@@ -5,9 +5,9 @@ import db from "../connection.js"
 
 
 async function setHistory(tableName, data, userInfo) {
-    console.log(tableName)
-    console.log(data)
-    console.log(userInfo)
+    // console.log(tableName)
+    // console.log(data)
+    // console.log(userInfo)
 
     /*
     try {
@@ -39,8 +39,6 @@ export async function createNewActives(nameActive, data, userInfo) {
     } catch (error) {
         throw error
     }
-
-
 }
 
 

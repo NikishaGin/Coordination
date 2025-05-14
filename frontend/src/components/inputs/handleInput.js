@@ -57,16 +57,9 @@ export const handlesInputNumber = {
 
 
 export const handlesInputInn = {
-    handleKeyPress(event) {
-        // Разрешаем только цифры и специальные клавиши (например, Backspace и Delete)
-        if (/^\d$/.test(event.key) || event.key === "Backspace" || event.key === "Delete") {
-            if ((event.target.value.length === 12) && /^\d$/.test(event.key))
-                event.preventDefault();
-        } else
-            event.preventDefault();
-    },
-
     handleKeyDown(event) {
+        // if (["ArrowRight", "ArrowLeft", "ArrowUp", "ArrowDown", "Tab"].includes(event.key) || (event.ctrlKey && ["c", "v", "с", "м"].includes(event.key.toLowerCase())))
+        //     return
         // Разрешаем только цифры и специальные клавиши (например, Backspace и Delete)
         if (/^\d$/.test(event.key) || event.key === "Backspace" || event.key === "Delete") {
             if ((event.target.value.length === 12) && /^\d$/.test(event.key))

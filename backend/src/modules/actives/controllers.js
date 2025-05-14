@@ -41,7 +41,7 @@ export async function getActivesStatistics(request, response) {
         let total_sum = 0
         for (let active in queries) {
             let data = (await queries[active])[0]
-            total_sum += data.cost ?? 0.00
+            total_sum += parseFloat(data.cost ?? "0.00")
             result[active] = data
         }
         result.total_sum = total_sum
@@ -80,8 +80,7 @@ export function createNewActives(request, response) {
     updates.createNewActives(nameActive,  data, {inn, id: userInfo.id, role: userInfo.role})
         .then(([id]) => {
             const newId = Array.isArray(data) ? Array.from({ length: data.length }, (_, i) => id + i) : id
-            const result = (Array.isArray(newId) && (newId.length == 1)) ? newId[0] : newId
-            response.end(JSON.stringify(result))
+            response.end(JSON.stringify(newId))
         })
         .catch(console.log)
 }
@@ -95,11 +94,6 @@ export function updateActives(request, response) {
     const data = request.body
     updates
         .updateActives(nameActive, data, {inn, id: userInfo.id, role: userInfo.role})
-        .then(d => {
-            console.log(d)
-
-            
-            response.end(JSON.stringify(""))
-        })
+        .then(d => response.end(JSON.stringify("")))
         .catch(console.log)
 }
