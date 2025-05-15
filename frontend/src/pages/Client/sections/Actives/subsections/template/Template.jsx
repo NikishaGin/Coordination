@@ -73,6 +73,10 @@ export default function ({ nameActive, data }) {
         }))
     }, [data])
 
+
+
+
+
     const onChangeHandler = (id, field, value) => {
         setChangedValue(prevValue => {
             return {

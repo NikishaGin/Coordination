@@ -213,12 +213,6 @@ export const Footer = () => {
           }}
           onMouseLeave={() => setTimer(setTimeout(() => setIsMenuVisible(false), 500))}
         >
-
-
-
-
-
-
           <Icon
             viewBox="0 0 24 24"
             focusable="false"

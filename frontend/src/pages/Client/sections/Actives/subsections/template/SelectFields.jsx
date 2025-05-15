@@ -73,6 +73,7 @@ const SelectFieldsItem = styled.li`
 
 export default function ({ config, selectedColumn, setSelectedColumn }) {
     const [openSelect, setOpenSelect] = useState(false)
+    const [timer, setTimer] = useState(undefined);
 
 
     const handleSelectColumns = selectedFields => {
@@ -91,8 +92,12 @@ export default function ({ config, selectedColumn, setSelectedColumn }) {
     return (
         <SelectFields
             visible={openSelect}
-            onMouseEnter={() => setOpenSelect(true)}
-            onMouseLeave={() => setOpenSelect(false)}
+            onClick={() => setOpenSelect(prevValue => !prevValue)}
+            onMouseEnter={() => {
+                clearTimeout(timer)
+                setOpenSelect(openSelect)
+            }}
+            onMouseLeave={() => setTimer(setTimeout(() => setOpenSelect(false), 400))}
         >
             <span>Показать столбцы</span>
             <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
@@ -104,9 +109,6 @@ export default function ({ config, selectedColumn, setSelectedColumn }) {
                     <label><b>Показать все столбцы</b></label>
                 </SelectFieldsItem>
                 <hr />
-
-
-
                 {config.map(itemGroup => {
                     if (Array.isArray(itemGroup)) {
                         return (

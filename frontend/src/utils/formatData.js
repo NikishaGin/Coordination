@@ -5,6 +5,12 @@ export function formatNumber(number) {
 }
 
 
+export function parseNumber(number) {
+  const strNumbers = number.replace(/,/g, ".").replace(/\s*|\t|\r|\n/gm, "")
+  return parseFloat(strNumbers)
+}
+
+
 export function formatDate(date) {
   if (!date) return undefined
   const dateFormat = new Date(date)

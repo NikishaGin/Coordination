@@ -4,6 +4,7 @@ import styled from "styled-components";
 import {FilterButtons} from "./FilterButtons.jsx";
 import {StatusFilter} from "./StatusFilter.jsx";
 import {SumFilter} from "./SumFilter.jsx";
+import {parseNumber} from "../../utils/formatData.js";
 import {useDispatch, useSelector} from "react-redux";
 import { setFilterCategory, setFilterStatusIp, setFilterSum } from "../../store/globalSlice.js";
 
@@ -54,7 +55,7 @@ export const FilterPanel = () => {
         if (category.length > 0)
             dispatch(setFilterCategory(category));
         if ((nameFilteredField.length > 0) && sum.length > 0) {
-            const valueSum = parseFloat(sum.replace(/,/g, ".").replace(/\s*|\t|\r|\n/gm, ""))
+            const valueSum = parseNumber(sum);
             dispatch(setFilterSum({sum: valueSum, name_filtered_field: nameFilteredField}));
         }
     };

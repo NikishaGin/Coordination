@@ -110,7 +110,7 @@ export default function () {
         return () => clearTimeout(timer)
     }
 
-    const saveChange = () => {
+    const saveChange = async () => {
         if ((Object.keys(changedDebit).length === 0) && (newDebit.length === 0)) return
         if (invalidInn.length === 0) {
             const getChangedFields = (newObj, oldObj) => {
@@ -140,27 +140,48 @@ export default function () {
                     const insertedData = insertedEntries.map(([_, value]) => value.data)
                     let flagUpdate = false
                     let flagInsert = false
+
+
+
                     if (Object.keys(updatedData).length > 0) {
-                        activesAPI.updateActives("debit", inn, updatedData).catch(console.log)
-                    }
+                        try {
+                            await activesAPI.updateActives("debit", inn, updatedData)
+                            setTimeout(() => {
+                                setDebit(prevValue => prevValue.map(item => ({...item, ...changedDebit[item.id] ?? {}})))
+                                setChangedDebit({})
+                                flagUpdate = true
+                            }, 0)
+                        } catch (error) {
+                            console.log(error)
+                        }
+                    } else
+                        flagUpdate = true
+
                     if (insertedEntries.length > 0) {
-                        activesAPI
-                            .createNewActives("debit", inn, insertedData.map(item => ({...item, inn})))
-                            .then(({data}) => {
+                        try {
+                            const { data } = await activesAPI.createNewActives("debit", inn, insertedData.map(item => ({...item, inn})))
+                            setTimeout(() => {
                                 setDebit(prevValue => [...prevValue, insertedData.map((item, idx) => ({...item, id: data[idx]}))])
-                                //setNewDebit([])
+                                setNewDebit([])
                                 flagInsert = true
-                            })
-                            .catch(console.log)
-                    }
+                            }, 0)
+                        } catch (error) {
+                            console.log(error)
+                        }
+                    } else
+                        flagInsert = true
+
+
+
+
                     if (flagUpdate && flagInsert)
-                        enqueueSnackbar("Сохранено", {variant: "info"})
+                        enqueueSnackbar("Сохранено", {variant: "success"})
                     else if (flagUpdate)
-                        enqueueSnackbar("Изменения сохранены, но удалось сохранить новые данные", {variant: "info"})
+                        enqueueSnackbar("Изменения сохранены, но удалось сохранить новые данные", {variant: "success"})
                     else if (flagInsert)
-                        enqueueSnackbar("Новые данные сохранены, но не удалось сохранить изменения", {variant: "info"})
+                        enqueueSnackbar("Новые данные сохранены, но не удалось сохранить изменения", {variant: "success"})
                     else
-                        enqueueSnackbar("Ошибка в сохранении", {variant: "info"})
+                        enqueueSnackbar("Ошибка в сохранении", {variant: "error"})
 
                 } else {
                     setInsertedExistingInn(prevValue => [...new Set([...prevValue, ...duplicateInn])])
@@ -247,7 +268,7 @@ export default function () {
             </Container>
             <SnackbarProvider
                 anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-                maxSnack={((invalidInn.length > 0) || (insertedExistingInn.length > 0)) ? 1 : 3}
+                maxSnack={1}
                 autoHideDuration={5000}
             />
             <ButtonBox>
