@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FileText, FileSpreadsheet, FileImage, FilePieChart, File } from 'lucide-react';
 import styled from 'styled-components';
+import { useLocation } from "react-router";
 
 const Wrapper = styled.div`
     background-color: rgb(15, 20, 30);
@@ -244,6 +245,12 @@ export const Library = () => {
     const [documentName, setDocumentName] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
     const [documents, setDocuments] = useState([]);
+    const location = useLocation();
+
+
+    useEffect(() => {
+
+    })
 
     const handleDocumentNameChange = (e) => {
         setDocumentName(e.target.value);

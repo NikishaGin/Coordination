@@ -111,88 +111,99 @@ export default function () {
     }
 
     const saveChange = async () => {
-        if ((Object.keys(changedDebit).length === 0) && (newDebit.length === 0)) return
-        if (invalidInn.length === 0) {
-            const getChangedFields = (newObj, oldObj) => {
-                const changedEntries = Object.entries(newObj)
-                    .filter(([key, value]) => key in oldObj && value !== oldObj[key])
-                return Object.fromEntries(changedEntries);
+        if (Object.keys(changedDebit).length === 0 && newDebit.length === 0) return;
+
+        if (invalidInn.length > 0) {
+            enqueueSnackbar("Неверный формат ИНН. Минимум 10 символов", { variant: "info" });
+            return;
+        }
+
+        const getChangedFields = (newObj, oldObj) => {
+            return Object.fromEntries(
+                Object.entries(newObj).filter(([key, value]) => key in oldObj && value !== oldObj[key])
+            );
+        };
+
+        const getOldDataById = id => debit.find(row => row.id === parseInt(id));
+
+        const updatedData = Object.fromEntries(
+            Object.entries(changedDebit)
+                .filter(([, value]) => value.type === "update")
+                .map(([id, value]) => [id, getChangedFields(value.data, getOldDataById(id))])
+                .filter(([, changes]) => Object.keys(changes).length > 0)
+        );
+
+        const insertedEntries = Object.entries(changedDebit).filter(([, value]) => value.type === "insert");
+        const duplicateInn = [];
+        const emptyInn = [];
+
+        insertedEntries.forEach(([id, { data }]) => {
+            if (!data.debitor_inn) emptyInn.push(parseInt(id));
+            if (existingInn.includes(data.debitor_inn)) duplicateInn.push(data.debitor_inn);
+        });
+
+        if (emptyInn.length > 0) {
+            setInvalidInn(prev => [...new Set([...prev, ...emptyInn])]);
+            enqueueSnackbar("Заполните обязательное поле - \"ИНН дебитора\"", { variant: "info" });
+            return;
+        }
+
+        if (duplicateInn.length > 0) {
+            setInsertedExistingInn(prev => [...new Set([...prev, ...duplicateInn])]);
+            enqueueSnackbar("Дебитор с таким ИНН уже существует", { variant: "info" });
+            return;
+        }
+
+        let updateSuccess = false;
+        let insertSuccess = false;
+
+        // 🟡 Обновление существующих записей
+        if (Object.keys(updatedData).length > 0) {
+            try {
+                await activesAPI.updateActives("debit", inn, updatedData);
+                setDebit(prev => prev.map(item =>
+                    changedDebit[item.id]?.type === "update"
+                        ? { ...item, ...changedDebit[item.id].data }
+                        : item
+                ));
+                updateSuccess = true;
+            } catch (error) {
+                console.error("Ошибка при обновлении:", error);
             }
-            const getRelatedOldObj = id => debit.find(row => row.id === parseInt(id))
-            const updatedEntries = Object.entries(changedDebit)
-                .filter(([ _, value ])=> value.type === "update")
-            const changesArr = updatedEntries
-                .map( ([ id, value ]) => [ id, getChangedFields(value.data, getRelatedOldObj(id)) ])
-                .filter(([_, value]) => (Object.keys(value).length > 0))
-            const updatedData = Object.fromEntries(changesArr)
+        } else {
+            updateSuccess = true;
+        }
 
-            const insertedEntries = Object.entries(changedDebit).filter(([ _, value ])=> value.type === "insert")
-            const duplicateInn = []
-            const emptyInn = []
-            insertedEntries.forEach(([id, { data }]) => {
-                if (existingInn.includes(data.debitor_inn))
-                    duplicateInn.push(data.debitor_inn)
-                if (!data.debitor_inn)
-                    emptyInn.push(parseInt(id))
-            })
-            if (emptyInn.length === 0)
-                if (duplicateInn.length === 0) {
-                    const insertedData = insertedEntries.map(([_, value]) => value.data)
-                    let flagUpdate = false
-                    let flagInsert = false
+        // 🟢 Вставка новых записей
+        if (insertedEntries.length > 0) {
+            try {
+                const newData = insertedEntries.map(([, value]) => ({ ...value.data, inn }));
+                const { data: ids } = await activesAPI.createNewActives("debit", inn, newData);
+                const newRecords = newData.map((item, index) => ({ ...item, id: ids[index] }));
 
-
-
-                    if (Object.keys(updatedData).length > 0) {
-                        try {
-                            await activesAPI.updateActives("debit", inn, updatedData)
-                            setTimeout(() => {
-                                setDebit(prevValue => prevValue.map(item => ({...item, ...changedDebit[item.id] ?? {}})))
-                                setChangedDebit({})
-                                flagUpdate = true
-                            }, 0)
-                        } catch (error) {
-                            console.log(error)
-                        }
-                    } else
-                        flagUpdate = true
-
-                    if (insertedEntries.length > 0) {
-                        try {
-                            const { data } = await activesAPI.createNewActives("debit", inn, insertedData.map(item => ({...item, inn})))
-                            setTimeout(() => {
-                                setDebit(prevValue => [...prevValue, insertedData.map((item, idx) => ({...item, id: data[idx]}))])
-                                setNewDebit([])
-                                flagInsert = true
-                            }, 0)
-                        } catch (error) {
-                            console.log(error)
-                        }
-                    } else
-                        flagInsert = true
-
-
-
-
-                    if (flagUpdate && flagInsert)
-                        enqueueSnackbar("Сохранено", {variant: "success"})
-                    else if (flagUpdate)
-                        enqueueSnackbar("Изменения сохранены, но удалось сохранить новые данные", {variant: "success"})
-                    else if (flagInsert)
-                        enqueueSnackbar("Новые данные сохранены, но не удалось сохранить изменения", {variant: "success"})
-                    else
-                        enqueueSnackbar("Ошибка в сохранении", {variant: "error"})
-
-                } else {
-                    setInsertedExistingInn(prevValue => [...new Set([...prevValue, ...duplicateInn])])
-                    enqueueSnackbar("Дебитор с таким ИНН уже существует", {variant: "info"})
-                }
-            else {
-                setInvalidInn(prevValue => [...new Set([...prevValue, ...emptyInn])])
-                enqueueSnackbar("Заполните обязательное поле - \"ИНН дебитора\"", {variant: "info"})
+                setDebit(prev => [...prev, ...newRecords]);
+                setNewDebit([]);
+                insertSuccess = true;
+            } catch (error) {
+                console.error("Ошибка при вставке:", error);
             }
-        } else
-            enqueueSnackbar("Неверный формат ИНН. Минимум 10 символов", {variant: "info"})
+        } else {
+            insertSuccess = true;
+        }
+
+        // ✅ Очистка
+        setChangedDebit({});
+
+        // ✅ Уведомления
+        if (updateSuccess && insertSuccess) {
+            enqueueSnackbar("Сохранено", { variant: "success" });
+        } else if (updateSuccess) {
+            enqueueSnackbar("Изменения сохранены, но не удалось сохранить новые данные", { variant: "success" });
+        } else if (insertSuccess) {
+            enqueueSnackbar("Новые данные сохранены, но не удалось сохранить изменения", { variant: "success" });
+        } else {
+            enqueueSnackbar("Ошибка при сохранении", { variant: "error" });
+        }
 
     }
 

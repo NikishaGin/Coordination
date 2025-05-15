@@ -8,6 +8,7 @@ import configTables from "./settingsTable.js";
 import { formatNumber, formatDate, transformDateForInput } from "../../../../../utils/formatData.js"
 import Input from "../../../../../components/inputs/Input.jsx";
 import { activesAPI } from "../../../../../api/index.js";
+import { enqueueSnackbar, SnackbarProvider } from "notistack";
 
 
 const Container = styled(TableContainer)`
@@ -16,27 +17,15 @@ const Container = styled(TableContainer)`
     & table {
         display: table;
     }
+
+    & th:nth-child(1), & td:nth-child(1) {
+        min-width: 1000px;
+        white-space: normal !important;
+    }
     
-    & th {
-        white-space: normal;
-    }
-
-    & th:nth-child(2), & td:nth-child(2) {
-        width: 100px;
-    }
-
-
-    & th:nth-child(3), & td:nth-child(3) {
-        width: 110px;
-    }
-
-
-    & td:nth-child(1) {
-        //overflow: hidden; 
-        //text-overflow: ellipsis;
-
-        //white-space: normal !important;
-        //word-break: break-word;
+    & th#comment, & td#comment {
+        min-width: 600px;
+        white-space: normal !important;
     }
 `
 
@@ -104,8 +93,41 @@ export default function({ nameActive }) {
         return () => clearTimeout(timer)
     }
 
-    const saveChange = () => {
-        console.log(changedValue)
+    const saveChange = async () => {
+        if (Object.keys(changedValue).length === 0) return
+
+        const getChangedFields = (newObj, oldObj) => {
+            return Object.fromEntries(
+                Object.entries(newObj).filter(([key, value]) => key in oldObj && value !== oldObj[key])
+            );
+        };
+
+        const getOldDataById = id => data.find(row => row.id === parseInt(id));
+
+        const updatedData = Object.fromEntries(
+            Object.entries(changedValue)
+                .map(([id, value]) => [id, getChangedFields(value, getOldDataById(id))])
+                .filter(([, changes]) => Object.keys(changes).length > 0)
+        );
+
+        let updateSuccess = false;
+
+        // 🟡 Обновление существующих записей
+        if (Object.keys(updatedData).length > 0) {
+            try {
+                await activesAPI.updateActives(nameActive, inn, updatedData);
+                setData(prevValue => prevValue.map(item => ({ ...item, ...changedValue[item.id] })));
+                setChangedValue({})
+                updateSuccess = true;
+            } catch (error) {
+                console.error("Ошибка при обновлении:", error);
+            }
+        }
+
+        if (updateSuccess)
+            enqueueSnackbar("Сохранено", { variant: "success" });
+        else
+            enqueueSnackbar("Ошибка при сохранении", { variant: "error" });
     }
 
 
@@ -115,7 +137,7 @@ export default function({ nameActive }) {
                 <table>
                     <thead>
                     <tr>
-                        {[...config[0], ...config.flat().filter(({ field }) => selectedColumn.includes(field))].map(({ name }) => <th>{name}</th>)}
+                        {[...config[0], ...config.flat().filter(({ field }) => selectedColumn.includes(field))].map(({ name, field }) => <th id={field}>{name}</th>)}
                     </tr>
                     </thead>
                     <tbody>
@@ -133,7 +155,7 @@ export default function({ nameActive }) {
                             >
                                 {[...config[0], ...config.flat().filter(({ field }) => selectedColumn.includes(field))].map(item => {
                                     if (item.editable) {
-                                        return <td width={item.width}><Input type={item.type} value={data[item.field]} onChange={event => onChangeHandler(data.id, item.field, event.target.value)} options={item.options} view={viewInput === index} /></td>
+                                        return <td id={item.field} width={item.width}><Input type={item.type} value={data[item.field]} onChange={event => onChangeHandler(data.id, item.field, event.target.value)} options={item.options} view={viewInput === index} /></td>
                                     } else
                                         return <td width={item.width}>{data[item.field]}</td>
 
@@ -144,6 +166,11 @@ export default function({ nameActive }) {
                     </tbody>
                 </table>
             </Container>
+            <SnackbarProvider
+                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+                maxSnack={1}
+                autoHideDuration={5000}
+            />
             <ButtonBox>
                 <ButtonContainer>
                     <SelectFields config={config.slice(1)} selectedColumn={selectedColumn} setSelectedColumn={setSelectedColumn} />

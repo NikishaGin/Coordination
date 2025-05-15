@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import { handlesInputNumber, handlesInputInn } from "./handleInput";
+import { useState } from "react";
 
 
 const borderInput = error => (error) ? "1px solid hsl(8, 74.80%, 50.20%);" : "1px solid hsl(210, 100%, 30%);"
@@ -47,9 +48,10 @@ const SelectStyle = styled.select`
 
 
 export default function({ type, width, options, value, view, error, onChange }) {
+    const [disabled, setDisabled] = useState(false)
 
     if (["text", "date"].includes(type))
-        return <InputStyle type={type} value={value ?? ""} view={view} error={error} onChange={onChange} style={{ width: (type == "text") ? width : "120px" }} />
+        return <InputStyle type={type} value={value ?? ""} disabled={disabled} onDoubleClick={() => setDisabled(true)}  view={view} error={error} onChange={onChange} style={{ width: (type == "text") ? width : "120px" }} />
     else if (type == "textarea")
         return <TextareaStyle value={value ?? ""} view={view} error={error} onChange={onChange} style={{ width }} />
     else if (type == "inn")

@@ -12,7 +12,7 @@ import {
 import storage from 'redux-persist/lib/storage';
 import globalReducer, { resetGlobal } from "./globalSlice";
 import userReducer, { resetUser } from "./userSlice";
-
+import tableDataReducer from "./tableDataSlice.js";
 
 
 const persistConfig = {
@@ -23,12 +23,11 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
     global: globalReducer,
-    user: userReducer
+    user: userReducer,
+    tableData: tableDataReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
-
-
 
 
 // Создаем хранилище

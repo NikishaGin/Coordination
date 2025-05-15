@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect, useMemo} from "react";
 import { useNavigate } from "react-router";
 import styled from "styled-components";
 import { SnackbarProvider, enqueueSnackbar } from 'notistack'
 import { TableContainer, Tr } from "../tables/Table.jsx";
 import { ButtonContainer, Button } from "../buttons/Button.jsx";
-import { activesAPI, downloadAPI } from "../../api/index.js";
+import {downloadAPI } from "../../api/index.js";
 import downloadExcel from "../../utils/downloadExcel.js"
 import { formatNumber } from "../../utils/formatData.js"
-import { useSelector } from "react-redux";
-
-
+import {useDispatch, useSelector} from "react-redux";
+import {fetchTableData} from "../../store/tableDataSlice.js";
 
 const Container = styled.div`
   padding-right: 24px;
@@ -70,14 +69,12 @@ const Li = styled.li`
   }
 `;
 
-
 const Icon = styled.svg`
   width: 16px;
   height: 16px;
   fill: currentColor;
 `;
 
-// Стиль для кастомного чекбокса
 const CustomCheckbox = styled.label`
   display: inline-block;
   position: relative;
@@ -152,37 +149,50 @@ const headings = [
 ];
 
 
+const statusList = [
+  "не произведено",
+  "произведено с нарушением",
+  "произведено в срок",
+  "в розыске",
+  "залог перед ФНС",
+  "обновление данных произведено за последние 7 дней"
+];
+
+
 
 export const Main = () => {
-  const [tableData, setTableData] = useState([]);
+
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+
   const [selectedInn, setSelectedInn] = useState([]);
+
   const selectedRegion = useSelector((state) => state.global.selectedRegion);
   const filters = useSelector((state) => state.global.filters);
-  const navigate = useNavigate()
-
+  const tableData = useSelector((state) => state.tableData.tableData);
 
   useEffect(() => {
-    activesAPI
-      .getTables("Index", selectedRegion)
-      .then((data) => setTableData(data.data))
-      .catch(console.log);
-  }, [selectedRegion]);
+    dispatch(fetchTableData(selectedRegion));
+  }, [dispatch, selectedRegion]);
 
-  let filteredData = tableData;
+  const filteredData = useMemo(() => {
+    let data = [...tableData];
 
-  if (filters.inputValueInn)
-    filteredData = filteredData.filter((row) => row.inn.startsWith(filters.inputValueInn))
+    if (filters.inputValueInn)
+      data = data.filter((row) => row.inn.startsWith(filters.inputValueInn));
 
-  if (filters.category)
-    filteredData = filteredData.filter((row) => row.category === filters.category)
+    if (filters.category)
+      data = data.filter((row) => row.category === filters.category);
 
-  if (filters.status_ip)
-    filteredData = filteredData.filter((row) => row.status_ip === filters.status_ip)
+    if (filters.status_ip)
+      data = data.filter((row) => row.status_ip === filters.status_ip);
 
-  if (filters.name_filtered_field && filters.sum) {
-    console.log(filteredData);
-    filteredData = filteredData.filter((row) => row[filters.name_filtered_field] >= filters.sum)
-  }
+    if (filters.name_filtered_field && filters.sum)
+      data = data.filter((row) => row[filters.name_filtered_field] >= filters.sum);
+
+    return data;
+  }, [tableData, filters]);
+
 
   const handleSelectAll = event => {
     if (event.target.checked)
@@ -221,12 +231,9 @@ export const Main = () => {
   return (
     <Container>
       <Ul>
-        <Li>не произведено</Li>
-        <Li>произведено с нарушением</Li>
-        <Li>произведено в срок</Li>
-        <Li>в розыске</Li>
-        <Li>залог перед ФНС</Li>
-        <Li>обновление данных произведено за последние 7 дней</Li>
+        {statusList.map((status, index) => (
+            <Li key={index}>{status}</Li>
+        ))}
       </Ul>
       <TableContainer>
         <table>

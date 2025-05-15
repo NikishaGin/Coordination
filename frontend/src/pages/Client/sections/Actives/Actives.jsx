@@ -1,11 +1,6 @@
 import React, { useState } from "react";
 import { Sidebar, Main } from "../../Sidebar.jsx";
-import Transport from "./subsections/Transport.jsx"
-import Property from "./subsections/Property.jsx"
-import Ground from "./subsections/Ground.jsx"
-import DebtorIndebtedness from "./subsections/DebtorIndebtedness.jsx"
-import Another from "./subsections/Another.jsx"
-
+import ActiveDetails from "./ActiveDetails/ActiveDetails.jsx"
 
 
 export default function () {
@@ -19,11 +14,11 @@ export default function () {
                 setSelectedSubsection={setSelectedSubsection}
             />
             <Main>
-                {(selectedSubsection === "Транспорт") && <Transport />}
-                {(selectedSubsection === "Недвижимость") && <Property />}
-                {(selectedSubsection === "Земельные участки") && <Ground />}
-                {(selectedSubsection === "Дебиторская задолженность") && <DebtorIndebtedness />}
-                {(selectedSubsection === "Иные активы") && <Another />}
+                {(selectedSubsection === "Транспорт") && <ActiveDetails nameActive="transport" />}
+                {(selectedSubsection === "Недвижимость") && <ActiveDetails nameActive="property" />}
+                {(selectedSubsection === "Земельные участки") && <ActiveDetails nameActive="ground" />}
+                {(selectedSubsection === "Дебиторская задолженность") && <ActiveDetails nameActive="debit" />}
+                {(selectedSubsection === "Иные активы") && <ActiveDetails nameActive="another" />}
             </Main>
         </>
     )
