@@ -210,3 +210,13 @@ export const download = {
             .andWhere("meta.region", regionCode)
     }
 }
+
+
+export const fileStorage = {
+    getDocuments: (source) => {
+        return db("library").select("*").where({ source })
+    },
+    saveDocument: (data) => {
+        return db("library").insert(data)
+    }
+}

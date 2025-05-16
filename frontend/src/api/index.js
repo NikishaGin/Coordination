@@ -51,3 +51,7 @@ export const downloadAPI = {
 }
 
 
+export const fileStorageAPI = {
+    getDocuments: (source) => instance.get(`/file-storage/get-documents/${source}`),
+    saveDocument: (source, formData) => instance.post(`/file-storage/save-document/${source}`, formData)
+}

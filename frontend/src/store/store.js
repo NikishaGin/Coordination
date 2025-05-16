@@ -13,6 +13,8 @@ import storage from 'redux-persist/lib/storage';
 import globalReducer, { resetGlobal } from "./globalSlice";
 import userReducer, { resetUser } from "./userSlice";
 import tableDataReducer from "./tableDataSlice.js";
+import clientReducer from "./ClientSlice.js";
+import fileStorageReducer from "./fileStorageSlice.js";
 
 
 const persistConfig = {
@@ -25,6 +27,8 @@ const rootReducer = combineReducers({
     global: globalReducer,
     user: userReducer,
     tableData: tableDataReducer,
+    client: clientReducer,
+    fileStorage: fileStorageReducer
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

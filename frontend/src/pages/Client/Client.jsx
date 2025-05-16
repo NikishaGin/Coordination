@@ -117,15 +117,15 @@ const Nav = styled.div`
 export function Client() {
     const [info, setInfo] = useState({})
     const [nav, setNav] = useState("info")
-    const [isCoordination, setIsCoordination] = useState(false)
+    // const [isCoordination, setIsCoordination] = useState(false)
     const { inn } = useParams()
     const navigate = useNavigate()
-    const urlHistory = useSelector((state) => state.global.urlHistory);
+    // const urlHistory = useSelector((state) => state.global.urlHistory);
 
 
     useEffect(() => {
         activesAPI.getInfo(inn).then(data => setInfo(data.data)).catch(console.log)
-        setIsCoordination(urlHistory[1] === "/coordination")
+        // setIsCoordination(urlHistory[1] === "/coordination")
     }, [])
 
     return (
