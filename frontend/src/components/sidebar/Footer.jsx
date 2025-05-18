@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate } from "react-router";
+import {useNavigate} from "react-router";
 import styled from 'styled-components';
-// import { useSelector } from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import resetStore from "../../store/store"
+import {fetchCheckServiceMode} from "../../store/globalSlice.js";
 
 
 // Стиль для футера
@@ -181,19 +182,69 @@ const MenuButton = styled.button`
 `;
 
 
+const Indicator = styled.span`
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-image: ${({serviceMode}) => (serviceMode) ? "radial-gradient(rgba(0, 255, 0, 1), rgba(0, 255, 0, 0.1))" : "radial-gradient(rgba(255, 0, 0, 1), rgba(255, 0, 0, 0.1))"};
+`
 
 
 
+const Modal = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: ${({ isVisible }) => (isVisible ? 1 : 0)};
+  visibility: ${({ isVisible }) => (isVisible ? 'visible' : 'hidden')};
+  
+  & div {
+    width: 400px;
+    height: 150px;
+    background-color: rgb(12, 16, 23);
+    border-radius: 8px;
+    box-shadow:
+        0px 4px 6px rgba(255, 255, 255, 0.1),
+        0px 1px 3px rgba(255, 255, 255, 0.06),
+        0px 8px 12px rgba(255, 255, 255, 0.08);
+    padding: 8px;
+    z-index: 10000;
+    transform-origin: left center;
+    transition: opacity 242ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 161ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+`
 
 
 export const Footer = () => {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const [timer, setTimer] = useState(undefined);
   const navigate = useNavigate()
+  const dispatch = useDispatch()
+
+  const serviceMode = useSelector(state => state.global.serviceMode)
 
   // const firstname = useSelector((state) => state.user.firstname);
   // const secondname = useSelector((state) => state.user.secondname);
   // const lastname = useSelector((state) => state.user.lastname);
+
+  const handleOpenMenu = () => {
+    setIsMenuVisible(prevValue => !prevValue)
+    dispatch(fetchCheckServiceMode())
+  }
+
+  const toggleServiceMode = () => {
+    setIsModalVisible(true)
+  }
+
 
 
   const logout = () => {
@@ -206,7 +257,7 @@ export const Footer = () => {
     <Container>
       <UserInfo>
         <IconButton
-          onClick={() => setIsMenuVisible(prevValue => !prevValue)}
+          onClick={handleOpenMenu}
           onMouseEnter={() => {
             clearTimeout(timer)
             setIsMenuVisible(isMenuVisible)
@@ -226,7 +277,7 @@ export const Footer = () => {
             <Arrow />
             <ul>
               <li>
-                <MenuButton>
+                <MenuButton onClick={toggleServiceMode}>
                   <svg
                     className="MuiSvgIcon-root"
                     focusable="false"
@@ -237,6 +288,7 @@ export const Footer = () => {
                     <path d="M22.61 18.99l-9.08-9.08c.93-2.34.45-5.1-1.44-7C9.79.61 6.21.4 3.66 2.26L7.5 6.11 6.08 7.52 2.25 3.69C.39 6.23.6 9.82 2.9 12.11c1.86 1.86 4.57 2.35 6.89 1.48l9.11 9.11c.39.39 1.02.39 1.41 0l2.3-2.3c.4-.38.4-1.01 0-1.41zm-3 1.6l-9.46-9.46c-.61.45-1.29.72-2 .82-1.36.2-2.79-.21-3.83-1.25C3.37 9.76 2.93 8.5 3 7.26l3.09 3.09 4.24-4.24-3.09-3.09c1.24-.07 2.49.37 3.44 1.31 1.08 1.08 1.49 2.57 1.24 3.96-.12.71-.42 1.37-.88 1.96l9.45 9.45-.88.89z" />
                   </svg>
                   Сервисный режим
+                  <Indicator serviceMode={serviceMode} />
                 </MenuButton>
               </li>
               <li>
@@ -266,6 +318,11 @@ export const Footer = () => {
           </DropdownMenu>
         </IconButton>
       </UserInfo>
+      <Modal isVisible={isModalVisible}>
+        <div>
+
+        </div>
+      </Modal>
     </Container>
   );
 };

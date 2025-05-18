@@ -9,6 +9,7 @@ lerna-debug.log*
 
 BD
 SQL
+FileStore
 
 node_modules
 dist

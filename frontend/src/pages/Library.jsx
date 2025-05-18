@@ -243,10 +243,12 @@ const EmptyState = styled.div`
     }
 `;
 
+
+
 export const Library = () => {
     const [documentName, setDocumentName] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
-    const documents = useSelector(state => state.fileStorage);
+    const documents = useSelector(state => state.fileStorage.documents);
 
     const dispatch = useDispatch()
     const location = useLocation();
@@ -348,7 +350,7 @@ export const Library = () => {
                                 <TableRow key={index}>
                                     <TableCell>{doc.name}</TableCell>
                                     <TableCell>
-                                        <a href={doc.url} download>
+                                        <a href={doc.url} download={doc.filename}>
                                             <FileIcon>
                                                 {getFileIcon(doc.url)}
                                             </FileIcon>

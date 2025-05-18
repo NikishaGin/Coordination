@@ -21,7 +21,18 @@ export const service = {
     },
 
     getDebtTypes() {
-        return db("debt_type").select("*")
+        return db("debt_type").select("debt_type");
+    },
+
+    checkServiceMode() {
+        return db("settings").first("value")
+    },
+
+    async changeServiceMode() {
+        let currValue = await db("settings").first("value")
+        return await db("settings").update({
+            value: !currValue.value
+        })
     }
 }
 

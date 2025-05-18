@@ -1,19 +1,16 @@
-import React, {useState, useEffect} from 'react';
+import React, {useEffect} from 'react';
 import { ArrowIcon, SelectWrapper, StyledSelect } from './Sidebar.jsx';
-import { serviceAPI } from "../../api/index.js"
 import {useDispatch, useSelector} from "react-redux";
-import {setSelectedRegion} from "../../store/globalSlice.js";
+import {fetchGetRegions, setSelectedRegion} from "../../store/globalSlice.js";
 
 
 export const SelectRegion = () => {
     const dispatch = useDispatch(); // Получаем функцию dispatch
-    const [listRegions, setListRegions] = useState([]);
+    const regions = useSelector(state => state.global.regions);
     const selectedRegion = useSelector((state) => state.global.selectedRegion);
 
     useEffect(() => {
-        serviceAPI.getRegions("Index")
-            .then(data => setListRegions(data.data))
-            .catch(console.log)
+        dispatch(fetchGetRegions("Index"));
     }, []);
 
     const handleChange = (event) => {
@@ -29,7 +26,7 @@ export const SelectRegion = () => {
                     Выберите регион
                 </option>
                 {/* Остальные опции */}
-                {listRegions.map(item => (
+                {regions.map(item => (
                     <option key={item.regionCode} value={item.regionCode}>
                         {(item.regionName) ? `${item.regionCode} - ${item.regionName}` : item.regionCode}
                     </option>

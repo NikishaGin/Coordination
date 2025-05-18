@@ -22,14 +22,16 @@ instance.interceptors.request.use(config => {
 // API для управления авторизацией пользователя
 export const userAPI = {
     loginUser: (login, password) => instance.post("/user/login", { login, password }), // Авторизация с предоставлением информации о пользователе и JWT-токена
-    verifyUser: () => instance.get("/user/verify")                                     // Верифекация пользователя - проверка валидности JWT-токена
+    verifyUser: () => instance.get("/user/verify")                                          // Верифекация пользователя - проверка валидности JWT-токена
 }
 
 
 // API для получения общей для нескольких страниц информации, такой как список регионов и категории должника
 export const serviceAPI = {
     getRegions: (page) => instance.get(`/service/get-regions/${page}`),
-    getDebtTypes: () => instance.get(`/service/get-debt-types`)
+    getDebtTypes: () => instance.get(`/service/get-debt-types`),
+    checkServiceMode: () => instance.get(`/service/check-service-mode`),
+    changeServiceMode: () => instance.post(`/service/change-service-mode`)
 }
 
 // API для получения информации, связанной с активыми

@@ -15,8 +15,11 @@ export function getDocuments(request, response) {
         .getDocuments(source)
         .then((data) => {
             const documents = data.map(item => {
-                const url = `${DIR_FILE_STORE}/${item.new_filename}`;
-                return {name: item.original_filename, url}
+                return {
+                    name: item.original_filename,
+                    filename: item.original_filename + "." + item.new_filename.split('.').pop()?.toLowerCase(),
+                    url: `${DIR_FILE_STORE}/${item.new_filename}`
+                }
             })
             response.end(JSON.stringify(documents));
         })
@@ -26,16 +29,33 @@ export function getDocuments(request, response) {
 
 export function saveDocument(request, response) {
     const source = request.params.source
-    //const fileBuffer = request.file.buffer
+    const original_filename = request.body.name
+    const fileBuffer = request.files.file[0].buffer
+    const extension = request.files.file[0].originalname.split('.').pop()?.toLowerCase()
+    const new_filename = crypto
+        .createHash('sha256')
+        .update(original_filename + Date.now().toString())
+        .digest('hex') + "." + extension
 
-    console.log(request.file)
-
-    //fileStorage.saveDocument(source)
+    fs.writeFile(`${DIR_FILE_STORE}/${new_filename}`, fileBuffer, (err) => {
+        if (err) {
+            response.end(JSON.stringify([]));
+            console.log(err)
+        }  else {
+            fileStorage
+                .saveDocument({source, original_filename, new_filename})
+                .then(() => {
+                    const data = {
+                        name: original_filename,
+                        filename: original_filename + "." + extension,
+                        url: `${DIR_FILE_STORE}/${new_filename}`,
+                    }
+                    response.end(JSON.stringify(data));
+                })
+                .catch(error => {
+                    response.end(JSON.stringify([]));
+                    console.log(error)
+                })
+        }
+    })
 }
-
-
-/*
-  response.setHeader('Content-Type', 'application/octet-stream')
-    response.setHeader('Content-Disposition', `attachment filename*=UTF-8''${encodeURIComponent(filename)}`)
-    response.send(excel)
-*/
