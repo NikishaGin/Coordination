@@ -167,10 +167,6 @@ const buildCommonFieldsQuery = (
     regionCode,
     innList
 ) => {
-    console.log(innList)
-    const idFields = [ "meta.kno", "meta.inn", "meta.name" ];
-    const sumFields = [ "resolutions.post_sum", "resolutions.cur_debt" ];
-
     const tables = [
         ...(withActives ? [
             ACTIVES.Transport,

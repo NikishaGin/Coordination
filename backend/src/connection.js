@@ -3,8 +3,6 @@ import { DB_CONFIG } from "./config.js";
 import { mountKnexExtensions } from "./utils/knex_extensions.js";
 
 
-dotenv.config()
-
 mountKnexExtensions(knex)
 
 const db = knex({
