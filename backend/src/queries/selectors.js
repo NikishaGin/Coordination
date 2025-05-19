@@ -1,5 +1,6 @@
 import db from "../connection.js"
 import * as subqueries from "./subqueries.js"
+import { ACTIVES } from "../../types.js"
 
 
 
@@ -181,18 +182,66 @@ where
     res.inn = ?
 */
 
+// const joinActivesAndDebitTables = query =>
+//     query
+//         .leftJoin("debt_type", "debt_type.id", "meta.debt_type")
+//         .leftJoin(db.raw('(??) as resolutions', [subqueries.getResolutions]), 'meta.inn', 'resolutions.inn')
+//         .leftJoin(db.raw('(??) as transport', [subqueries.getActives("transport")]), 'meta.inn', 'transport.inn')
+//         .leftJoin(db.raw('(??) as nedvizh', [subqueries.getActives("property")]), 'meta.inn', 'nedviz.inn')
+//         .leftJoin(db.raw('(??) as debit', [subqueries.getActives("debit")]), 'meta.inn', 'debit.inn')
+//         .leftJoin(db.raw('(??) as another', [subqueries.getActives("another")]), 'meta.inn', 'another.inn');
 
 
+
+const buildCommonFieldsQuery = (
+    withActives = true,
+    withDebit = true,
+    regionCode,
+    innList
+) => {
+    const idFields = [ "meta.kno", "meta.inn", "meta.name" ];
+    const sumFields = [ "resolutions.post_sum", "resolutions.curr_debt" ];
+
+    const tables = [
+        ...(withActives ? [
+            ACTIVES.Transport,
+            ACTIVES.Property,
+            ACTIVES.Ground,
+            ACTIVES.Another
+        ] : []),
+        ...(withDebit ? [ACTIVES.Debit] : [])
+    ];
+
+    const activesFieldsToSum = [
+        "arrest",
+        "evaluation",
+        "realization_property",
+        "price_reduction",
+        "realization_sum_2",
+        "return_sum"
+    ];
+
+    return db("meta")
+        .select([...idFields, ...sumFields])
+        .leftJoin("resolutions", "meta.inn", "resolutions.inn")
+        .modify(query => {
+            activesFieldsToSum.forEach(field => {
+                query.sumFieldsOfFewTables(tables, field);
+            });
+        })
+        .modify(joinActivesAndDebitTables)
+        .whereIn("meta.inn", innList)
+        .andWhere("meta.region", regionCode);
+};
 
 
 export const download = {
-    getStatistics(regionCode, innList) {
-
-        actives.getTables()
-
-
-
-
+    getStatistics: async (regionCode, innList, isDerived) => {
+        return {
+            general: await buildCommonFieldsQuery(true, true, regionCode, innList),
+            actives: await buildCommonFieldsQuery(true, false, regionCode, innList),
+            debitor: await buildCommonFieldsQuery(false, true, regionCode, innList),
+        };
     },
     getStatisticsIP(regionCode, innList) {
         return db("meta")

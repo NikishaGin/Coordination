@@ -1,9 +1,12 @@
 import dotenv from "dotenv"
 import knex from "knex"
+import { mountKnexExtensions } from "./utils/knex_extensions.js";
+
 
 
 dotenv.config()
 
+mountKnexExtensions(knex)
 
 const db = knex({
     client: 'mysql2',

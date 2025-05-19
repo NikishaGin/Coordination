@@ -1,19 +1,33 @@
-import { download } from "../../queries/selectors.js"
-import { createSheet, createAndSendTable, getDateNow } from "./tablesConfig/create.js"
-import { headerStatisticsIP } from "./tablesConfig/headers.js"
+import { download as downloadSelectors, download } from "../../queries/selectors.js"
+import { createSheet, sendXLSXFile, getDateNow } from "./tablesConfig/create.js"
+import { headersStatistics, headerStatisticsIP } from "./tablesConfig/headers.js"
 
 
 
-export function getStatistics(request, response) {
-    const isDerived = request.query.isDerived
-    const regionCode = request.query.regionCode
-    const innList = request.query.innList
-    download
-        .getStatistics(regionCode, innList)
-        .then(data => {
-            ////
-        })
-        .catch(console.log)
+export const getStatistics = async(req, res) => {
+    const { isDerived, regionCode, innList } = req.query
+
+    const stats = await downloadSelectors.getStatistics(regionCode, innList, isDerived)
+    const headers = headersStatistics(isDerived)
+
+    const sheetNames = {
+        general: "Статистика",
+        actives: "Статистика по активам",
+        debit:   "статистика по дебиторской задолженности"
+    }
+
+    const namedSheets = Object.entries(sheetNames).map(
+        ([ type, name ]) => [
+            name,
+            createSheet(stats[type], headers[type])
+        ]
+    );
+
+    sendXLSXFile(
+        res,
+        Object.fromEntries(namedSheets),
+        `Выгрузка_${regionCode}_${getDateNow()}.xlsx`
+    );
 }
 
 
@@ -26,7 +40,7 @@ export function getStatisticsIP(request, response) {
         .then(data => {
             const header = headerStatisticsIP(isDerived)
             const sheet = createSheet(data, header)
-            createAndSendTable(response, { "Статистика": sheet }, `Выгрузка_по_ИП_${regionCode}_${getDateNow()}.xlsx`)
+            sendXLSXFile(response, { "Статистика": sheet }, `Выгрузка_по_ИП_${regionCode}_${getDateNow()}.xlsx`)
         })
         .catch(console.log)
 }
