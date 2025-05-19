@@ -304,7 +304,7 @@ export const Library = () => {
     return (
         <Wrapper>
             <Container>
-                <Title>Нормативно - правовая документация</Title>
+                <Title>{(location.pathname === "/library-documentation") ? "Нормативно-правовая документация" : "Положительная практика"}</Title>
 
                 <Form onSubmit={handleSubmit}>
                     <InputGroup>

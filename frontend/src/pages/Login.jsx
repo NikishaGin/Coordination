@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import styled from "styled-components";
-import {useDispatch} from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setUserInfo } from "../store/userSlice.js";
 import { userAPI } from '../api';
 
@@ -92,18 +92,24 @@ const ErrorText = styled.div`
 
 export const Login = () => {
   const [messageError, setMessageError] = useState("");
-  const dispatch = useDispatch(); 
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const serviceMode = useSelector(state => state.global.serviceMode)
   const { register, handleSubmit } = useForm()
 
   // Обработка формы авторизации
   const onSubmitLogin = async formData => {
     if (formData.username && formData.password) {
       const result = await userAPI.loginUser(formData.username, formData.password);
-      if (result.data.code == 0)
+      if (serviceMode)
+        setMessageError("")
+      else if (result.data.code === 0) {
         dispatch(setUserInfo(result.data.userInfo));
-      else if (result.data.code == 1)
+        navigate("/coordination");
+      }
+      else if (result.data.code === 1)
         setMessageError("Пользователя с таким логином не существует");
-      else if (result.data.code == 2)
+      else if (result.data.code === 2)
         setMessageError("Неверный пароль");
     } else
       setMessageError("Заполните логин и пароль");

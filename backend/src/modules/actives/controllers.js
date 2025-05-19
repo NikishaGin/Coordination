@@ -19,7 +19,7 @@ export function getInfo(request, response) {
     const inn = request.params.inn
     actives
         .getInfo(inn)
-        .then(data => response.end(JSON.stringify(data[0])))
+        .then(([ data ]) => response.end(JSON.stringify(data)))
         .catch(console.log)
 }
 

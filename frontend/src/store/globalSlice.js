@@ -1,5 +1,6 @@
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
-import {serviceAPI} from "../api/index.js";
+import { serviceAPI, userAPI } from "../api/index.js";
+import resetStore from "./store.js";
 
 
 
@@ -36,7 +37,6 @@ export const fetchCheckServiceMode = createAsyncThunk(
     async (_, {rejectWithValue}) => {
         try {
             const response = await serviceAPI.checkServiceMode();
-            console.log(response.data);
             return response.data
         } catch (error) {
             console.error('Ошибка при загрузке данных:', error);

@@ -30,6 +30,7 @@ export const service = {
 
     async changeServiceMode() {
         let currValue = await db("settings").first("value")
+        console.log(currValue)
         return await db("settings").update({
             value: !currValue.value
         })

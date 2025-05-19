@@ -1,6 +1,6 @@
 import express from "express"
 import cors from "cors"
-import {APP_CONFIG} from "./src/connection.js"
+import {APP_CONFIG} from "./src/config.js"
 import baseRouter from "./src/modules/routes.js"
 
 

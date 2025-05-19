@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+
 // Начальное состояние
 const initialState = {
     firstname: "",
@@ -16,19 +17,22 @@ const userSlice = createSlice({
     name: "user",
     initialState,
     reducers: {
-        setUserInfo: (state, action) => {
-            Object.keys(state).forEach(key => {
-                state[key] = action.payload[key]
-            })
+        setUserInfo: (state, { payload }) => {
+            state = { ...payload };
         },
         resetUser(state) {
-            Object.keys(state).forEach(key => {
-                state[key] = initialState[key]
-            })
+            state = initialState;
         }
     }
 });
 
-export const { setUserInfo, resetUser } = userSlice.actions;
+
+export const selectUser = (state) => state.user;
+
+
+export const {
+    setUserInfo,
+    resetUser
+} = userSlice.actions;
 
 export default userSlice.reducer;

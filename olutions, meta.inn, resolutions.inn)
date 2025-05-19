@@ -1,0 +1,562 @@
+[33mcommit 8afc802fea259895d4c138680a4a900f787c70a5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdmitriy[m[33m, [m[1;31morigin/cringe[m[33m, [m[1;32mcringe[m[33m)[m
+Author: Дмитрий <139131442+AndreevDM23@users.noreply.github.com>
+Date:   Mon May 19 11:37:30 2025 +0300
+
+    cringe
+
+[1mdiff --git a/backend/src/connection.js b/backend/src/connection.js[m
+[1mindex 86e6dfa..f154803 100644[m
+[1m--- a/backend/src/connection.js[m
+[1m+++ b/backend/src/connection.js[m
+[36m@@ -1,9 +1,12 @@[m
+ import dotenv from "dotenv"[m
+ import knex from "knex"[m
+[32m+[m[32mimport { mountKnexExtensions } from "./utils/knex_extensions.js";[m
+[32m+[m
+ [m
+ [m
+ dotenv.config()[m
+ [m
+[32m+[m[32mmountKnexExtensions(knex)[m
+ [m
+ const db = knex({[m
+     client: 'mysql2',[m
+[1mdiff --git a/backend/src/modules/download/controllers.js b/backend/src/modules/download/controllers.js[m
+[1mindex 596892c..0ac2901 100644[m
+[1m--- a/backend/src/modules/download/controllers.js[m
+[1m+++ b/backend/src/modules/download/controllers.js[m
+[36m@@ -1,19 +1,33 @@[m
+[31m-import { download } from "../../queries/selectors.js"[m
+[31m-import { createSheet, createAndSendTable, getDateNow } from "./tablesConfig/create.js"[m
+[31m-import { headerStatisticsIP } from "./tablesConfig/headers.js"[m
+[32m+[m[32mimport { download as downloadSelectors, download } from "../../queries/selectors.js"[m
+[32m+[m[32mimport { createSheet, sendXLSXFile, getDateNow } from "./tablesConfig/create.js"[m
+[32m+[m[32mimport { headersStatistics, headerStatisticsIP } from "./tablesConfig/headers.js"[m
+ [m
+ [m
+ [m
+[31m-export function getStatistics(request, response) {[m
+[31m-    const isDerived = request.query.isDerived[m
+[31m-    const regionCode = request.query.regionCode[m
+[31m-    const innList = request.query.innList[m
+[31m-    download[m
+[31m-        .getStatistics(regionCode, innList)[m
+[31m-        .then(data => {[m
+[31m-            ////[m
+[31m-        })[m
+[31m-        .catch(console.log)[m
+[32m+[m[32mexport const getStatistics = async(req, res) => {[m
+[32m+[m[32m    const { isDerived, regionCode, innList } = req.query[m
+[32m+[m
+[32m+[m[32m    const stats = await downloadSelectors.getStatistics(regionCode, innList, isDerived)[m
+[32m+[m[32m    const headers = headersStatistics(isDerived)[m
+[32m+[m
+[32m+[m[32m    const sheetNames = {[m
+[32m+[m[32m        general: "Статистика",[m
+[32m+[m[32m        actives: "Статистика по активам",[m
+[32m+[m[32m        debit:   "статистика по дебиторской задолженности"[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    const namedSheets = Object.entries(sheetNames).map([m
+[32m+[m[32m        ([ type, name ]) => [[m
+[32m+[m[32m            name,[m
+[32m+[m[32m            createSheet(stats[type], headers[type])[m
+[32m+[m[32m        ][m
+[32m+[m[32m    );[m
+[32m+[m
+[32m+[m[32m    sendXLSXFile([m
+[32m+[m[32m        res,[m
+[32m+[m[32m        Object.fromEntries(namedSheets),[m
+[32m+[m[32m        `Выгрузка_${regionCode}_${getDateNow()}.xlsx`[m
+[32m+[m[32m    );[m
+ }[m
+ [m
+ [m
+[36m@@ -26,7 +40,7 @@[m [mexport function getStatisticsIP(request, response) {[m
+         .then(data => {[m
+             const header = headerStatisticsIP(isDerived)[m
+             const sheet = createSheet(data, header)[m
+[31m-            createAndSendTable(response, { "Статистика": sheet }, `Выгрузка_по_ИП_${regionCode}_${getDateNow()}.xlsx`)[m
+[32m+[m[32m            sendXLSXFile(response, { "Статистика": sheet }, `Выгрузка_по_ИП_${regionCode}_${getDateNow()}.xlsx`)[m
+         })[m
+         .catch(console.log)[m
+ }[m
+\ No newline at end of file[m
+[1mdiff --git a/backend/src/modules/download/tablesConfig/create.js b/backend/src/modules/download/tablesConfig/create.js[m
+[1mindex f3cd05d..d2f2d14 100644[m
+[1m--- a/backend/src/modules/download/tablesConfig/create.js[m
+[1m+++ b/backend/src/modules/download/tablesConfig/create.js[m
+[36m@@ -7,59 +7,82 @@[m [mconst headerStyle = {[m
+     alignment: { horizontal: "center" }[m
+ }[m
+ [m
+[32m+[m[32mconst defaultBorder = { style: "thin", color: { rgb: "000000" } }[m
+ const borderStyle = {[m
+[31m-    top: { style: "thin", color: { rgb: "000000" } },[m
+[31m-    bottom: { style: "thin", color: { rgb: "000000" } },[m
+[31m-    left: { style: "thin", color: { rgb: "000000" } },[m
+[31m-    right: { style: "thin", color: { rgb: "000000" } }[m
+[32m+[m[32m    top:    defaultBorder,[m
+[32m+[m[32m    bottom: defaultBorder,[m
+[32m+[m[32m    left:   defaultBorder,[m
+[32m+[m[32m    right:  defaultBorder,[m
+ }[m
+ [m
+ [m
+[31m-[m
+[31m-export function createSheet(data, header) {[m
+[31m-    const worksheet = XLSX.utils.json_to_sheet([m
+[31m-        data.map(row => Object.entries(header).reduce((obj, [key, newKey]) => {[m
+[31m-            obj[newKey] = row[key] ?? ""[m
+[31m-            return obj[m
+[31m-        }, {}))[m
+[32m+[m[32mexport const createSheet = (data, header) => {[m
+[32m+[m[32m    const renameKeys = (data, renames) => data.map([m
+[32m+[m[32m        row =>  Object.fromEntries([m
+[32m+[m[32m            Object.entries(row).map([m
+[32m+[m[32m                ([key, value]) => [renames[key] || "", value][m
+[32m+[m[32m            )[m
+[32m+[m[32m        )[m
+     )[m
+[32m+[m
+[32m+[m[32m    const renamedKeysRows = renameKeys(data, header)[m
+[32m+[m[32m    const worksheet = XLSX.utils.json_to_sheet(renamedKeysRows)[m
+[32m+[m
+     worksheet['!cols'] = Object.values(header).map(h => ({ wch: 1.4 * h.length + 2 }))[m
+[31m-    const range = XLSX.utils.decode_range(worksheet['!ref'])[m
+[31m-    for (let col = range.s.c; col <= range.e.c; col++) {[m
+[32m+[m
+[32m+[m[32m    const sheetRange = XLSX.utils.decode_range(worksheet['!ref'])[m
+[32m+[m
+[32m+[m[32m    for (let col = sheetRange.s.c; col <= sheetRange.e.c; col++) {[m
+         const headerCell = XLSX.utils.encode_cell({ r: 0, c: col })[m
+[31m-        if (worksheet[headerCell])[m
+[32m+[m
+[32m+[m[32m        if (worksheet[headerCell]) // Оно всегда существует же?[m
+             worksheet[headerCell].s = headerStyle[m
+[31m-        for (let row = range.s.r; row <= range.e.r; row++) {[m
+[32m+[m
+[32m+[m[32m        for (let row = sheetRange.s.r; row <= sheetRange.e.r; row++) {[m
+             const cell = XLSX.utils.encode_cell({ r: row, c: col })[m
+[32m+[m
+             if (worksheet[cell]) {[m
+                 worksheet[cell].s = worksheet[cell].s || {}[m
+                 worksheet[cell].s.border = borderStyle[m
+             }[m
+         }[m
+     }[m
+[32m+[m
+     return worksheet[m
+ }[m
+ [m
+ [m
+[31m-export function createAndSendTable(response, Sheets, filename) {[m
+[31m-    const workbook = XLSX.utils.book_new()[m
+[31m-    Object.keys(Sheets).forEach(sheetname => {[m
+[31m-        XLSX.utils.book_append_sheet(workbook, Sheets[sheetname], sheetname)[m
+[31m-    })[m
+[31m-    const excel = XLSX.write(workbook, { bookType: 'xlsx', type: 'buffer' })[m
+[31m-    response.setHeader('Content-Type', 'application/octet-stream')[m
+[31m-    response.setHeader('Content-Disposition', `attachment filename*=UTF-8''${encodeURIComponent(filename)}`)[m
+[31m-    response.send(excel)[m
+[32m+[m[32mexport const sendXLSXFile = (res, sheets, filename) => {[m
+[32m+[m[32m    const book = XLSX.utils.book_new()[m
+[32m+[m
+[32m+[m[32m    for (const [name, sheet] of Object.entries(sheets)) {[m
+[32m+[m[32m        XLSX.utils.book_append_sheet(book, sheet, name)[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    const buffer = XLSX.write(book, { bookType: 'xlsx', type: 'buffer' })[m
+[32m+[m
+[32m+[m[32m    res.setHeader('Content-Type', 'application/octet-stream')[m
+[32m+[m[32m    res.setHeader([m
+[32m+[m[32m        'Content-Disposition',[m
+[32m+[m[32m        `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`[m
+[32m+[m[32m    )[m
+[32m+[m[32m    res.send(buffer)[m
+ }[m
+ [m
+ [m
+[31m-export function getDateNow() {[m
+[32m+[m[32mexport const getDateNow = () => {[m
+[32m+[m[32m    const format = arr => arr.map([m
+[32m+[m[32m        num => String( num).padStart(2, '0')[m
+[32m+[m[32m    ).join("-")[m
+[32m+[m
+     const now = new Date()[m
+[31m-    const year = now.getFullYear()[m
+[31m-    const month = String(now.getMonth() + 1).padStart(2, '0')[m
+[31m-    const day = String(now.getDate()).padStart(2, '0')[m
+[31m-    const hours = String(now.getHours()).padStart(2, '0')[m
+[31m-    const minutes = String(now.getMinutes()).padStart(2, '0')[m
+[31m-    const seconds = String(now.getSeconds()).padStart(2, '0')[m
+[31m-    return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`[m
+[32m+[m
+[32m+[m[32m    const date = format([[m
+[32m+[m[32m        now.getFullYear(), now.getMonth() + 1, now.getDate()[m
+[32m+[m[32m    ])[m
+[32m+[m[32m    const stamp = format([[m
+[32m+[m[32m        now.getHours(), now.getMinutes(), now.getSeconds()[m
+[32m+[m[32m    ]);[m
+[32m+[m
+[32m+[m[32m    return date + "_" + stamp;[m
+ }[m
+\ No newline at end of file[m
+[1mdiff --git a/backend/src/modules/download/tablesConfig/headers.js b/backend/src/modules/download/tablesConfig/headers.js[m
+[1mindex 0c6a7ec..cdd8a1c 100644[m
+[1m--- a/backend/src/modules/download/tablesConfig/headers.js[m
+[1m+++ b/backend/src/modules/download/tablesConfig/headers.js[m
+[36m@@ -1,19 +1,71 @@[m
+[32m+[m[32mconst getSourceName = isDerived =>[m
+[32m+[m[32m    isDerived[m
+[32m+[m[32m        ? "исполнительного листа"[m
+[32m+[m[32m        : "постановления";[m
+[32m+[m
+[32m+[m
+[32m+[m[32mconst ID_HEADERS = {[m
+[32m+[m[32m    kno:  `Код НО`,[m
+[32m+[m[32m    inn:  `ИНН должника`,[m
+[32m+[m[32m    name: `Наименование должника`,[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m
+[32m+[m[32mconst GET_SUMS_HEADERRS =  sourceName => ({[m
+[32m+[m[32m    post_sum: `Сумма всего/сумма ${sourceName} по статье 47 НК РФ`,[m
+[32m+[m[32m    cur_debt: `Сумма всего/текущий остаток ${sourceName} по статье 47 НК РФ`,[m
+[32m+[m[32m})[m
+[32m+[m
+[32m+[m
+[32m+[m[32mconst ACTIVES_COMMON_HEADERS = {[m
+[32m+[m[32m    arrest_sum:           `Арест имущества, ₽`,[m
+[32m+[m[32m    measures_sum:         `Оценка имущества, ₽`,[m
+[32m+[m[32m    realisation_sum_1:    `Результат принудительной реализация 1 этап, ₽`,[m
+[32m+[m[32m    price_reduction_sum:  `Сумма снижения цены, ₽`,[m
+[32m+[m[32m    realisation_sum_2:    `Результат принудительной реализация 2 этап, ₽`,[m
+[32m+[m[32m    return_to_debtor_sum: `Сумма возврата имущества должнику, ₽`,[m
+[32m+[m[32m    debitor_request_sum:  `Сумма по обращениям на взыскания дебиторской задолженности`,[m
+[32m+[m[32m    enforcement_status:   `Статус ИП`,[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m
+[32m+[m[32mexport const headersStatistics = isDerived => {[m
+[32m+[m[32m    const sourceName = getSourceName(isDerived)[m
+[32m+[m
+[32m+[m[32m    return {[m
+[32m+[m[32m        general: { // По всем активом вместе с дебиторской задолженностью[m
+[32m+[m[32m            ...ID_HEADERS,[m
+[32m+[m[32m            ...GET_SUMS_HEADERRS(sourceName),[m
+[32m+[m[32m            debt_type:   `Категория должника`,[m
+[32m+[m[32m            actives_sum: `Сумма активов и дебиторской задолженности, ₽`,[m
+[32m+[m[32m            ...ACTIVES_COMMON_HEADERS,[m
+[32m+[m
+[32m+[m[32m        },[m
+[32m+[m[32m        actives: { // По всем активом без дебиторской задолженности[m
+[32m+[m[32m            ...ID_HEADERS,[m
+[32m+[m[32m            actives_sum: `Сумма активов`,[m
+[32m+[m[32m            ...ACTIVES_COMMON_HEADERS[m
+[32m+[m[32m        },[m
+[32m+[m[32m        debit: { // По дебиторской задолженности только[m
+[32m+[m[32m            ...ID_HEADERS,[m
+[32m+[m[32m            actives_sum: `Сумма дебиторской задолженности`,[m
+[32m+[m[32m            ...ACTIVES_COMMON_HEADERS[m
+[32m+[m[32m        },[m
+[32m+[m[32m    };[m
+[32m+[m[32m}[m
+ [m
+ [m
+ export const headerStatisticsIP = isDerived => {[m
+[31m-    const sourceName = (isDerived) ? 'исполнительного листа' : 'постановления'[m
+[32m+[m[32m    const sourceName = getSourceName(isDerived);[m
+     return {[m
+[31m-        kno: `Код НО`,[m
+[31m-        inn: `ИНН должника`,[m
+[31m-        name: `Наименование должника`,[m
+[31m-        post_number: `Номер  ${sourceName}  по статье 47 НК РФ`,[m
+[31m-        post_date: `Дата ${sourceName} по статье 47 НК РФ`,[m
+[31m-        post_sum: `Сумма всего/сумма ${sourceName} по статье 47 НК РФ`,[m
+[31m-        cur_debt: `Сумма всего/текущий остаток ${sourceName} по статье 47 НК РФ`,[m
+[32m+[m[32m        ...ID_HEADERS,[m
+[32m+[m[32m        post_number: `Номер  ${sourceName} по статье 47 НК РФ`,[m
+[32m+[m[32m        post_date:   `Дата ${sourceName} по статье 47 НК РФ`,[m
+[32m+[m[32m        ...GET_SUMS_HEADERRS(sourceName),[m
+         exec_number: `Номер исполнительного производства/наличие сводного ИП`,[m
+[31m-        exec_date: `Дата возбуждения исполнительного производства`,[m
+[31m-        end_date: `Дата ${sourceName} СПИ об окончании ИП`,[m
+[31m-        end_reason: `Основание окончания (прекращения) исполнительного производства`,[m
+[31m-        status_ip: `Статус ИП`[m
+[32m+[m[32m        exec_date:   `Дата возбуждения исполнительного производства`,[m
+[32m+[m[32m        end_date:    `Дата ${sourceName} СПИ об окончании ИП`,[m
+[32m+[m[32m        end_reason:  `Основание окончания (прекращения) исполнительного производства`,[m
+[32m+[m[32m        status_ip:   `Статус ИП`[m
+     }[m
+[31m-}[m
+\ No newline at end of file[m
+[32m+[m[32m}[m
+[1mdiff --git a/backend/src/queries/selectors.js b/backend/src/queries/selectors.js[m
+[1mindex 93dffbf..df9b5c3 100644[m
+[1m--- a/backend/src/queries/selectors.js[m
+[1m+++ b/backend/src/queries/selectors.js[m
+[36m@@ -1,5 +1,6 @@[m
+ import db from "../connection.js"[m
+ import * as subqueries from "./subqueries.js"[m
+[32m+[m[32mimport { ACTIVES } from "../../types.js"[m
+ [m
+ [m
+ [m
+[36m@@ -181,18 +182,66 @@[m [mwhere[m
+     res.inn = ?[m
+ */[m
+ [m
+[32m+[m[32m// const joinActivesAndDebitTables = query =>[m
+[32m+[m[32m//     query[m
+[32m+[m[32m//         .leftJoin("debt_type", "debt_type.id", "meta.debt_type")[m
+[32m+[m[32m//         .leftJoin(db.raw('(??) as resolutions', [subqueries.getResolutions]), 'meta.inn', 'resolutions.inn')[m
+[32m+[m[32m//         .leftJoin(db.raw('(??) as transport', [subqueries.getActives("transport")]), 'meta.inn', 'transport.inn')[m
+[32m+[m[32m//         .leftJoin(db.raw('(??) as nedvizh', [subqueries.getActives("property")]), 'meta.inn', 'nedviz.inn')[m
+[32m+[m[32m//         .leftJoin(db.raw('(??) as debit', [subqueries.getActives("debit")]), 'meta.inn', 'debit.inn')[m
+[32m+[m[32m//         .leftJoin(db.raw('(??) as another', [subqueries.getActives("another")]), 'meta.inn', 'another.inn');[m
+ [m
+ [m
+ [m
+[32m+[m[32mconst buildCommonFieldsQuery = ([m
+[32m+[m[32m    withActives = true,[m
+[32m+[m[32m    withDebit = true,[m
+[32m+[m[32m    regionCode,[m
+[32m+[m[32m    innList[m
+[32m+[m[32m) => {[m
+[32m+[m[32m    const idFields = [ "meta.kno", "meta.inn", "meta.name" ];[m
+[32m+[m[32m    const sumFields = [ "resolutions.post_sum", "resolutions.curr_debt" ];[m
+ [m
+[31m-export const download = {[m
+[31m-    getStatistics(regionCode, innList) {[m
+[31m-[m
+[31m-        actives.getTables()[m
+[32m+[m[32m    const tables = [[m
+[32m+[m[32m        ...(withActives ? [[m
+[32m+[m[32m            ACTIVES.Transport,[m
+[32m+[m[32m            ACTIVES.Property,[m
+[32m+[m[32m            ACTIVES.Ground,[m
+[32m+[m[32m            ACTIVES.Another[m
+[32m+[m[32m        ] : []),[m
+[32m+[m[32m        ...(withDebit ? [ACTIVES.Debit] : [])[m
+[32m+[m[32m    ];[m
+ [m
+[32m+[m[32m    const activesFieldsToSum = [[m
+[32m+[m[32m        "arrest",[m
+[32m+[m[32m        "evaluation",[m
+[32m+[m[32m        "realization_property",[m
+[32m+[m[32m        "price_reduction",[m
+[32m+[m[32m        "realization_sum_2",[m
+[32m+[m[32m        "return_sum"[m
+[32m+[m[32m    ];[m
+ [m
+[32m+[m[32m    return db("meta")[m
+[32m+[m[32m        .select([...idFields, ...sumFields])[m
+[32m+[m[32m        .leftJoin("resolutions", "meta.inn", "resolutions.inn")[m
+[32m+[m[32m        .modify(query => {[m
+[32m+[m[32m            activesFieldsToSum.forEach(field => {[m
+[32m+[m[32m                query.sumFieldsOfFewTables(tables, field);[m
+[32m+[m[32m            });[m
+[32m+[m[32m        })[m
+[32m+[m[32m        .modify(joinActivesAndDebitTables)[m
+[32m+[m[32m        .whereIn("meta.inn", innList)[m
+[32m+[m[32m        .andWhere("meta.region", regionCode);[m
+[32m+[m[32m};[m
+ [m
+ [m
+[32m+[m[32mexport const download = {[m
+[32m+[m[32m    getStatistics: async (regionCode, innList, isDerived) => {[m
+[32m+[m[32m        return {[m
+[32m+[m[32m            general: await buildCommonFieldsQuery(true, true, regionCode, innList),[m
+[32m+[m[32m            actives: await buildCommonFieldsQuery(true, false, regionCode, innList),[m
+[32m+[m[32m            debitor: await buildCommonFieldsQuery(false, true, regionCode, innList),[m
+[32m+[m[32m        };[m
+     },[m
+     getStatisticsIP(regionCode, innList) {[m
+         return db("meta")[m
+[1mdiff --git a/backend/src/utils/controllers_utils.js b/backend/src/utils/controllers_utils.js[m
+[1mnew file mode 100644[m
+[1mindex 0000000..2cda989[m
+[1m--- /dev/null[m
+[1m+++ b/backend/src/utils/controllers_utils.js[m
+[36m@@ -0,0 +1,14 @@[m
+[32m+[m[32mimport { PAGES } from "../types.js"[m
+[32m+[m
+[32m+[m
+[32m+[m[32mexport const isDerivedDebt = page =>[m[41m [m
+[32m+[m[32m    [PAGES.DerivativeDebt, PAGES.DerivativeDebtArchive].includes(page)[m
+[32m+[m
+[32m+[m
+[32m+[m[32mexport const isArchive = page =>[m
+[32m+[m[32m    [PAGES.IndexArchive, PAGES.DerivativeDebtArchive].includes(page)[m
+[32m+[m
+[32m+[m
+[32m+[m[32m// Навпряляет необработанные ошибки в next[m
+[32m+[m[32mexport const errWrap = wraped => (req, res, next) =>[m
+[32m+[m[32m    Promise.resolve(wraped(req, res, next)).catch(next)[m
+[1mdiff --git a/backend/src/utils/knex_extensions.js b/backend/src/utils/knex_extensions.js[m
+[1mnew file mode 100644[m
+[1mindex 0000000..487f7e5[m
+[1m--- /dev/null[m
+[1m+++ b/backend/src/utils/knex_extensions.js[m
+[36m@@ -0,0 +1,198 @@[m
+[32m+[m[32m/**[m
+[32m+[m[32m * TODO: Сделать более удобные интерфейсы[m
+[32m+[m[32m */[m
+[32m+[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Переименовывает названия полей, при необходимости, сохраняет также старые поля.[m
+[32m+[m[32m * (Вместо select("name as name"), чтобы контролировать перименования из одной точки,[m
+[32m+[m[32m * возможно, не пригодится).[m
+[32m+[m[32m * @param {string} table - имя таблицы, из которой брать поля[m
+[32m+[m[32m * @param {object} renamedFields - объект переименований[m
+[32m+[m[32m * @param {object} fields - список селлекуии без переименования[m
+[32m+[m[32m * @param {boolean} keepOriginal - флаг, указывающий, надо ли также сохранять старые имена полей.[m
+[32m+[m[32m * (Появятся два поля с разными именами, ссылающиеся на одну колонку, на всякий пожарный)[m
+[32m+[m[32m * @returns {object} - knex-запрос с результатом[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction selectFromTable([m
+[32m+[m[32m    table,[m[41m [m
+[32m+[m[32m    fields = [],[m[41m [m
+[32m+[m[32m    renamedFields = {},[m
+[32m+[m[32m    // where = {},[m
+[32m+[m[32m    keepOriginal = false[m
+[32m+[m[32m) {[m
+[32m+[m[32m    const selected = fields.map([m
+[32m+[m[32m        field => this.client.ref(`${table}.${field}`)[m
+[32m+[m[32m    );[m
+[32m+[m
+[32m+[m[32m    const original = keepOriginal[m
+[32m+[m[32m        ? Object.keys(renamedFields).map([m
+[32m+[m[32m            field => this.client.ref(`${table}.${field}`)[m
+[32m+[m[32m        )[m[41m [m
+[32m+[m[32m        : [];[m
+[32m+[m
+[32m+[m[32m    const renamed = Object.entries(renamedFields).map([m
+[32m+[m[32m        ([ orig, alias ]) =>[m
+[32m+[m[32m            this.client.ref(`${table}.${orig}`).as(alias)[m
+[32m+[m[32m    );[m
+[32m+[m
+[32m+[m[32m    return this.select(...selected, ...original, ...renamed);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Безопасно подсчитывает сумму значений выбранного поля, заменяя NULL на 0.00[m
+[32m+[m[32m * @param {string} field - имя поля для суммирования[m
+[32m+[m[32m * @param {string} [alias=field] - псевдоним результата[m
+[32m+[m[32m * @returns {object} - knex-запрос с результатом[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction sumSafe(field, alias = field) {[m
+[32m+[m[32m    return this.sum({[m
+[32m+[m[32m        [ alias ]: this.client.raw('IFNULL(??, 0.00)', [ field ])[m
+[32m+[m[32m    });[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Форматирует NULL поля как пустые строки.[m
+[32m+[m[32m * @param {string[]} fields - массив полей[m
+[32m+[m[32m * @returns {object} - knex-запрос с результатом[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction nullToEmptyStr(fields) {[m
+[32m+[m[32m    const selects = fields.map(field => {[m
+[32m+[m[32m        const name = field.includes('.')[m
+[32m+[m[32m            ? field.split('.').pop()[m
+[32m+[m[32m            : field;[m
+[32m+[m
+[32m+[m[32m        const rawExpr = this.client.raw([m
+[32m+[m[32m            fref => `IFNULL(${ref}, '')`[m
+[32m+[m[32m        );[m
+[32m+[m
+[32m+[m[32m        return rawExpr.as(name);[m
+[32m+[m[32m    });[m
+[32m+[m
+[32m+[m[32m    return this.select(...selects);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Подсчитывает число записей с заполненным (не NULL) выбранным полем[m
+[32m+[m[32m * @param {string} field - имя поля для подсчета[m
+[32m+[m[32m * @param {string} [alias=field] - псевдоним результата[m
+[32m+[m[32m * @returns {object} - knex-запрос с результатом[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction countNotNull(field, alias = field) {[m
+[32m+[m[32m    return this.sum({[m
+[32m+[m[32m        [ alias ]: this.client.raw('IF(?? IS NULL, 0, 1)', [ field ])[m
+[32m+[m[32m    });[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Суммирует значение одного поля, если другое поле не NULL[m
+[32m+[m[32m * @param {string} checkField - поле, наличие значения которого проверяется[m
+[32m+[m[32m * @param {string} sumField - поле, которое суммируется[m
+[32m+[m[32m * @param {string} [alias=sumField] - псевдоним результата[m
+[32m+[m[32m * @returns {object} - knex-запрос с результатом[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction sumIfCheckedFieldNotNull(checkField, sumField, alias = sumField) {[m
+[32m+[m[32m    return this.sum({[m
+[32m+[m[32m        [ alias ]: this.client.raw([m
+[32m+[m[32m            'IF(?? IS NOT NULL, IFNULL(??, 0.00), 0.00)',[m
+[32m+[m[32m            [ checkField, sumField ][m
+[32m+[m[32m        ),[m
+[32m+[m[32m    });[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Превращает набор значений логических флагов в конкретное значение статуса,[m
+[32m+[m[32m * удаляя при необходимости флаги из данных.[m
+[32m+[m[32m * ```[m
+[32m+[m[32m *  // Вот это:[m
+[32m+[m[32m *  CASE[m
+[32m+[m[32m *      WHEN resolutions.end_date       IS NOT NULL THEN "Окончено"[m
+[32m+[m[32m *      WHEN resolutions.stop_date      IS NOT NULL THEN "Приостановлено"[m
+[32m+[m[32m *      WHEN resolutions.pending_date   IS NOT NULL THEN "Отложено"[m
+[32m+[m[32m *      WHEN resolutions.terminate_date IS NOT NULL THEN "Прекращено"[m
+[32m+[m[32m *      ELSE "На исполнении"[m
+[32m+[m[32m *  END[m
+[32m+[m[32m *  // Будет реализовано вот так:[m
+[32m+[m[32m *  .mapFlagsToStatus("resolutions", {[m
+[32m+[m[32m *      end_date:       "Окончено",[m
+[32m+[m[32m *      stop_date:      "Приостановлено",[m
+[32m+[m[32m *      pending_date:   "Отложено",[m
+[32m+[m[32m *      terminate_date: "Прекращено",[m
+[32m+[m[32m *      _:              "На исполнении"  // _ заменяет default[m
+[32m+[m[32m *  })[m
+[32m+[m[32m *  .[m
+[32m+[m[32m *  ```[m
+[32m+[m[32m * @param {string} table - таблица, флаги которой должны маппиться[m
+[32m+[m[32m * @param {string} sumField - поле, которое суммируется[m
+[32m+[m[32m * @param {string} [alias=sumField] - псевдоним результата[m
+[32m+[m[32m * @returns {object} - knex-запрос с результатом[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction reduceFlagsToStatusField(table, statusField, flagsMapping, keepFlags = false) {[m
+[32m+[m[32m    return function () {[m
+[32m+[m[32m        const {[m
+[32m+[m[32m            _: defaultVal = "Ошибка статуса",[m
+[32m+[m[32m            ...switchMapping[m
+[32m+[m[32m        } = flagsMapping[m
+[32m+[m
+[32m+[m[32m        const casesStr = Object.entries(switchMapping)[m
+[32m+[m[32m            .map(([ field, label ]) =>[m
+[32m+[m[32m                `WHEN \`${table}\`.\`${field}\` IS NOT NULL THEN '${label}'`[m
+[32m+[m[32m            )[m
+[32m+[m[32m            .join(' ')[m
+[32m+[m
+[32m+[m[32m        const rawCase = `CASE ${casesStr} ELSE '${defaultVal}' END`[m
+[32m+[m
+[32m+[m[32m        return this.select([m
+[32m+[m[32m            this.client.raw(`${rawCase} AS \`${statusField}\``)[m
+[32m+[m[32m        );[m
+[32m+[m[32m    };[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Суммирует значения одного и того же поля из разных таблиц с защитой от NULL.[m
+[32m+[m[32m * @param {string[]} tables - список названий таблиц[m
+[32m+[m[32m * @param {string} field - имя п�

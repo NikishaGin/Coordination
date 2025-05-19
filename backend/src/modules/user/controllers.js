@@ -1,14 +1,12 @@
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import db from "../../connection.js"
-
-
-
-const SECRET_KEY = "i5n3b4f5br65HY567JHGFRHb55vgcfvghjkokm87654dse76UHYGF765tyhj&GvyHgfg6GBGV"
-//const EXPIRES_IN
+import {SECRET_KEY} from "../../config.js"
 
 
 function auth(userInfo, password) {
+    console.log(userInfo)
+
     if (!userInfo) return { code: 1 }
     const passwordHash = userInfo.password.replace(/^\$2y\$/, "$2a$")
     if (bcrypt.compareSync(password, passwordHash)) {
