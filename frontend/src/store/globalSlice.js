@@ -36,6 +36,7 @@ export const fetchCheckServiceMode = createAsyncThunk(
     async (_, {rejectWithValue}) => {
         try {
             const response = await serviceAPI.checkServiceMode();
+            console.log(response.data);
             return response.data
         } catch (error) {
             console.error('Ошибка при загрузке данных:', error);
@@ -115,9 +116,6 @@ const globalSlice = createSlice({
             })
             .addCase(fetchCheckServiceMode.fulfilled, (state, action) => {
                 state.serviceMode = action.payload;
-            })
-            .addCase(fetchChangeServiceMode.fulfilled, (state) => {
-                state.serviceMode = !state.serviceMode;
             })
     }
 });

@@ -93,7 +93,6 @@ const ErrorText = styled.div`
 export const Login = () => {
   const [messageError, setMessageError] = useState("");
   const dispatch = useDispatch(); 
-  const navigate = useNavigate()
   const { register, handleSubmit } = useForm()
 
   // Обработка формы авторизации

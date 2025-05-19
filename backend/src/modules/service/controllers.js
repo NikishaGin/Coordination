@@ -15,10 +15,10 @@ export function getDebtTypes(_, response) {
 
 
 export function checkServiceMode(_, response) {
-    service.checkServiceMode().then(data => response.end(JSON.stringify(Boolean(data[0])))).catch(console.log)
+    service.checkServiceMode().then(data => response.end(JSON.stringify(Boolean(data.value)))).catch(console.log)
 }
 
 
 export function changeServiceMode(_, response) {
-    service.changeServiceMode().then(data => response.end(JSON.stringify(""))).catch(console.log)
+    service.changeServiceMode().then(() => response.end(JSON.stringify(""))).catch(console.log)
 }

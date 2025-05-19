@@ -3,7 +3,8 @@ import {useNavigate} from "react-router";
 import styled from 'styled-components';
 import {useDispatch, useSelector} from "react-redux";
 import resetStore from "../../store/store"
-import {fetchCheckServiceMode} from "../../store/globalSlice.js";
+import {fetchChangeServiceMode, fetchCheckServiceMode} from "../../store/globalSlice.js";
+import {ButtonContainer, Button} from "../buttons/Button.jsx";
 
 
 // Стиль для футера
@@ -201,25 +202,31 @@ const Modal = styled.div`
   align-items: center;
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.8);
   opacity: ${({ isVisible }) => (isVisible ? 1 : 0)};
   visibility: ${({ isVisible }) => (isVisible ? 'visible' : 'hidden')};
-  
-  & div {
-    width: 400px;
-    height: 150px;
-    background-color: rgb(12, 16, 23);
-    border-radius: 8px;
-    box-shadow:
-        0px 4px 6px rgba(255, 255, 255, 0.1),
-        0px 1px 3px rgba(255, 255, 255, 0.06),
-        0px 8px 12px rgba(255, 255, 255, 0.08);
-    padding: 8px;
-    z-index: 10000;
-    transform-origin: left center;
-    transition: opacity 242ms cubic-bezier(0.4, 0, 0.2, 1),
-    transform 161ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
+`
+
+
+const ModalContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  width: 300px;
+  height: 150px;
+  background-color: rgb(12, 16, 23);
+  border-radius: 8px;
+  box-shadow:
+      0px 4px 6px rgba(255, 255, 255, 0.1),
+      0px 1px 3px rgba(255, 255, 255, 0.06),
+      0px 8px 12px rgba(255, 255, 255, 0.08);
+  padding: 8px;
+  transform-origin: left center;
+  transition: opacity 242ms cubic-bezier(0.4, 0, 0.2, 1),
+  transform 161ms cubic-bezier(0.4, 0, 0.2, 1);
 `
 
 
@@ -242,10 +249,18 @@ export const Footer = () => {
   }
 
   const toggleServiceMode = () => {
+    setIsMenuVisible(false)
     setIsModalVisible(true)
   }
 
+  const handleCloseModal = () => {
+    setIsModalVisible(false)
+  }
 
+  const handleSubmit = () => {
+    setIsModalVisible(false)
+    dispatch(fetchChangeServiceMode())
+  }
 
   const logout = () => {
     resetStore()
@@ -319,9 +334,13 @@ export const Footer = () => {
         </IconButton>
       </UserInfo>
       <Modal isVisible={isModalVisible}>
-        <div>
-
-        </div>
+        <ModalContent>
+          Подтвердите {(serviceMode) ? "выключение" : "включение"} сервисного режима
+          <ButtonContainer>
+            <Button onClick={handleCloseModal}>Отменить</Button>
+            <Button onClick={handleSubmit}>{(serviceMode) ? "Выключить" : "Включить"}</Button>
+          </ButtonContainer>
+        </ModalContent>
       </Modal>
     </Container>
   );
