@@ -206,7 +206,7 @@ export const EditableCell = ({value, onSave, type = "text", isEditable = true}) 
             </IconsContainer>
         </CellContainer>
     ) : (
-        <CellContent onClick={() => setEditing(true)}>
+        <CellContent onDoubleClick={() => setEditing(true)}>
             {formatValue(value, type) || "—"}
         </CellContent>
     );

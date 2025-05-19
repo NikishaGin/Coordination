@@ -2,12 +2,10 @@ import db from "../connection.js"
 
 
 
-
-
 async function setHistory(tableName, data, userInfo) {
-    // console.log(tableName)
-    // console.log(data)
-    // console.log(userInfo)
+    console.log(tableName)
+    console.log(data)
+    console.log(userInfo)
 
     /*
     try {
@@ -32,6 +30,9 @@ async function setHistory(tableName, data, userInfo) {
 
 export async function createNewActives(nameActive, data, userInfo) {
     const tableName = (nameActive === "ground") ? "property" : nameActive
+
+    console.log(data)
+
     try {
         const result = await db(tableName).insert(data)
         await setHistory(tableName, data, userInfo)

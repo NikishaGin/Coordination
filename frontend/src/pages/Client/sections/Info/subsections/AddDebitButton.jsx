@@ -1,31 +1,56 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import {addDebitRow} from "../../../../../store/debitSlice.js";
-import {Button} from "../../../../../components/buttons/Button.jsx";
-
+import {addDebitRow, createDebitRow} from "../../../../../store/debitSlice.js";
+import AddDebitModal from "./AddDebitModal.jsx";
+import Button from "./Button.jsx";
+import { useParams } from "react-router";
 
 export const AddDebitButton = () => {
     const dispatch = useDispatch();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const { inn } = useParams()
 
-    const handleAddDebit = () => {
-        dispatch(addDebitRow()); // Добавляем новую строку через Redux
-
-        // Прокрутка к концу таблицы (опционально)
-        setTimeout(() => {
-            const table = document.querySelector('.table-container'); // Убедитесь, что у таблицы есть класс
-            if (table) {
-                table.scrollTo({
-                    top: table.scrollHeight,
-                    behavior: 'smooth',
-                });
-            }
-        }, 0);
+    const handleOpenModal = () => {
+        setIsModalOpen(true);
     };
 
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+    };
+
+    const handleSaveDebit = (data) => {
+        dispatch(createDebitRow({ inn, newRow: data })).unwrap()
+            .then(() => {
+                setTimeout(() => {
+                    const table = document.querySelector('.table-container');
+                    if (table) {
+                        table.scrollTo({
+                            top: table.scrollHeight,
+                            behavior: 'smooth',
+                        });
+                    }
+                }, 0);
+            })
+            .catch((error) => {
+                console.error("Ошибка при сохранении строки:", error);
+            });
+    };
+
+
+
     return (
-        <Button onClick={handleAddDebit}>
-            Добавить дебиторскую задолженность
-        </Button>
+        <>
+            <Button variant="primary" onClick={handleOpenModal}>
+                Добавить дебиторскую задолженность
+            </Button>
+
+            <AddDebitModal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                onSave={handleSaveDebit}
+            />
+        </>
     );
 };
+
 
