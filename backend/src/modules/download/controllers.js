@@ -8,12 +8,13 @@ export const getStatistics = async(req, res) => {
     const { isDerived, regionCode, innList } = req.query
 
     const stats = await downloadSelectors.getStatistics(regionCode, innList, isDerived)
+    console.log(stats)
     const headers = headersStatistics(isDerived)
 
     const sheetNames = {
-        general: "Статистика",
-        actives: "Статистика по активам",
-        debit:   "статистика по дебиторской задолженности"
+        general: "Ста",
+        actives: "Ста по активам",
+        debit:   "ста"
     }
 
     const namedSheets = Object.entries(sheetNames).map(

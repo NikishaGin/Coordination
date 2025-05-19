@@ -219,9 +219,11 @@ export const Main = () => {
   const downloadStatistics = flagButton => {
     if (selectedInn.length > 0) {
       if (flagButton) {
-        downloadAPI.getStatistics(false, selectedRegion, selectedInn).then().catch(console.log)
+        downloadAPI.getStatistics(false, selectedRegion, selectedInn)
+            .then(downloadExcel).catch(console.log)
       } else {
-        downloadAPI.getStatisticsIP(false, selectedRegion, selectedInn).then(downloadExcel).catch(console.log)
+        downloadAPI.getStatisticsIP(false, selectedRegion, selectedInn)
+            .then(downloadExcel).catch(console.log)
       }
     } else 
       enqueueSnackbar("Выберете регион и строки, которые необходимо включить в статистику", {variant: "info"})

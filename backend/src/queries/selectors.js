@@ -160,76 +160,53 @@ export const actives = {
 }
 
 
-
-
-
-
-
-/*
-SELECT 
-    res.post_number,
-    res.post_date,
-    res.post_sum,
-    res.cur_debt,
-    res.exec_number,
-    res.exec_date,
-    (IFNULL(transport_recovered, 0.00) + IFNULL(property_recovered, 0.00)) AS total_recovered
-FROM
-    resolutions as res
-LEFT JOIN (SELECT inn, post_number, SUM(recovered_total) AS transport_recovered FROM transport  WHERE status != 2 group by inn) AS transport ON res.inn = transport.inn AND res.post_number = transport.post_number
-LEFT JOIN (SELECT inn, post_number, SUM(recovered_total) AS property_recovered FROM property WHERE status != 2  group by inn) AS property ON res.inn = property.inn AND res.post_number = property.post_number
-where
-    res.inn = ?
-*/
-
-// const joinActivesAndDebitTables = query =>
-//     query
-//         .leftJoin("debt_type", "debt_type.id", "meta.debt_type")
-//         .leftJoin(db.raw('(??) as resolutions', [subqueries.getResolutions]), 'meta.inn', 'resolutions.inn')
-//         .leftJoin(db.raw('(??) as transport', [subqueries.getActives("transport")]), 'meta.inn', 'transport.inn')
-//         .leftJoin(db.raw('(??) as nedvizh', [subqueries.getActives("property")]), 'meta.inn', 'nedviz.inn')
-//         .leftJoin(db.raw('(??) as debit', [subqueries.getActives("debit")]), 'meta.inn', 'debit.inn')
-//         .leftJoin(db.raw('(??) as another', [subqueries.getActives("another")]), 'meta.inn', 'another.inn');
-
-
-
 const buildCommonFieldsQuery = (
     withActives = true,
     withDebit = true,
     regionCode,
     innList
 ) => {
+    console.log(innList)
     const idFields = [ "meta.kno", "meta.inn", "meta.name" ];
-    const sumFields = [ "resolutions.post_sum", "resolutions.curr_debt" ];
+    const sumFields = [ "resolutions.post_sum", "resolutions.cur_debt" ];
 
     const tables = [
         ...(withActives ? [
             ACTIVES.Transport,
-            ACTIVES.Property,
-            ACTIVES.Ground,
+            "property",
             ACTIVES.Another
         ] : []),
         ...(withDebit ? [ACTIVES.Debit] : [])
-    ];
+    ].map(table => table.toLowerCase());
 
     const activesFieldsToSum = [
-        "arrest",
-        "evaluation",
-        "realization_property",
-        "price_reduction",
+        "arrest_sum",
+        "evaluation_sum",
+        "realization_property_sum",
+        "price_reduction_sum",
         "realization_sum_2",
-        "return_sum"
+        "property_to_debtor_sum"
     ];
 
-    return db("meta")
-        .select([...idFields, ...sumFields])
-        .leftJoin("resolutions", "meta.inn", "resolutions.inn")
+     return db("meta")
+        .select([
+            "meta.kno as kno",
+            "meta.inn as inn",
+            "meta.name as name",
+            "resolutions.post_sum as post_sum",
+            "resolutions.cur_debt as cur_debt"
+        ])
+        .modify(query => {
+            ["resolutions", "transport", "debit", "property", "another"].forEach(table =>
+                query.leftJoin(table, "meta.inn", `${table}.inn`)
+            );
+        })
         .modify(query => {
             activesFieldsToSum.forEach(field => {
-                query.sumFieldsOfFewTables(tables, field);
+                query.sumFieldsOfFewTables(tables, field); // предполагается, что тут тоже alias'ы
             });
         })
-        .modify(joinActivesAndDebitTables)
+         .groupBy("meta.inn")
         .whereIn("meta.inn", innList)
         .andWhere("meta.region", regionCode);
 };
@@ -240,7 +217,7 @@ export const download = {
         return {
             general: await buildCommonFieldsQuery(true, true, regionCode, innList),
             actives: await buildCommonFieldsQuery(true, false, regionCode, innList),
-            debitor: await buildCommonFieldsQuery(false, true, regionCode, innList),
+            debit: await buildCommonFieldsQuery(false, true, regionCode, innList),
         };
     },
     getStatisticsIP(regionCode, innList) {
