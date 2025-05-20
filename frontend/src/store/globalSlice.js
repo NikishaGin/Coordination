@@ -117,6 +117,9 @@ const globalSlice = createSlice({
             .addCase(fetchCheckServiceMode.fulfilled, (state, action) => {
                 state.serviceMode = action.payload;
             })
+            .addCase(fetchChangeServiceMode.fulfilled, (state) => {
+                state.serviceMode = !state.serviceMode;
+            })
     }
 });
 

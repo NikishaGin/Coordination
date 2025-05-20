@@ -6,7 +6,7 @@ import DebtorIndebtedness from "./subsections/DebtorIndebtedness.jsx";
 
 
 export default function() {
-    const [selectedSubsection, setSelectedSubsection] = useState("Дебиторская задолженность")
+    const [selectedSubsection, setSelectedSubsection] = useState("Постановления")
 
     return (
         <>

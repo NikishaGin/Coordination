@@ -6,34 +6,43 @@ import { Client } from "../pages/Client/Client.jsx";
 import { Library } from "../pages/Library.jsx";
 import { RegionalStatistics } from "../pages/RegionalStatistics.jsx";
 import Layout from "./Layout.jsx";
-// import { resetGlobal, updateUrlHistory } from '../store/globalSlice.js';
-// import { useDispatch, useSelector } from "react-redux";
 
 
-export const AppRoutes = () => {
-    return (
-        <Routes>
-            <Route path="/login" element={<Login/>}/>
-            <Route element={<Layout includeSidebar={true}/>}>
-                <Route index element={<Navigate to="/coordination" replace/>}/>
-                <Route path="/coordination" element={<Coordination/>}/>
-                <Route path="/derivative" element={<Derivative/>}/>
-                <Route path="/coordination-archive" element={<Coordination/>}/>
-                <Route path="/derivative-archive" element={<Derivative/>}/>
-            </Route>
 
-            {/* Layout без Sidebar */}
-            <Route element={<Layout includeSidebar={false}/>}>
-                <Route path="/library-documentation" element={<Library/>}/>
-                <Route path="/library-practice" element={<Library/>}/>
-                <Route path="/statistics" element={<RegionalStatistics/>}/>
-            </Route>
+export const AppRoutes = ({ isAuth }) => {
 
-            {/* Без Layout вообще */}
-            <Route path="/client/:inn" element={<Client/>}/>
+    if (isAuth) {
+        return (
+            <Routes>
+                {/* Layout с Sidebar */}
+                <Route element={<Layout includeSidebar={true} />}>
+                    <Route index element={<Navigate to="/coordination" replace />} />
+                    <Route path="/coordination" element={<Coordination />} />
+                    <Route path="/derivative" element={<Derivative />} />
+                    <Route path="/coordination-archive" element={<Coordination />} />
+                    <Route path="/derivative-archive" element={<Derivative />} />
+                </Route>
 
-            {/* Перенаправление */}
-            <Route path="*" element={<Navigate to="/coordination" replace/>}/>
-        </Routes>
-    );
+                {/* Layout без Sidebar */}
+                <Route element={<Layout includeSidebar={false}/>}>
+                    <Route path="/library-documentation" element={<Library />} />
+                    <Route path="/library-practice" element={<Library />} />
+                    <Route path="/statistics" element={<RegionalStatistics />} />
+                </Route>
+
+                {/* Без Layout вообще */}
+                <Route path="/client/:inn" element={<Client />} />
+
+                {/* Перенаправление */}
+                <Route path="*" element={<Navigate to="/coordination" replace />} />
+            </Routes>
+        );
+    } else {
+        return (
+            <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="*" element={<Navigate to="/login" replace />} />
+            </Routes>
+        );
+    }
 };

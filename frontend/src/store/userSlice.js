@@ -17,17 +17,18 @@ const userSlice = createSlice({
     name: "user",
     initialState,
     reducers: {
-        setUserInfo: (state, { payload }) => {
-            state = { ...payload };
+        setUserInfo: (state, action) => {
+            Object.keys(state).forEach(key => {
+                state[key] = action.payload[key]
+            })
         },
         resetUser(state) {
-            state = initialState;
+            Object.keys(state).forEach(key => {
+                state[key] = initialState[key]
+            })
         }
     }
 });
-
-
-export const selectUser = (state) => state.user;
 
 
 export const {

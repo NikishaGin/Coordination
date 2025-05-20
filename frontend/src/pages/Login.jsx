@@ -101,11 +101,11 @@ export const Login = () => {
   const onSubmitLogin = async formData => {
     if (formData.username && formData.password) {
       const result = await userAPI.loginUser(formData.username, formData.password);
-      if (serviceMode)
-        setMessageError("")
+      if (serviceMode && (result.data.userInfo.role !== "admin"))
+        setMessageError("Сервис временно недоступен")
       else if (result.data.code === 0) {
         dispatch(setUserInfo(result.data.userInfo));
-        navigate("/coordination");
+        navigate("/coordination", { replace: true });
       }
       else if (result.data.code === 1)
         setMessageError("Пользователя с таким логином не существует");

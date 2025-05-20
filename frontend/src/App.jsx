@@ -1,23 +1,15 @@
-import { useNavigate } from "react-router";
-import resetStore from "./store/store.js"
+import {useLogoutUser} from "./utils/logoutUser.js";
+import {useSelector} from "react-redux";
 import { AppRoutes } from "./routes/AppRoutes.jsx";
 import "./App.css";
-import { useLogoutOnTokenExpires } from "./utils/logoutOnTokenExpired.js";
-//import { useLogoutOnServiceMode } from "./utils/logoutOnServiceMode.js";
 
 
 
 export default function App() {
-  const navigate = useNavigate();
+  const token = useSelector((state) => state.user.token)
+  const isAuth = token && (token.length > 0)
 
-  const logoutCall = () => {
-    resetStore();
-    navigate("/login");
-  };
+  useLogoutUser(isAuth);
 
-  useLogoutOnTokenExpires(logoutCall);
-  //useLogoutOnServiceMode(logoutCall)
-
-
-  return <AppRoutes />
+  return <AppRoutes isAuth={isAuth} />
 }

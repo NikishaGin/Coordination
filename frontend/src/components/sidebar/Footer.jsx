@@ -3,7 +3,7 @@ import {useNavigate} from "react-router";
 import styled from 'styled-components';
 import {useDispatch, useSelector} from "react-redux";
 import resetStore from "../../store/store"
-import {fetchChangeServiceMode} from "../../store/globalSlice.js";
+import {fetchChangeServiceMode, fetchCheckServiceMode} from "../../store/globalSlice.js";
 import {ButtonContainer, Button} from "../buttons/Button.jsx";
 
 
@@ -292,7 +292,8 @@ export const Footer = () => {
           <DropdownMenu isVisible={isMenuVisible}>
             <Arrow />
             <ul>
-              {(role === "admin") &&
+              {
+                (role === "admin") &&
                 <li>
                 <MenuButton onClick={toggleServiceMode}>
                   <svg
@@ -308,7 +309,8 @@ export const Footer = () => {
                   Сервисный режим
                   <Indicator serviceMode={serviceMode}/>
                 </MenuButton>
-              </li>}
+              </li>
+              }
               <li>
                 <MenuButton onClick={() => navigate("/statistics")}>
                   <svg viewBox="0 0 24 24">
