@@ -79,10 +79,7 @@ export function createNewActives(request, response) {
     const data = {...request.body, inn}
     updates
         .createNewActives(nameActive, data, {inn, id: userInfo.id, role: userInfo.role})
-        .then(([id]) => {
-            const newId = Array.isArray(data) ? Array.from({ length: data.length }, (_, i) => id + i) : id
-            response.end(JSON.stringify(newId))
-        })
+        .then(() => response.end(JSON.stringify("")))
         .catch(console.log)
 }
 
@@ -95,6 +92,6 @@ export function updateActives(request, response) {
     const data = request.body
     updates
         .updateActives(nameActive, data, {inn, id: userInfo.id, role: userInfo.role})
-        .then(d => response.end(JSON.stringify("")))
+        .then(() => response.end(JSON.stringify("")))
         .catch(console.log)
 }

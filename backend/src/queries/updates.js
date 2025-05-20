@@ -2,38 +2,34 @@ import db from "../connection.js"
 
 
 
-async function setHistory(tableName, data, userInfo) {
-    console.log(tableName)
-    console.log(data)
-    console.log(userInfo)
+async function setHistory(tableName, data, rowId, userInfo, action) {
+    // userInfo.role
 
-    /*
     try {
         const [id] = await db("history").insert({
             user_id: userInfo.id,
             table_name: tableName,
-            action: ,
-            row_id: ,
+            action: action,
+            row_id: rowId,
             inn: userInfo.inn
         })
-        await db("history_fields").insert({
-            change_id: ,
-            field_name: 
+        const changedFields = Object.keys(data).map((field_name) => {
+            return {change_id: id, field_name}
         })
+        await db("history_fields").insert(changedFields)
     } catch (error) {
         console.log(error)
     }
-    */
 }
-
 
 
 export async function createNewActives(nameActive, data, userInfo) {
     const tableName = (nameActive === "ground") ? "property" : nameActive
     try {
         const result = await db(tableName).insert(data)
-        await setHistory(tableName, data, userInfo)
-        return result
+        const newId = result[0]
+
+        await setHistory(tableName, data, newId, userInfo, "insert")
     } catch (error) {
         throw error
     }
@@ -44,29 +40,9 @@ export async function updateActives(nameActive, data, userInfo) {
     const tableName = (nameActive === "ground") ? "property" : nameActive
     try {
         const [id, updatedData] = Object.entries(data)[0]
-        console.log("id", id)
-        console.log("updatedData", updatedData)
-
-        const result = await db(tableName).where({ id }).update(updatedData)
-        await setHistory(tableName, data, userInfo)
-        return result
+        await db(tableName).where({ id }).update(updatedData)
+        await setHistory(tableName, updatedData, id, userInfo, "update")
     } catch (error) {
         throw error
     }
 }
-
-
-
-/*
-const result = await db.transaction(async trx => {
-    const queries = Object.keys(data).map(id => (
-        trx(tableName).where("id", id).update(data[id])
-    ))
-    try {
-        const value = await Promise.all(queries)
-        return trx.commit(value)
-    } catch (error) {
-        return trx.rollback(error)
-    }
-})
- */
