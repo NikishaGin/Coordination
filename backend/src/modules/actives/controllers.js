@@ -76,8 +76,9 @@ export function createNewActives(request, response) {
     const userInfo = userIdentification(token).userInfo
     const nameActive = request.params.nameActive
     const inn = request.params.inn
-    const data = request.body
-    updates.createNewActives(nameActive,  data, {inn, id: userInfo.id, role: userInfo.role})
+    const data = {...request.body, inn}
+    updates
+        .createNewActives(nameActive, data, {inn, id: userInfo.id, role: userInfo.role})
         .then(([id]) => {
             const newId = Array.isArray(data) ? Array.from({ length: data.length }, (_, i) => id + i) : id
             response.end(JSON.stringify(newId))

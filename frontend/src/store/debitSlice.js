@@ -25,16 +25,18 @@ export const fetchDebit = createAsyncThunk(
 // thunk для сохранения одной строки
 export const saveDebitRow = createAsyncThunk(
     'debit/saveDebitRow',
-    async ({inn, updatedRow}, {dispatch, rejectWithValue}) => {
+    async ({inn, updatedRow}, {dispatch, getState, rejectWithValue}) => {
         try {
-            // Очищаем total_sum перед отправкой
+            const oldRow = getState().debit.data.find(item => item.id === updatedRow.id)
             const cleanedRow = {
-                ...updatedRow,
-                total_sum: cleanTotalSum(updatedRow.total_sum),
+                debitor_inn: (updatedRow.debitor_inn !== oldRow.debitor_inn) ? updatedRow.debitor_inn : undefined,
+                debitor_names: (updatedRow.debitor_names !== oldRow.debitor_names) ? updatedRow.debitor_names : undefined,
+                date: (updatedRow.date !== oldRow.date) ? updatedRow.date : undefined,
+                total_sum: (updatedRow.total_sum !== oldRow.total_sum) ? cleanTotalSum(updatedRow.total_sum) : undefined
             };
 
             // Отправляем данные на сервер
-            await activesAPI.updateActives("debit", inn, {[cleanedRow.id]: cleanedRow});
+            await activesAPI.updateActives("debit", inn, {[updatedRow.id]: cleanedRow});
 
             // Обновляем локальный store
             dispatch(updateDebitRow({id: updatedRow.id, field: null, value: cleanedRow}));
@@ -55,27 +57,14 @@ export const createDebitRow = createAsyncThunk(
     'debit/createDebitRow',
     async ({ inn, newRow }, { dispatch, rejectWithValue }) => {
         try {
-
-            console.log(newRow);
-
             const cleanedRow = {
                 debitor_inn: newRow.inn,
                 debitor_names: (newRow.debtorName.length > 0) ? newRow.debtorName : undefined,
                 date: (newRow.petitionDate.length > 0) ? newRow.petitionDate : undefined,
-                total_sum: (newRow.total_sum.length > 0) ? cleanTotalSum(newRow.amount) : undefined,
+                total_sum: (newRow.amount.length > 0) ? cleanTotalSum(newRow.amount) : undefined,
             };
-
-
-
-            console.log("Отправка на сервер:", cleanedRow);
-
-
-
             await activesAPI.createNewActives("debit", inn, cleanedRow);
-
-            // После успешного создания — подгружаем заново все данные
             await dispatch(fetchDebit(inn));
-
             return cleanedRow;
         } catch (error) {
             console.error("Ошибка при создании строки:", error);

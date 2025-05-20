@@ -30,9 +30,6 @@ async function setHistory(tableName, data, userInfo) {
 
 export async function createNewActives(nameActive, data, userInfo) {
     const tableName = (nameActive === "ground") ? "property" : nameActive
-
-    console.log(data)
-
     try {
         const result = await db(tableName).insert(data)
         await setHistory(tableName, data, userInfo)
@@ -46,20 +43,30 @@ export async function createNewActives(nameActive, data, userInfo) {
 export async function updateActives(nameActive, data, userInfo) {
     const tableName = (nameActive === "ground") ? "property" : nameActive
     try {
-        const result = await db.transaction(async trx => {
-            const queries = Object.keys(data).map(id => (
-                trx(tableName).where("id", id).update(data[id])
-            ))
-            try {
-                const value = await Promise.all(queries)
-                return trx.commit(value)
-            } catch (error) {
-                return trx.rollback(error)
-            }
-        })
+        const [id, updatedData] = Object.entries(data)[0]
+        console.log("id", id)
+        console.log("updatedData", updatedData)
+
+        const result = await db(tableName).where({ id }).update(updatedData)
         await setHistory(tableName, data, userInfo)
         return result
     } catch (error) {
         throw error
     }
 }
+
+
+
+/*
+const result = await db.transaction(async trx => {
+    const queries = Object.keys(data).map(id => (
+        trx(tableName).where("id", id).update(data[id])
+    ))
+    try {
+        const value = await Promise.all(queries)
+        return trx.commit(value)
+    } catch (error) {
+        return trx.rollback(error)
+    }
+})
+ */
