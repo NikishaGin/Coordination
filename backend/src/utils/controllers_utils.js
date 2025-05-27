@@ -7,8 +7,3 @@ export const isDerivedDebt = page =>
 
 export const isArchive = page =>
     [PAGES.IndexArchive, PAGES.DerivativeDebtArchive].includes(page)
-
-
-// Навпряляет необработанные ошибки в next
-export const errWrap = wraped => (req, res, next) =>
-    Promise.resolve(wraped(req, res, next)).catch(next)

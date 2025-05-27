@@ -1,14 +1,65 @@
 import db from "../connection.js"
 import * as subqueries from "./subqueries.js"
-import { ACTIVES } from "../../types.js"
+import { ACTIVES } from "../types.js"
 
 
 
 const sumPrices = (tableNames, field) => db.ref(db.raw(tableNames.map(table => `IFNULL(${table}.${field}, 0.00)`).join(" + "))).as(field)
 
+async function tableActives(inn, modifyFunc=() => undefined) {
+    return {
+        transport: await db("transport")
+            .where({inn})
+            .andWhere("status", "<>", 2)
+            .modify(query => modifyFunc(query, "transport")),
+
+        property: await db("property")
+            .where({inn, type_id: 2})
+            .andWhere("status", "<>", 2)
+            .modify(query => modifyFunc(query, "property")),
+
+        ground: await db("property")
+            .where({inn, type_id: 4})
+            .andWhere("status", "<>", 2)
+            .modify(query => modifyFunc(query, "ground")),
+
+        debit: await db("debit")
+            .where({inn})
+            .modify(query => modifyFunc(query, "debit")),
+
+        another: await db("another")
+            .where({inn})
+            .modify(query => modifyFunc(query, "another"))
+    }
+}
 
 
 export const service = {
+    async getUser(login) {
+        return await db("users").select([
+            "id",
+            db.ref("password").as("passwordHash"),
+            db.ref("name").as("firstname"),
+            db.ref("surname").as("secondname"),
+            db.ref("patronymic").as("lastname"),
+            db.ref("region").as("regionCode"),
+            "role"
+        ])
+            .where({ username: login })
+    },
+
+    checkServiceMode() {
+        return db("settings").first("value")
+    },
+
+    async changeServiceMode() {
+        let currValue = await db("settings").first("value")
+        console.log(currValue)
+        return await db("settings").update({
+            value: !currValue.value
+        })
+    },
+
     getRegions(is_derivative_debt, is_archive) {
         return db('meta')
             .select(db.raw('DISTINCT meta.region AS regionCode'), 'regions.regionName AS regionName')
@@ -23,23 +74,43 @@ export const service = {
 
     getDebtTypes() {
         return db("debt_type").select("debt_type");
-    },
-
-    checkServiceMode() {
-        return db("settings").first("value")
-    },
-
-    async changeServiceMode() {
-        let currValue = await db("settings").first("value")
-        console.log(currValue)
-        return await db("settings").update({
-            value: !currValue.value
-        })
     }
 }
 
 
+
+const selectFieldsOccupancy = query => {
+    query
+        .select("arrest_propperty")
+        .select("arrest_sum")
+        .select("wanted_open")
+        .select("wanted_close")
+        .select("wanted_result")
+        .select("evaluation_submit")
+        .select("evaluation_accept")
+        .select("evaluation_sum")
+        .select("realization_submit")
+        .select("realization_result_1")
+        .select("not_realization_notification")
+        .select("not_realization_notification_2")
+        .select("price_reduction_sum")
+}
+
 export const actives = {
+    async getFieldsOccupancy(inn) {
+        return  {
+            execMinDate: await db("resolutions").min("exec_date as value").where({ inn }),
+            maxLoadDate: await tableActives(inn, query => query.max("load_date as value")),
+            isLizingFNS: await tableActives(inn, (query, nameActive) => {
+                if (nameActive !== "debit")
+                    query.count("id as value").where({ is_fns_lizing: 1 })
+                else 
+                    query.count("id as value").where("id", "<", 0)
+            }),
+            data: await tableActives(inn, selectFieldsOccupancy)
+        }
+    },
+
     getTables(regionCode, is_derivative_debt, is_archive) {
         return db('meta')
             .select(db.ref("meta.inn").as("inn"))
@@ -100,14 +171,10 @@ export const actives = {
             .where("resolutions.inn", inn)
     },
     getActivesStatistics(inn) {
-        const result = {
-            transport: db("transport").count({ count: "id" }).sum({ cost: db.raw("IFNULL(cost, 0.00)") }).where("inn", inn).andWhere("status", "<>", 2),
-            property: db("property").count({ count: "id" }).sum({ cost: db.raw("IFNULL(cost, 0.00)") }).where("inn", inn).andWhere("status", "<>", 2).andWhere("type_id", 2),
-            ground: db("property").count({ count: "id" }).sum({ cost: db.raw("IFNULL(cost, 0.00)") }).where("inn", inn).andWhere("status", "<>", 2).andWhere("type_id", 4),
-            debit: db("debit").count({ count: "id" }).sum({ cost: db.raw("IFNULL(total_sum, 0.00)") }).where("inn", inn),
-            another: db("another").count({ count: "id" }).sum({ cost: db.raw("IFNULL(cost, 0.00)") }).where("inn", inn)
-        }
-        return result
+        return tableActives(inn, (query, nameActive) => {
+            const cost = (nameActive === "debit") ? db.raw("IFNULL(total_sum, 0.00)") : db.raw("IFNULL(cost, 0.00)")
+            query.count({ count: "id" }).sum({ cost })
+        })
     },
     getDebt(inn) {
         return db("debit")
@@ -161,12 +228,7 @@ export const actives = {
 }
 
 
-const buildCommonFieldsQuery = (
-    withActives = true,
-    withDebit = true,
-    regionCode,
-    innList
-) => {
+const buildCommonFieldsQuery = (withActives=true, withDebit=true, regionCode, innList) => {
     const tables = [
         ...(withActives ? [
             ACTIVES.Transport,

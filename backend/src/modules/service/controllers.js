@@ -12,13 +12,3 @@ export function getRegions(request, response) {
 export function getDebtTypes(_, response) {
     service.getDebtTypes().then(data => response.end(JSON.stringify(data.map(item => item.debt_type)))).catch(console.log)
 }
-
-
-export function checkServiceMode(_, response) {
-    service.checkServiceMode().then(data => response.end(JSON.stringify(Boolean(data.value)))).catch(console.log)
-}
-
-
-export function changeServiceMode(_, response) {
-    service.changeServiceMode().then(() => response.end(JSON.stringify(""))).catch(console.log)
-}

@@ -1,6 +1,6 @@
 import { actives } from "../../queries/selectors.js"
 import * as updates from "../../queries/updates.js"
-import userIdentification from "../user/controllers.js"
+import { calculateIndicators } from "../indicators/service.js";
 
 
 export function getTables(request, response) {
@@ -17,6 +17,7 @@ export function getTables(request, response) {
 
 export function getInfo(request, response) {
     const inn = request.params.inn
+    calculateIndicators(inn).catch(console.log)
     actives
         .getInfo(inn)
         .then(([ data ]) => response.end(JSON.stringify(data)))
@@ -35,12 +36,12 @@ export function getResolutions(request, response) {
 
 export async function getActivesStatistics(request, response) {
     const inn = request.params.inn
-    const queries = actives.getActivesStatistics(inn)
+    const statistics = await actives.getActivesStatistics(inn)
     let result = {}
     try {
         let total_sum = 0
-        for (let active in queries) {
-            let data = (await queries[active])[0]
+        for (let active in statistics) {
+            let data = statistics[active][0]
             total_sum += parseFloat(data.cost ?? "0.00")
             result[active] = data
         }
@@ -85,8 +86,7 @@ export function createNewActives(request, response) {
 
 
 export function updateActives(request, response) {
-    const token = request.headers.authorization
-    const userInfo = userIdentification(token).userInfo
+    const userInfo = request.userInfo
     const nameActive = request.params.nameActive
     const inn = request.params.inn
     const data = request.body
