@@ -1,23 +1,24 @@
 import { actives } from "../../queries/selectors.js"
 import * as updates from "../../queries/updates.js"
-import { calculateIndicators } from "../indicators/service.js";
+import { aggregateIndicators } from "../indicators/service.js";
 
 
-export function getTables(request, response) {
+export async function getTables(request, response) {
     const page = request.params.page
     const regionCode = request.params.regionCode
     const is_derivative_debt = +["DerivativeDebt", "DerivativeDebtArchive"].includes(page)
     const is_archive = +["IndexArchive", "DerivativeDebtArchive"].includes(page)
-    actives
-        .getTables(regionCode, is_derivative_debt, is_archive)
-        .then(data => response.end(JSON.stringify(data)))
-        .catch(console.log)
+    const activesAggregatedData = await actives.getTables(regionCode, is_derivative_debt, is_archive)
+    for (const row of activesAggregatedData) {
+        row.indicators = aggregateIndicators(row.inn)
+    }
+
+    response.json(activesAggregatedData)
 }
 
 
 export function getInfo(request, response) {
     const inn = request.params.inn
-    calculateIndicators(inn).catch(console.log)
     actives
         .getInfo(inn)
         .then(([ data ]) => response.end(JSON.stringify(data)))

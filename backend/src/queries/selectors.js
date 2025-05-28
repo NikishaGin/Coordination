@@ -6,7 +6,7 @@ import { ACTIVES } from "../types.js"
 
 const sumPrices = (tableNames, field) => db.ref(db.raw(tableNames.map(table => `IFNULL(${table}.${field}, 0.00)`).join(" + "))).as(field)
 
-async function tableActives(inn, modifyFunc=() => undefined) {
+export async function tableActives(inn, modifyFunc=() => undefined) {
     return {
         transport: await db("transport")
             .where({inn})
@@ -79,7 +79,7 @@ export const service = {
 
 
 
-const selectFieldsOccupancy = query => {
+export const selectFieldsOccupancy = query => {
     query
         .select("arrest_propperty")
         .select("arrest_sum")
@@ -96,19 +96,27 @@ const selectFieldsOccupancy = query => {
         .select("price_reduction_sum")
 }
 
+
 export const actives = {
-    async getFieldsOccupancy(inn) {
-        return  {
-            execMinDate: await db("resolutions").min("exec_date as value").where({ inn }),
-            maxLoadDate: await tableActives(inn, query => query.max("load_date as value")),
-            isLizingFNS: await tableActives(inn, (query, nameActive) => {
-                if (nameActive !== "debit")
-                    query.count("id as value").where({ is_fns_lizing: 1 })
-                else 
-                    query.count("id as value").where("id", "<", 0)
-            }),
-            data: await tableActives(inn, selectFieldsOccupancy)
+    async getExecMinDate(inn) {
+        const [{ execMinDate }] = await db("resolutions").min("exec_date as execMinDate").where({ inn })
+        return execMinDate
+    },
+    async getMaxLoadDate(inn) {
+        const datesArr = await tableActives(inn, query => query.max("load_date as maxLoadDate"))
+
+        const entries = Object.entries(datesArr)
+        const listDates = entries.map(([_, data]) => new Date(data[0].maxLoadDate ?? 0))
+
+        return Math.max(...listDates)
+    },
+    async isLizingFNS(inn) {
+        const modify = (query, name) => {
+            return name !== "debit"
+                ? query.where({ is_fns_lizing: 1}).first("id as exists")
+                : query.whereRaw("false")
         }
+        return await tableActives(inn, modify).then(Boolean)
     },
 
     getTables(regionCode, is_derivative_debt, is_archive) {

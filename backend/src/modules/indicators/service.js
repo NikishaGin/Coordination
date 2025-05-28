@@ -1,52 +1,89 @@
-import { actives } from "../../queries/selectors.js"
+import { actives, selectFieldsOccupancy, tableActives } from "../../queries/selectors.js"
 
 
-const day = 24*60*60*1000
+function parseDate(date) {
+    const validDate = date ?? (Date.now() + 24*60*60*1000)
+    return new Date(validDate)
+}
 
 
-const indicators = {
+function addDate(date, { dey=0, month=0 } = {}) {
+    const newDate = date
+    newDate.setDate(date.getDate() + dey)
+    newDate.setMonth(date.getMonth() + month)
+    return newDate
+}
 
 
-
+const indicatorsGetters = {
     arrest(execDate, row) {
-        const hasArrest = row.arrest_property && row.arrest_sum
-        const isWantedCase = row.wanted_close && row.wanted_result === "1"
         const now = new Date()
+        const hasArrest = row.arrest_property && row.arrest_sum
+        const hasWantedList = row.wanted_open && row.wanted_result === "1"
+        const wantedClose = parseDate(row.wanted_close)
 
-        // Для случаев с розыскным делом
-        if (isWantedCase) {
-            const closeDate = new Date(row.wanted_close)
-            const arrestDate = row.arrest_property ? new Date(row.arrest_property) : null
-            const deadline = hasArrest ? 5 : 10
+        const deadlineArrest   = addDate(execDate, { dey: 5 })
+        const deadlineWanted5  = addDate(wantedClose, { dey: 5 })
+        const deadlineWanted10 = addDate(wantedClose, { dey: 10 })
 
+        const arrestActual     = (deadlineArrest   >= now) &&  hasArrest && !row.wanted_open
+        const wantedActual     = (deadlineWanted5  >= now) &&  hasArrest && hasWantedList
+        const arrestExpired    = (deadlineArrest   <  now) &&  hasArrest && !row.wanted_open
+        const wantedExpired    = (deadlineWanted5  <  now) &&  hasArrest && hasWantedList
+        const arrestMissed     = (deadlineArrest   <  now) && !hasArrest && !row.wanted_open
+        const wantedMissed     = (deadlineWanted10 <  now) && !hasArrest && hasWantedList
 
-            const cutoffDate = new Date(closeDate)
-            cutoffDate.setDate(closeDate.getDate() + deadline)
-
-            return !hasArrest
-                ? (now > cutoffDate ? 1 : 0)
-                : (arrestDate > cutoffDate ? 2 : 3)
-        }
-
-        // Для обычных случаев (без розыскного дела)
-        const execCutoff = new Date(execDate)
-        execCutoff.setDate(execDate.getDate() + 5)
-
-        return !hasArrest
-            ? (now > execCutoff ? 1 : 0)
-            : (new Date(row.arrest_property) > execCutoff ? 2 : 3)
+        return (
+            (arrestActual  || wantedActual)  ? 3 :
+                (arrestExpired || wantedExpired) ? 2 :
+                    (arrestMissed  || wantedMissed)  ? 1 :
+                        0
+        )
     },
-
-
-
 
     wanted(execDate, row) {
+        const now = new Date()
+        const hasArrest = row.arrest_property && row.arrest_sum
+        const WantedOpen = parseDate(row.wanted_open)
+
+        const deadlineWanted1 = addDate(execDate, { dey: 10, month: 2 })
+        const deadlineWanted2 = addDate(WantedOpen, { month: 2 })
+
+        const arrestActual    = (deadlineWanted1 >= now) && !hasArrest       && row.wanted_open
+        const wantedActual    = (deadlineWanted2 >= now) &&  row.wanted_open && row.wanted_close
+        const arrestExpired   = (deadlineWanted1 <  now) && !hasArrest       && row.wanted_open
+        const wantedExpired   = (deadlineWanted2 <  now) &&  row.wanted_open && row.wanted_close
+
+        const arrestMissed    = (deadlineWanted1 >= now) && !hasArrest      && !row.wanted_open
+        const wantedMissed    = (deadlineWanted2 <  now) && row.wanted_open &&  row.wanted_close
+
+        return (
+            (arrestActual  || wantedActual)  ? 3 :
+                (arrestExpired || wantedExpired) ? 2 :
+                    (arrestMissed  || wantedMissed)  ? 1 :
+                        0
+        )
 
     },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     evaluation(execDate, row) {
 
     },
     submitRealizationFirstStage(execDate, row) {
+
 
     },
     realizationFirstStage(execDate, row) {
@@ -61,20 +98,50 @@ const indicators = {
     collectionAccountsReceivable(execDate, row) {
 
     },
+}
+
+
+export async function insertIndicatorsToActives(rows, inn) {
+    const execMinDate = new Date(await actives.getExecMinDate(inn))
+    for (const row of rows) {
+        const indicators = {}
+
+        for (const [ name, getter ] of Object.entries(indicatorsGetters)) {
+            indicators[name] = getter(execMinDate, row)
+        }
+
+        row.indicators = indicators
+    }
+}
+
+
+export async function aggregateIndicators(inn) {
+    const IS_UPDATED_DELTA =  7 * 24 * 60 * 60 * 1000
+
+    const maxLoadDate =  await actives.getMaxLoadDate(inn)
+    const isUpdated = (Date.now() - new Date(maxLoadDate)) <= IS_UPDATED_DELTA;
+    const isLizing = actives.isLizingFNS(inn)
+
+    const activesTables = await tableActives(inn, selectFieldsOccupancy)
+
+    const activesValues = Object.values(activesTables)
+
+    for (const activeRows of activesValues) {
+        await insertIndicatorsToActives(activeRows, inn)
+    }
+
+    console.log(activesValues)
+
+    /*
+    for (const activeRows of activesValues) {
+
+    }
+
+     */
 
 
 }
 
 
 
-export async function calculateIndicators(inn, aggregated=false) {
-    const { execMinDate, maxLoadDate, isLizingFNS, data } = await actives.getFieldsOccupancy(inn)
-    const isLizing = Object.entries(isLizingFNS).reduce((currSum, [_, data]) => currSum + data[0].value, 0) > 0
-    const isUpdated = Date.now() - Math.max(...Object.entries(maxLoadDate).map(([_, data]) => new Date(data[0].value))) < 7*day
-    const execDate = new Date(execMinDate[0].value)
-    data.map(row => {
 
-    })
-
-
-}
