@@ -12,7 +12,6 @@ export async function getTables(request, response) {
     for (const row of activesAggregatedData) {
         row.indicators = aggregateIndicators(row.inn)
     }
-
     response.json(activesAggregatedData)
 }
 

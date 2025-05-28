@@ -53,7 +53,6 @@ const indicatorsGetters = {
         const wantedActual    = (deadlineWanted2 >= now) &&  row.wanted_open && row.wanted_close
         const arrestExpired   = (deadlineWanted1 <  now) && !hasArrest       && row.wanted_open
         const wantedExpired   = (deadlineWanted2 <  now) &&  row.wanted_open && row.wanted_close
-
         const arrestMissed    = (deadlineWanted1 >= now) && !hasArrest      && !row.wanted_open
         const wantedMissed    = (deadlineWanted2 <  now) && row.wanted_open &&  row.wanted_close
 
@@ -63,29 +62,48 @@ const indicatorsGetters = {
                     (arrestMissed  || wantedMissed)  ? 1 :
                         0
         )
-
     },
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     evaluation(execDate, row) {
+        const now = new Date()
+        const hasArrest = row.arrest_property && row.arrest_sum
+        const arrestProperty = parseDate(row.arrest_property)
+        const evaluationSubmit = parseDate(row.evaluation_submit)
 
+        const deadlineEvaluation = addDate(arrestProperty, { month: 1 })
+        const deadlineEvaluation2 = addDate(evaluationSubmit, { month: 1 })
+
+        const arrestActual    = (deadlineEvaluation >= now) && hasArrest && !row.evaluation_accept
+        const wantedActual    = (deadlineEvaluation2 >= now) &&  row.evaluation_accept
+        const arrestExpired   = (deadlineEvaluation <  now) && hasArrest && row.evaluation_accept
+        const wantedExpired   = (deadlineEvaluation2 < now) &&  row.evaluation_accept
+        const arrestMissed    = (deadlineEvaluation >= now) && hasArrest && !row.evaluation_submit
+        const wantedMissed    = (deadlineEvaluation2 >=  now) && !row.evaluation_accept
+
+        return (
+            (arrestActual  || wantedActual)  ? 3 :
+                (arrestExpired || wantedExpired) ? 2 :
+                    (arrestMissed  || wantedMissed)  ? 1 :
+                        0
+        )
     },
+
     submitRealizationFirstStage(execDate, row) {
+        const now = new Date()
+        const evaluationSubmit = parseDate(row.evaluation_submit)
 
+        const deadline = addDate(evaluationSubmit, { month: 1 })
 
+        if ((evaluationSubmit >= now) && )
+            return 3
+        else if ()
+            return 2
+        else if ()
+            return 1
+        else
+            return 0
     },
+
     realizationFirstStage(execDate, row) {
 
     },
@@ -120,28 +138,18 @@ export async function aggregateIndicators(inn) {
 
     const maxLoadDate =  await actives.getMaxLoadDate(inn)
     const isUpdated = (Date.now() - new Date(maxLoadDate)) <= IS_UPDATED_DELTA;
-    const isLizing = actives.isLizingFNS(inn)
+    const isLizing = await actives.isLizingFNS(inn)
 
     const activesTables = await tableActives(inn, selectFieldsOccupancy)
 
     const activesValues = Object.values(activesTables)
 
+    console.log(activesTables)
+    // console.log(activesValues.flat())
+
     for (const activeRows of activesValues) {
         await insertIndicatorsToActives(activeRows, inn)
     }
 
-    console.log(activesValues)
-
-    /*
-    for (const activeRows of activesValues) {
-
-    }
-
-     */
-
 
 }
-
-
-
-
