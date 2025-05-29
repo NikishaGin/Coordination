@@ -1,42 +1,62 @@
 import React, {useState} from 'react';
 import {ButtonsSwitches} from "./ButtonsSwitches.jsx";
 import styled from "styled-components";
-import {FilterButtons} from "./FilterButtons.jsx";
 import {StatusFilter} from "./StatusFilter.jsx";
 import {SumFilter} from "./SumFilter.jsx";
 import {parseNumber} from "../../utils/formatData.js";
 import {useDispatch, useSelector} from "react-redux";
-import { setFilterCategory, setFilterStatusIp, setFilterSum } from "../../store/globalSlice.js";
-
+import {setFilterCategory, setFilterStatusIp, setFilterSum} from "../../store/globalSlice.js";
+import {IconButton} from "../IconButton.jsx";
+import {ResetButton} from "../ResetButton.jsx";
 
 const WrapperFilter = styled.div`
   padding: 10px;
-  margin-top: 12px;
-  border: 1px solid rgba(51, 60, 77, 0.6); // Граница
-  background-color: rgb(12, 16, 23); // Фон совпадает с заголовком
-  border-radius: 4px; // Скругление углов
-`;
-
-// Стиль для контейнера кнопок
-const ToggleButtonGroup = styled.div`
-  display: flex;
-  overflow: hidden; // Убираем видимость границ внутри
-  margin-bottom: 24px; // Отступ снизу
-`;
-
-
-// Стиль для контейнера селектов
-const SelectsContainer = styled.div`
-  display: flex;
-  gap: 12px; // Расстояние между селектами
-  margin-bottom: 12px; // Отступ снизу
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: ${props => props.theme.borderRadius.sm};
 `;
 
 // Стиль для контейнера кнопок "Применить" и "Сбросить"
 const ButtonsContainer = styled.div`
   display: flex;
-  justify-content: center; // Кнопки по центру
-  gap: 12px; // Расстояние между кнопками
+  justify-content: space-between;
+  gap: 12px;
+`;
+
+const FilterToggle = styled.div`
+  border-radius: ${props => props.theme.borderRadius.sm};
+  display: flex;
+  margin-bottom: 24px;
+  background-color: #232339;
+  overflow: hidden;
+`;
+
+const FilterToggleButton = styled.button`
+  flex: 1;
+  padding: 10px;
+  background-color: ${props => props.active ? '#3a3a6a' : 'transparent'};
+  color: ${props => props.active ? '#ffffff' : '#a0a0a0'};
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: ${props => props.active ? '#3a3a6a' : '#2a2a3a'};
+  }
+`;
+
+const ActionButton = styled.button`
+  flex: 1;
+  padding: 10px;
+  background-color: ${props => props.type === 'primary' ? '#3a3a6a' : 'transparent'};
+  color: #ffffff;
+  border: 1px solid ${props => props.type === 'primary' ? '#3a3a6a' : '#333'};
+  border-radius: ${props => props.theme.borderRadius.sm};
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: ${props => props.type === 'primary' ? '#4a4a7a' : '#2a2a3a'};
+  }
 `;
 
 export const FilterPanel = () => {
@@ -45,9 +65,6 @@ export const FilterPanel = () => {
     const [category, setCategory] = useState(useSelector((state) => state.global.filters.category));
     const [nameFilteredField, setNameFilteredField] = useState(useSelector((state) => state.global.filters.name_filtered_field));
     const [sum, setSum] = useState(useSelector((state) => state.global.filters.sum));
-
-
-
 
     const handleApply = () => {
         if (statusIP.length > 0)
@@ -70,28 +87,38 @@ export const FilterPanel = () => {
         setSum("");
     };
 
-    const [valueButton, setValueButton] = useState('status');
+
+    const [activeFilter, setActiveFilter] = useState('status');
+
+    const handleFilterToggle = (filter) => {
+        setActiveFilter(filter);
+    };
 
     return <WrapperFilter>
-        <ToggleButtonGroup>
-            <ButtonsSwitches
-                title={'По статусу'}
-                value={'status'}
-                selectedButton={valueButton}
-                setSelectedButton={setValueButton}/>
-            <ButtonsSwitches
-                title={'По сумме'}
-                value={'sum'}
-                selectedButton={valueButton}
-                setSelectedButton={setValueButton}/>
-        </ToggleButtonGroup>
-        <SelectsContainer>
-            {valueButton === 'status' && <StatusFilter statusIP={statusIP} setStatusIP={setStatusIP} category={category} setCategory={setCategory} />}
-            {valueButton === 'sum' && <SumFilter nameFilteredField={nameFilteredField} setNameFilteredField={setNameFilteredField} sum={sum} setSum={setSum} />}
-        </SelectsContainer>
+        <FilterToggle>
+            <FilterToggleButton
+                active={activeFilter === 'status'}
+                onClick={() => handleFilterToggle('status')}
+            >
+                По статусу
+            </FilterToggleButton>
+            <FilterToggleButton
+                active={activeFilter === 'sum'}
+                onClick={() => handleFilterToggle('sum')}
+            >
+                По сумме
+            </FilterToggleButton>
+        </FilterToggle>
+
+        {activeFilter === 'status' &&
+            <StatusFilter statusIP={statusIP} setStatusIP={setStatusIP} category={category} setCategory={setCategory}/>}
+        {activeFilter === 'sum' &&
+            <SumFilter nameFilteredField={nameFilteredField} setNameFilteredField={setNameFilteredField} sum={sum}
+                       setSum={setSum}/>}
+
         <ButtonsContainer>
-            <FilterButtons title={'Применить'} variant={"primary"} onClick={handleApply}/>
-            <FilterButtons title={'Сбросить'} variant={"secondary"} onClick={handleReset}/>
+            <ActionButton type="primary" onClick={handleApply}>Применить</ActionButton>
+            <ActionButton type="secondary" onClick={handleReset}>Сбросить</ActionButton>
         </ButtonsContainer>
     </WrapperFilter>
 };

@@ -11,11 +11,27 @@ export function parseNumber(number) {
 }
 
 
+// Функция для отображения даты в формате DD.MM.YYYY
 export function formatDate(date) {
-  if (!date) return undefined
-  const dateFormat = new Date(date)
-  return dateFormat.toLocaleDateString()
+  if (!date) return '';
+  const dateFormat = new Date(date);
+  const day = String(dateFormat.getDate()).padStart(2, '0');
+  const month = String(dateFormat.getMonth() + 1).padStart(2, '0');
+  const year = dateFormat.getFullYear();
+  return `${day}.${month}.${year}`;
 }
+
+// Функция для передачи даты в формате YYYY-MM-DD
+export function formatDateForInput(date) {
+  if (!date) return '';
+  const dateFormat = new Date(date);
+  const year = dateFormat.getFullYear();
+  const month = String(dateFormat.getMonth() + 1).padStart(2, '0');
+  const day = String(dateFormat.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+
 
 
 export function transformDateForInput(date) {

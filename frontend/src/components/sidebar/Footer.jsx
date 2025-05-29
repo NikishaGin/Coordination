@@ -48,7 +48,7 @@ const IconButton = styled.button`
   font-weight: 500;
   letter-spacing: 0px;
   color: rgb(255, 255, 255);
-  background-color: rgb(11, 14, 20);
+  background-color: #3a3a6a;
   width: 2.25rem;
   height: 2.25rem;
   align-self: center;
@@ -58,11 +58,11 @@ const IconButton = styled.button`
   flex: 0 0 auto;
   transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 8px;
-  border: 1px solid rgb(51, 60, 77);
+  border: none;
   padding: 0.25rem;
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.08); // Эффект при наведении
+    background-color: #4a4a7a;
   }
 
   &:active {
@@ -76,6 +76,7 @@ const Icon = styled.svg`
   width: 1.5rem; // Размер иконки
   height: 1.5rem; // Размер иконки
   fill: currentColor; // Наследует цвет из свойства color
+  
 `;
 
 // Стиль для выпадающего меню
@@ -84,19 +85,18 @@ const DropdownMenu = styled.div`
   top: -115%; // Центрируем по вертикали относительно кнопки
   left: calc(100% + 8px); // Располагаем справа от кнопки с отступом
   transform: translateY(-50%); // Корректируем вертикальное положение
-  background-color: rgb(12, 16, 23); // Цвет фона
+  background-color: #171722;
   border-radius: 8px; // Скругление углов
-  box-shadow: 
-    0px 4px 6px rgba(255, 255, 255, 0.1), // Легкая тень
-    0px 1px 3px rgba(255, 255, 255, 0.06), // Более мягкая тень
-    0px 8px 12px rgba(255, 255, 255, 0.08); // Глубокая тень
+  box-shadow: 0px 4px 6px rgba(255, 255, 255, 0.1), // Легкая тень
+  0px 1px 3px rgba(255, 255, 255, 0.06), // Более мягкая тень
+  0px 8px 12px rgba(255, 255, 255, 0.08); // Глубокая тень
   padding: 8px; // Внутренние отступы
   z-index: 1000; // Чтобы меню было поверх других элементов
-  opacity: ${({ isVisible }) => (isVisible ? 1 : 0)}; // Прозрачность
-  visibility: ${({ isVisible }) => (isVisible ? 'visible' : 'hidden')}; // Видимость
+  opacity: ${({isVisible}) => (isVisible ? 1 : 0)}; // Прозрачность
+  visibility: ${({isVisible}) => (isVisible ? 'visible' : 'hidden')}; // Видимость
   transform-origin: left center; // Точка трансформации для анимации
   transition: opacity 242ms cubic-bezier(0.4, 0, 0.2, 1),
-              transform 161ms cubic-bezier(0.4, 0, 0.2, 1); // Плавные переходы
+  transform 161ms cubic-bezier(0.4, 0, 0.2, 1); // Плавные переходы
 
   & ul {
     list-style: none;
@@ -117,7 +117,7 @@ const Arrow = styled.div`
   left: 0px; // Размещаем слева от меню
   width: 10px;
   height: 10px;
-  background-color: rgb(12, 16, 23); // Цвет совпадает с фоном меню
+  background-color: #171722;
   transform: translate(-50%, -50%) rotate(45deg); // Создаём треугольник
   z-index: -1; // Стрелка должна быть под меню
 `;
@@ -194,8 +194,6 @@ const Indicator = styled.span`
   background-image: ${({serviceMode}) => (serviceMode) ? "radial-gradient(rgba(0, 255, 0, 1), rgba(0, 255, 0, 0.1))" : "radial-gradient(rgba(255, 0, 0, 1), rgba(255, 0, 0, 0.1))"};
 `
 
-
-
 const Modal = styled.div`
   display: flex;
   justify-content: center;
@@ -207,7 +205,6 @@ const Modal = styled.div`
   opacity: ${({ isVisible }) => (isVisible ? 1 : 0)};
   visibility: ${({ isVisible }) => (isVisible ? 'visible' : 'hidden')};
 `
-
 
 const ModalContent = styled.div`
   display: flex;
@@ -239,11 +236,7 @@ export const Footer = () => {
 
   const serviceMode = useSelector(state => state.global.serviceMode)
 
-
   const role = useSelector((state) => state.user.role)
-  // const firstname = useSelector((state) => state.user.firstname);
-  // const secondname = useSelector((state) => state.user.secondname);
-  // const lastname = useSelector((state) => state.user.lastname);
 
   const handleOpenMenu = () => {
     setIsMenuVisible(prevValue => !prevValue)

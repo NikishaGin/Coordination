@@ -19,8 +19,7 @@ li {
 html,
 body {
     height: 100%;
-    /* background-color: rgb(5, 7, 10); */
-    background-color: rgb(15, 20, 30);
+    /*background-color: #171722;*/
     color: rgb(255, 255, 255);
     overflow: hidden;
 }

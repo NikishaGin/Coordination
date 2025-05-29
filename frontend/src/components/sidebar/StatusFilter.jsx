@@ -1,35 +1,54 @@
 import React, {useEffect} from 'react';
-import {CustomSelect} from "./CustomSelect.jsx";
 import {useDispatch, useSelector} from "react-redux";
 import {fetchGetDebitTypes} from "../../store/globalSlice.js";
+import {CustomIcon, FilterGroup, Select, SelectWrapper} from "../select/Select.jsx";
 
 export const StatusFilter = (props) => {
     const dispatch = useDispatch();
     const categories = useSelector((state) => state.global.debitTypes);
 
-    useEffect(() =>  {
-        dispatch(fetchGetDebitTypes())
-    }, [])
+    useEffect(() => {
+        dispatch(fetchGetDebitTypes());
+    }, []);
 
-    return <>
-        <CustomSelect
-            value={props.statusIP}
-            onChange={event => props.setStatusIP(event.target.value)}
-            placeholder="Статус ИП"
-            options={[
-                "На исполнении",
-                "Приостановлено",
-                "Отложено",
-                "Прекращено",
-                "Окончено",
-            ]}
-        />
-        <CustomSelect
-            value={props.category}
-            onChange={event => props.setCategory(event.target.value)}
-            placeholder="Категория"
-            options={categories}
-        />
-    </>
+    return (
+        <FilterGroup>
+            <SelectWrapper style={{marginBottom: '16px'}}>
+                    <Select
+                        id="status"
+                        value={props.statusIP}
+                        onChange={(event) => props.setStatusIP(event.target.value)}
+                    >
+                        <option value="">Все статусы</option>
+                        <option value="На исполнении">На исполнении</option>
+                        <option value="Приостановлено">Приостановлено</option>
+                        <option value="Отложено">Отложено</option>
+                        <option value="Прекращено">Прекращено</option>
+                        <option value="Окончено">Окончено</option>
+                    </Select>
+                    <CustomIcon/>
+            </SelectWrapper>
+
+
+            <SelectWrapper>
+                    <Select
+                        id="category"
+                        value={props.category}
+                        onChange={(event) => props.setCategory(event.target.value)}
+                    >
+                        <option value="">Все категории</option>
+                        {categories?.map((category, idx) => (
+                            <option key={idx} value={category}>
+                                {category}
+                            </option>
+                        ))}
+                    </Select>
+                    <CustomIcon/>
+            </SelectWrapper>
+        </FilterGroup>
+    );
 };
+
+
+
 

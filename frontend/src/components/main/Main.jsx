@@ -1,80 +1,22 @@
 import React, {useState, useEffect, useMemo} from "react";
-import { useNavigate } from "react-router";
+import {useLocation, useNavigate} from "react-router";
 import styled from "styled-components";
-import { SnackbarProvider, enqueueSnackbar } from 'notistack'
-import { TableContainer, Tr } from "../tables/Table.jsx";
-import { ButtonContainer, Button } from "../buttons/Button.jsx";
-import {downloadAPI } from "../../api/index.js";
+import {SnackbarProvider, enqueueSnackbar} from 'notistack'
+import {TableContainer, Tr} from "../tables/Table.jsx";
+import {ButtonContainer} from "../buttons/Button.jsx";
+import {downloadAPI} from "../../api/index.js";
 import downloadExcel from "../../utils/downloadExcel.js"
-import { formatNumber } from "../../utils/formatData.js"
+import {formatNumber} from "../../utils/formatData.js"
 import {useDispatch, useSelector} from "react-redux";
 import {fetchTableData} from "../../store/tableDataSlice.js";
+import {DownloadCloud} from 'lucide-react';
 
 const Container = styled.div`
+  background-color: ${props => props.theme.colors.background};
   padding-right: 24px;
   padding-left: 24px;
   height: 100%;
 `;
-
-const Ul = styled.ul`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 40px;
-`;
-
-const Li = styled.li`
-  padding-left: 8px;
-  padding-right: 8px;
-  border-width: 1px;
-  border-style: solid;
-  border-image: initial;
-  border-radius: 999px;
-  text-align: center;
-
-  &:nth-child(1) {
-    color: rgb(252, 156, 156);
-    border-color: rgb(60, 2, 2);
-    background-color: rgb(30, 1, 1);
-  }
-
-  &:nth-child(2) {
-    color: rgb(255, 223, 130);
-    border-color: rgb(60, 50, 5);
-    background-color: rgb(30, 25, 2);
-  }
-
-  &:nth-child(3) {
-    color: rgb(161, 232, 161);
-    border-color: rgb(4, 47, 4);
-    background-color: rgb(2, 29, 2);
-  }
-
-  &:nth-child(4) {
-    color: rgb(255, 178, 102);
-    border-color: rgb(80, 40, 5);
-    background-color: rgb(40, 20, 2);
-  }
-
-  &:nth-child(5) {
-    color: rgb(240, 135, 250);
-    border-color: rgb(60, 5, 54);
-    background-color: rgb(30, 2, 17);
-  }
-
-  &:nth-child(6) {
-    color: rgb(135, 206, 250);
-    border-color: rgb(5, 30, 60);
-    background-color: rgb(2, 15, 30);
-  }
-`;
-
-const Icon = styled.svg`
-  width: 16px;
-  height: 16px;
-  fill: currentColor;
-`;
-
 const CustomCheckbox = styled.label`
   display: inline-block;
   position: relative;
@@ -114,7 +56,7 @@ const CustomCheckbox = styled.label`
   }
 
 
-span {
+  span {
     display: inline-block;
     position: absolute;
     top: 0;
@@ -127,187 +69,353 @@ span {
     transition: all 0.3s ease;
   }
 `;
-
-
-const headings = [
-  "",
-  "№",
-  "ИНН",
-  "Наименование",
-  "Сумма по постановлениям",
-  "Остаток по постановлениям",
-  "Категория должника",
-  "Сумма активов и дебиторской задолженности",
-  "Статус ИП",
-  "Арест имущества",
-  "Оценка имущества",
-  "Принудительная реализация",
-  "Торги 2 этап",
-  "Результат принудительной реализации",
-  "Сумма возврата имущества плательщику",
-  "Обращение взыскания на дебиторскую задолженность",
+const headingsCoordination = [
+    "",
+    "№",
+    "ИНН",
+    "Наименование",
+    "Сумма по постановлениям",
+    "Остаток по постановлениям",
+    "Категория должника",
+    "Сумма активов и дебиторской задолженности",
+    "Статус ИП",
+    "Арест имущества",
+    "Оценка имущества",
+    "Принудительная реализация",
+    "Торги 2 этап",
+    "Результат принудительной реализации",
+    "Сумма возврата имущества плательщику",
+    "Обращение взыскания на дебиторскую задолженность",
 ];
 
-
-const statusList = [
-  "не произведено",
-  "произведено с нарушением",
-  "произведено в срок",
-  "в розыске",
-  "залог перед ФНС",
-  "обновление данных произведено за последние 7 дней"
+const headingsDerivative = [
+    "",
+    "№",
+    'ИНН',
+    'Наименование',
+    'Сумма исполнительного листа, ₽',
+    'Остаток исполнительного листа, ₽',
+    'Категория должника',
+    'Сумма активов и дебиторской задолженности, ₽',
+    'Статус ИП',
+    'Арест имущества, ₽',
+    'Оценка имущества, ₽',
+    'Принудительная реализация, ₽',
+    'Торги 2 этап, ₽',
+    'Результат принудительной реализации, ₽',
+    'Сумма возврата имущества плательщику, ₽',
+    'Обращение взыскания на дебиторскую задолженность',
+    'Обращение взыскания на заработную плату',
+    'Детализация индикаторов работы',
 ];
+const StatsButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #3a3a6a;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
 
+  &:hover {
+    background-color: #4a4a7a;
+  }
+
+  svg {
+    color: #ffffff;
+  }
+`;
+export const StatusIndicators = styled.div`
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 11.5px;
+
+  .status {
+    font-size: 14px;
+    padding: 4px 12px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .not-executed {
+    background-color: #602020;
+    color: #fff;
+  }
+
+  .executed-with-violation {
+    background-color: #946000;
+    color: #fff;
+  }
+
+  .executed-on-time {
+    background-color: #1a5336;
+    color: #fff;
+  }
+
+  .in-search {
+    background-color: #7e4e00;
+    color: #fff;
+  }
+
+  .pledged-to-tax {
+    background-color: #4a2d79;
+    color: #fff;
+  }
+
+  .data-updated {
+    background-color: #1a3b5c;
+    color: #fff;
+  }
+`;
+const MainContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 11.5px; /* Расстояние между индикаторами и таблицей */
+
+`;
+
+
+const codeIndicators = {
+    1: "status executed-on-time",
+    2: "status executed-with-violation",
+    3: "status not-executed",
+    isLizingFNS: "status pledged-to-tax",
+    isUpdated: "status data-updated"
+}
 
 
 export const Main = () => {
 
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
+    const location = useLocation();
 
-  const [selectedInn, setSelectedInn] = useState([]);
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
 
-  const selectedRegion = useSelector((state) => state.global.selectedRegion);
-  const filters = useSelector((state) => state.global.filters);
-  const tableData = useSelector((state) => state.tableData.tableData);
+    const [selectedInn, setSelectedInn] = useState([]);
 
-  useEffect(() => {
-    dispatch(fetchTableData(selectedRegion));
-  }, [dispatch, selectedRegion]);
+    const selectedRegion = useSelector((state) => state.global.selectedRegion);
+    const filters = useSelector((state) => state.global.filters);
+    const tableData = useSelector((state) => state.tableData.tableData);
 
-  const filteredData = useMemo(() => {
-    let data = [...tableData];
+    console.log('tableData', tableData)
 
-    if (filters.inputValueInn)
-      data = data.filter((row) => row.inn.startsWith(filters.inputValueInn));
-
-    if (filters.category)
-      data = data.filter((row) => row.category === filters.category);
-
-    if (filters.status_ip)
-      data = data.filter((row) => row.status_ip === filters.status_ip);
-
-    if (filters.name_filtered_field && filters.sum)
-      data = data.filter((row) => row[filters.name_filtered_field] >= filters.sum);
-
-    return data;
-  }, [tableData, filters]);
+    const {pageKey, headings} = useMemo(() => {
+        if (location.pathname.includes("/coordination")) {
+            return {pageKey: "Index", headings: headingsCoordination};
+        } else if (location.pathname.includes("/derivative")) {
+            return {pageKey: "DerivativeDebt", headings: headingsDerivative};
+        } else {
+            return {pageKey: "default", headings: []};
+        }
+    }, [location.pathname]);
 
 
-  const handleSelectAll = event => {
-    if (event.target.checked)
-      setSelectedInn(filteredData.map(item => item.inn));
-    else
-      setSelectedInn([]);
-  };
+    useEffect(() => {
+        dispatch(fetchTableData({pageKey, region: selectedRegion}));
+    }, [dispatch, pageKey, selectedRegion]);
 
 
-  const handleInnSelect = (event, inn) => {
-    if (event.target.checked)
-      setSelectedInn([...selectedInn, inn]);
-    else
-      setSelectedInn(selectedInn.filter(value => value != inn));
-  };
+    const filteredData = useMemo(() => {
+        let data = [...tableData];
+
+        if (filters.inputValueInn)
+            data = data.filter((row) => row.inn.startsWith(filters.inputValueInn));
+
+        if (filters.category)
+            data = data.filter((row) => row.category === filters.category);
+
+        if (filters.status_ip)
+            data = data.filter((row) => row.status_ip === filters.status_ip);
+
+        if (filters.name_filtered_field && filters.sum)
+            data = data.filter((row) => row[filters.name_filtered_field] >= filters.sum);
+
+        return data;
+    }, [tableData, filters]);
 
 
-  const handleLink = (event, inn) => {
-    if (event.target.type === 'checkbox') return;
-    navigate(`/client/${inn}`)
-  }
+    const handleSelectAll = event => {
+        if (event.target.checked)
+            setSelectedInn(filteredData.map(item => item.inn));
+        else
+            setSelectedInn([]);
+    };
 
 
-  const downloadStatistics = flagButton => {
-    if (selectedInn.length > 0) {
-      if (flagButton) {
-        downloadAPI.getStatistics(false, selectedRegion, selectedInn)
-            .then(downloadExcel).catch(console.log)
-      } else {
-        downloadAPI.getStatisticsIP(false, selectedRegion, selectedInn)
-            .then(downloadExcel).catch(console.log)
-      }
-    } else 
-      enqueueSnackbar("Выберете регион и строки, которые необходимо включить в статистику", {variant: "info"})
-  }
+    const handleInnSelect = (event, inn) => {
+        if (event.target.checked)
+            setSelectedInn([...selectedInn, inn]);
+        else
+            setSelectedInn(selectedInn.filter(value => value != inn));
+    };
 
 
-  return (
-    <Container>
-      <Ul>
-        {statusList.map((status, index) => (
-            <Li key={index}>{status}</Li>
-        ))}
-      </Ul>
-      <TableContainer>
-        <table>
-          <thead>
-            <tr>
-              <th>
-                <CustomCheckbox>
-                  <input
-                    type="checkbox"
-                    checked={(selectedInn.length === filteredData.length) && (filteredData.length > 0)}
-                    onChange={handleSelectAll}
-                  />
-                  <span></span>
-                </CustomCheckbox>
-              </th>
-              {headings.slice(1).map((heading, index) => (
-                <th key={`header-${index}`}>{heading}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filteredData.map((row, rowIndex) => (
-              <Tr key={rowIndex} isSelected={selectedInn.includes(row.inn)} cursor={true} onClick={event => handleLink(event, row.inn)}>
-                <td onClick={event => event.stopPropagation()}>
-                  <CustomCheckbox>
-                    <input
-                      type="checkbox"
-                      checked={selectedInn.includes(row.inn)}
-                      onChange={event => handleInnSelect(event, row.inn)}
-                    />
-                    <span></span>
-                  </CustomCheckbox>
-                </td>
-                <td>{rowIndex + 1}</td>
-                <td>{row.inn}</td>
-                <td>{row.name}</td>
-                <td>{formatNumber(row.post_sum)}</td>
-                <td>{formatNumber(row.cur_debt)}</td>
-                <td>{row.category}</td>
-                <td>{formatNumber(row.total_sum)}</td>
-                <td>{row.status_ip}</td>
-                <td>{formatNumber(row.arrest)}</td>
-                <td>{formatNumber(row.evaluation)}</td>
-                <td>{formatNumber(row.realization_property)}</td>
-                <td>{formatNumber(row.price_reduction)}</td>
-                <td>{formatNumber(row.realization_sum_2)}</td>
-                <td>{formatNumber(row.return_sum)}</td>
-                <td>{formatNumber(row.debitor)}</td>
-              </Tr>
-            ))}
-          </tbody>
-        </table>
-      </TableContainer>
-      <ButtonContainer>
-        <Button onClick={() => downloadStatistics(true)}>
-          <Icon viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
-          </Icon>
-          Статистика
-        </Button>
-        <Button onClick={() => downloadStatistics(false)}>
-          <Icon viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
-          </Icon>
-          Статистика по ИП
-        </Button>
-      </ButtonContainer>
-      <SnackbarProvider
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        maxSnack={1}
-        autoHideDuration={5000}
-      />
-    </Container>
-  );
+    const handleLink = (event, inn) => {
+        if (event.target.type === 'checkbox') return;
+        navigate(`/client/${inn}`)
+    }
+
+
+    const downloadStatistics = flagButton => {
+        if (selectedInn.length > 0) {
+            if (flagButton) {
+                downloadAPI.getStatistics(false, selectedRegion, selectedInn)
+                    .then(downloadExcel).catch(console.log)
+            } else {
+                downloadAPI.getStatisticsIP(false, selectedRegion, selectedInn)
+                    .then(downloadExcel).catch(console.log)
+            }
+        } else
+            enqueueSnackbar("Выберете регион и строки, которые необходимо включить в статистику", {variant: "info"})
+    }
+
+    const renderTableCells = (row, rowIndex, pageKey) => {
+        if (pageKey === "Index") {
+            return (
+                <>
+                    <td>{rowIndex + 1}</td>
+                    <td>{row.inn}</td>
+                    <td className={(row.indicators.isUpdated) ?? codeIndicators.isUpdated}>{row.name}</td>
+                    <td>{formatNumber(row.post_sum)}</td>
+                    <td>{formatNumber(row.cur_debt)}</td>
+                    <td>{row.category}</td>
+                    <td className={(row.indicators.isLizingFNS) && codeIndicators.isLizingFNS}>{formatNumber(row.total_sum)}</td>
+                    <td>{row.status_ip}</td>
+                    <td className={codeIndicators[row.indicators.arrest]}>{formatNumber(row.arrest)}</td>
+                    <td className={codeIndicators[row.indicators.evaluation]}>{formatNumber(row.evaluation)}</td>
+                    <td className={codeIndicators[row.indicators.submitRealizationFirstStage]}>{formatNumber(row.realization_property)}</td>
+                    <td className={codeIndicators[row.indicators.submitRealizationSecondStage]}>{formatNumber(row.price_reduction)}</td>
+                    <td className={codeIndicators[row.indicators.realizationSecondStage]}>{formatNumber(row.realization_sum_2)}</td>
+                    <td>{formatNumber(row.return_sum)}</td>
+                    <td className={codeIndicators[row.indicators.collectionAccountsReceivable]}>{formatNumber(row.debitor)}</td>
+                </>
+            );
+        } else if (pageKey === "DerivativeDebt") {
+            return (
+                <>
+                    <td>{rowIndex + 1}</td>
+                    <td>{row.inn}</td>
+                    <td className={(row.indicators.isUpdated) ?? codeIndicators.isUpdated}>{row.name}</td>
+                    <td>{formatNumber(row.cur_debt)}</td>
+                    <td>{formatNumber(row.post_sum)}</td>
+                    <td>{row.category}</td>
+                    <td className={(row.indicators.isLizingFNS) && codeIndicators.isLizingFNS}>{formatNumber(row.total_sum)}</td>
+                    <td>{row.status_ip}</td>
+                    <td className={codeIndicators[row.indicators.arrest]}>{formatNumber(row.arrest)}</td>
+                    <td className={codeIndicators[row.indicators.evaluation]}>{formatNumber(row.evaluation)}</td>
+                    <td className={codeIndicators[row.indicators.submitRealizationFirstStage]}>{formatNumber(row.realization_property)}</td>
+                    <td className={codeIndicators[row.indicators.submitRealizationSecondStage]}>{formatNumber(row.price_reduction)}</td>
+                    <td className={codeIndicators[row.indicators.realizationSecondStage]}>{formatNumber(row.realization_sum_2)}</td>
+                    <td>{formatNumber(row.return_sum)}</td>
+                    <td className={codeIndicators[row.indicators.collectionAccountsReceivable]}>{formatNumber(row.debitor)}</td>
+                </>
+            );
+        } else {
+            return null;
+        }
+    };
+
+
+    return (
+        <Container>
+            <MainContent>
+                <StatusIndicators>
+                    <div className="status not-executed">Не произведено</div>
+                    <div className="status executed-with-violation">Произведено с нарушением</div>
+                    <div className="status executed-on-time">Произведено в срок</div>
+                    <div className="status in-search">В розыске</div>
+                    <div className="status pledged-to-tax">Залог перед ФНС</div>
+                    <div className="status data-updated">Данные обновлены за последние 7 дней</div>
+                </StatusIndicators>
+                <TableContainer>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>
+                                <CustomCheckbox>
+                                    <input
+                                        type="checkbox"
+                                        checked={(selectedInn.length === filteredData.length) && (filteredData.length > 0)}
+                                        onChange={handleSelectAll}
+                                    />
+                                    <span></span>
+                                </CustomCheckbox>
+                            </th>
+                            {headings.slice(1).map((heading, index) => (
+                                <th key={`header-${index}`}>{heading}</th>
+                            ))}
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {filteredData.map((row, rowIndex) => (
+                            <Tr key={rowIndex} isSelected={selectedInn.includes(row.inn)} cursor={true}
+                                onClick={event => handleLink(event, row.inn)}>
+                                <td onClick={event => event.stopPropagation()}>
+                                    <CustomCheckbox>
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedInn.includes(row.inn)}
+                                            onChange={event => handleInnSelect(event, row.inn)}
+                                        />
+                                        <span></span>
+                                    </CustomCheckbox>
+                                </td>
+                                {renderTableCells(row, rowIndex, pageKey)}
+                            </Tr>
+                        ))}
+                        </tbody>
+                    </table>
+                </TableContainer>
+            </MainContent>
+            <ButtonContainer>
+                <StatsButton onClick={() => downloadStatistics(true)}>
+                    <DownloadCloud size={18}/>
+                    Статистика
+                </StatsButton>
+
+                <StatsButton onClick={() => downloadStatistics(false)}>
+                    <DownloadCloud size={18}/>
+                    Статистика по ИП
+                </StatsButton>
+            </ButtonContainer>
+            <SnackbarProvider
+                anchorOrigin={{vertical: "bottom", horizontal: "right"}}
+                maxSnack={1}
+                autoHideDuration={5000}
+            />
+        </Container>
+    );
 };
+
+
+// useEffect(() => {
+//   dispatch(fetchTableData(selectedRegion));
+// }, [dispatch, selectedRegion]);
+
+
+// useEffect(() => {
+//   let pageKey = "default";
+//
+//   if (location.pathname.includes("/coordination")) {
+//     pageKey = "Index";
+//   } else if (location.pathname.includes("/derivative")) {
+//     pageKey = "DerivativeDebt";
+//   }
+//
+//   dispatch(fetchTableData({ pageKey, region: selectedRegion }));
+// }, [dispatch, location.pathname, selectedRegion]);
+//
+//
+// let headings = [];
+//
+// if (location.pathname.includes("/coordination")) {
+//   headings = headingsCoordination;
+// } else if (location.pathname.includes("/derivative")) {
+//   headings = headingsDerivative;
+// }

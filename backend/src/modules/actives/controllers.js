@@ -9,8 +9,16 @@ export async function getTables(request, response) {
     const is_derivative_debt = +["DerivativeDebt", "DerivativeDebtArchive"].includes(page)
     const is_archive = +["IndexArchive", "DerivativeDebtArchive"].includes(page)
     const activesAggregatedData = await actives.getTables(regionCode, is_derivative_debt, is_archive)
+
+    console.log(actives.getTables(regionCode, is_derivative_debt, is_archive).toString())
+
     for (const row of activesAggregatedData) {
-        row.indicators = aggregateIndicators(row.inn)
+        for (const fieldName in row) {
+            if (typeof row[fieldName] === "number") {
+                row[fieldName] = row[fieldName].toString()
+            }
+        }
+        row.indicators = await aggregateIndicators(row.inn)
     }
     response.json(activesAggregatedData)
 }
@@ -74,7 +82,7 @@ export function getActives(request, response) {
 
 export function createNewActives(request, response) {
     const token = request.headers.authorization
-    const userInfo = userIdentification(token).userInfo
+    const userInfo = request.userInfo
     const nameActive = request.params.nameActive
     const inn = request.params.inn
     const data = {...request.body, inn}

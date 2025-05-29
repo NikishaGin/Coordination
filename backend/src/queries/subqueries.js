@@ -18,7 +18,9 @@ export const getResolutions = db('resolutions')
 export function getActives(tableName) {
     let query = db(tableName)
         .select('inn')
-        .sum({ total_sum: ((tableName === "debit") ? db.raw('IFNULL(total_sum, 0.00)') : db.raw('IFNULL(cost, 0.00)')) })
+        // .sum({ total_sum: ((tableName === "debit") ? db.raw('IFNULL(total_sum, 0.00)') : db.raw('IFNULL(cost, 0.00)')) })
+        .sum({ total_sum: ((tableName === "debit") ? 'total_sum' : 'cost') })
+
         .sum({ arrest: db.raw('IFNULL(arrest_sum, 0.00)') })
         .sum({ evaluation: db.raw('IFNULL(evaluation_sum, 0.00)') })
         .sum({ realization_property: db.raw('IFNULL(realization_sum_1, 0.00)') })

@@ -18,7 +18,7 @@ export const AppRoutes = ({ isAuth }) => {
                 <Route element={<Layout includeSidebar={true} />}>
                     <Route index element={<Navigate to="/coordination" replace />} />
                     <Route path="/coordination" element={<Coordination />} />
-                    <Route path="/derivative" element={<Derivative />} />
+                    <Route path="/derivative" element={<Coordination />} />
                     <Route path="/coordination-archive" element={<Coordination />} />
                     <Route path="/derivative-archive" element={<Derivative />} />
                 </Route>

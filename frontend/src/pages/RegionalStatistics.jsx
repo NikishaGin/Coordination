@@ -1,58 +1,85 @@
 import React from 'react';
 import styled from 'styled-components';
-import { FileSpreadsheet } from 'lucide-react';
-
-
+import { FileSpreadsheet, Download } from 'lucide-react';
 
 const Container = styled.div`
   width: 100%;
+  height: calc(100vh - 65px);
+  margin: 0 auto;
+  padding: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: ${props => props.theme.colors.background};
+  color: #ffffff;
+  overflow-y: auto;
+`;
+
+const SectionsWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 40px 20px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 `;
 
 const Section = styled.section`
-  margin-bottom: 32px;
   width: 100%;
+  animation: fadeIn 0.5s ease-out;
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 `;
 
 const SectionTitle = styled.h2`
-  font-size: 1.375rem;
+  font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 16px;
   color: #ffffff;
+  padding-bottom: 8px;
+  border-bottom: 1px solid ${props => props.theme.colors.border};
+  display: flex;
+  align-items: center;
 `;
 
 const DocumentGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
   width: 100%;
+  
+  
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(auto-fill, minmax(600px, 1fr));
+  }
 `;
 
 const DocumentCard = styled.div`
-  background: #1c2538;
-  border-radius: 8px;
+  background-color: ${props => props.theme.colors.surface};
+  border-radius: 4px;
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 100%;
-
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border: 1px solid ${props => props.theme.colors.border};
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    border-color: #a0a0ff;
   }
 `;
 
 const CardHeader = styled.div`
   padding: 16px 20px;
-  background: #252f44;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: ${props => props.theme.colors.surface};
+  border-bottom: 1px solid ${props => props.theme.colors.border};
 `;
 
 const DocumentName = styled.h3`
-  font-size: 1rem;
+  font-size: 1.125rem;
   font-weight: 500;
   color: #ffffff;
   margin: 0;
@@ -60,30 +87,53 @@ const DocumentName = styled.h3`
 
 const CardContent = styled.div`
   padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  justify-content: space-between;
 `;
 
 const DownloadLink = styled.a`
   display: flex;
   align-items: center;
-  color: #ffffff;
+  justify-content: space-between;
+  color: #e0e0e0;
   text-decoration: none;
   font-size: 0.9375rem;
-  padding: 8px 12px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.05);
-  transition: all 0.2s ease;
-  width: 100%;
-
+  padding: 12px;
+  border-radius: 4px;
+  background-color: #232339;
+  transition: all 0.25s ease;
+  margin-top: 8px;
+  
   &:hover {
-    background: rgba(76, 175, 80, 0.1);
-    color: #4CAF50;
+    color: #ffffff;
+  }
+  
+  &:active {
+    transform: scale(0.98);
   }
 `;
 
+const FileInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
 const ExcelIcon = styled(FileSpreadsheet)`
-  color: #4CAF50;
-  margin-right: 8px;
+  color: #a0a0ff;
   flex-shrink: 0;
+`;
+
+const DownloadIcon = styled(Download)`
+  color: #a0a0ff;
+  transition: all 0.2s ease;
+  
+  ${DownloadLink}:hover & {
+    opacity: 1;
+    transform: translateY(2px);
+  }
 `;
 
 export const RegionalStatistics = () => {
@@ -154,9 +204,14 @@ export const RegionalStatistics = () => {
         }
     ];
 
+    const handleDownload = (e, filename) => {
+        e.preventDefault();
+        console.log(`Downloading: ${filename}`);
+    };
+
     return (
-        <>
-            <Container>
+        <Container>
+            <SectionsWrapper>
                 {documentData.map((section) => (
                     <Section key={section.id}>
                         <SectionTitle>{section.title}</SectionTitle>
@@ -167,9 +222,15 @@ export const RegionalStatistics = () => {
                                         <DocumentName>{documentItem.name}</DocumentName>
                                     </CardHeader>
                                     <CardContent>
-                                        <DownloadLink href="#" onClick={(e) => e.preventDefault()}>
-                                            <ExcelIcon size={18} />
-                                            {documentItem.filename}
+                                        <DownloadLink
+                                            href="#"
+                                            onClick={(e) => handleDownload(e, documentItem.filename)}
+                                        >
+                                            <FileInfo>
+                                                <ExcelIcon size={20} />
+                                                {documentItem.filename}
+                                            </FileInfo>
+                                            <DownloadIcon size={18} />
                                         </DownloadLink>
                                     </CardContent>
                                 </DocumentCard>
@@ -177,8 +238,8 @@ export const RegionalStatistics = () => {
                         </DocumentGrid>
                     </Section>
                 ))}
-            </Container>
-        </>
+            </SectionsWrapper>
+        </Container>
     );
 }
 

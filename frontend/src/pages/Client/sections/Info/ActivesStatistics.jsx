@@ -1,42 +1,80 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { AlertCircle } from "lucide-react";
+import {AlertCircle, DownloadCloud} from "lucide-react";
 import { useParams } from "react-router";
-import { activesAPI } from "../../../../../api/index.js";
-import { Button, ButtonContainer } from "../../../../../components/buttons/Button.jsx";
+import { activesAPI } from "../../../../api/index.js";
+import { Button} from "../../../../components/buttons/Button.jsx";
 
-const ChartWrapper = styled.div`
+const ChartContainer = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+  width: 100%;
+  margin-bottom: 2rem; // Add margin to create space before the button
+  
+  @media (min-width: 1024px) {
+    grid-template-columns: 3fr 2fr;
+    align-items: center;
+  }
+`;
+
+const ChartSection = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
 `;
-const PieChartContainer = styled.div`
+
+const InfoSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  
+  @media (max-width: 1023px) {
+    order: -1; // Move info section above chart on mobile
+  }
+`;
+
+const PieChartWrapper = styled.div`
   width: 100%;
   height: 25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
+
 const TotalValueContainer = styled.div`
-  margin-top: 1.5rem;
   text-align: center;
+  padding: 1.5rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+  }
 
   p:first-child {
     color: rgb(255, 255, 255);
-    font-size: 1rem; // text-sm
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
   }
 
   p:last-child {
-    margin-top: 0.35rem;
     color: rgb(255, 255, 255);
-    font-size: 1.25rem; // text-xl
+    font-size: 1.5rem;
     font-weight: 600;
   }
 `;
+
 const TooltipWrapper = styled.div`
   background-color: white;
   padding: 0.75rem;
-  border: 1px solid #e5e7eb; // border-gray-200
+  border: 1px solid #e5e7eb;
   box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-  border-radius: 0.375rem; // rounded-md
+  border-radius: 0.375rem;
 
   p {
     font-weight: 500;
@@ -52,38 +90,74 @@ const TooltipWrapper = styled.div`
 
   p:nth-child(2), p:nth-child(3) {
     margin-top: 0.25rem;
-    color: #374151; // text-gray-700
+    color: #374151;
     font-size: 0.875rem;
   }
 
   p:last-child {
     margin-top: 0.25rem;
-    color: #6b7280; // text-gray-500
+    color: #6b7280;
     font-size: 0.75rem;
   }
 `;
+
+const LegendContainer = styled.div`
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+`;
+
+const LegendTitle = styled.h3`
+  color: rgb(255, 255, 255);
+  font-size: 1.125rem;
+  margin-bottom: 1rem;
+  text-align: center;
+`;
+
 const LegendWrapper = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: 1.5rem;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.875rem;
 `;
+
 const LegendItem = styled.div`
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.25rem;
+  background-color: rgba(255, 255, 255, 0.03);
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+`;
 
+const LegendLabel = styled.div`
+  display: flex;
+  align-items: center;
+  
   span {
     font-size: 0.875rem;
     color: rgb(255, 255, 255);
   }
 `;
+
 const LegendColorBox = styled.div`
   width: 1rem;
   height: 1rem;
   border-radius: 0.125rem;
   margin-right: 0.5rem;
 `;
+
+const LegendValue = styled.span`
+  font-size: 0.875rem;
+  color: rgb(255, 255, 255);
+  font-weight: 500;
+`;
+
 const NoDataWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -93,23 +167,39 @@ const NoDataWrapper = styled.div`
   color: #6b7280;
 
   svg {
-    color: #9ca3af; // text-gray-400
+    color: #9ca3af;
     margin-bottom: 0.75rem;
   }
 `;
 
-
-const ButtonBox = styled(ButtonContainer)`
-    margin-top: 50px;
-    justify-content: center;
-`
-
-const Icon = styled.svg`
-  width: 16px;
-  height: 16px;
-  fill: currentColor;
+const ButtonBox = styled.div`
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem 0;
+  width: 100%;
+  grid-column: 1 / -1;
 `;
 
+const StatsButton = styled(Button)`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #3a3a6a;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #4a4a7a;
+  }
+
+  svg {
+    color: #ffffff;
+  }
+`;
 
 // Форматирование числа по российскому стандарту без десятичных знаков
 const formatNumber = (value) =>
@@ -138,7 +228,7 @@ const ASSET_NAMES = {
 // Парсинг стоимости актива: возвращает число или 0
 const parseCost = (asset) => parseFloat(asset?.cost) || 0;
 
-export default function () {
+export default function PieChartAssets() {
     const [assets, setAssets] = useState(null); // Состояние для хранения данных об активах
     const [loading, setLoading] = useState(true); // Состояние загрузки
     const { inn } = useParams(); // Получаем ИНН из параметров URL
@@ -175,18 +265,6 @@ export default function () {
             .reduce((sum, key) => sum + parseCost(assets[key]), 0);
     };
 
-    // Компонент легенды под диаграммой
-    const renderLegend = ({ payload }) => (
-        <LegendWrapper>
-            {payload.map(({ value, color }, i) => (
-                <LegendItem key={i}>
-                    <LegendColorBox style={{ backgroundColor: color }} />
-                    <span>{value}</span>
-                </LegendItem>
-            ))}
-        </LegendWrapper>
-    );
-
     // Компонент всплывающей подсказки при наведении на сектор диаграммы
     const renderTooltip = ({ active, payload }) => {
         if (!active || !payload?.length) return null;
@@ -216,60 +294,81 @@ export default function () {
     if (loading) return <p>Загрузка...</p>;
     if (chartData.length === 0) return <NoDataDisplay message="Нет данных о стоимости активов" />;
 
+    // Рендер кастомных легенд
+    const renderCustomLegend = () => (
+        <LegendContainer>
+            <LegendTitle>Структура активов</LegendTitle>
+            <LegendWrapper>
+                {chartData.map((entry, index) => {
+                    const percent = Math.round((entry.value / totalCost) * 100);
+                    return (
+                        <LegendItem key={`legend-${index}`}>
+                            <LegendLabel>
+                                <LegendColorBox style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                                <span>{entry.name}</span>
+                            </LegendLabel>
+                            <LegendValue>{formatNumber(entry.value)} ₽ ({percent}%)</LegendValue>
+                        </LegendItem>
+                    );
+                })}
+            </LegendWrapper>
+        </LegendContainer>
+    );
+
     // Основной JSX, содержащий диаграмму и общую стоимость
     return (
         <>
-            <ChartWrapper>
-                <PieChartContainer>
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                            <Pie
-                                data={chartData}
-                                cx="50%"
-                                cy="50%"
-                                labelLine={false}
-                                outerRadius={150}
-                                innerRadius={35}
-                                paddingAngle={5}
-                                dataKey="value"
-                                nameKey="name"
-                                animationDuration={800}
-                                animationBegin={200}
-                                animationEasing="ease-out"
-                                minAngle={10}
-                            >
-                                {/* Раскрашиваем каждый сектор отдельным цветом */}
-                                {chartData.map((_, i) => (
-                                    <Cell
-                                        key={i}
-                                        fill={COLORS[i % COLORS.length]}
-                                        stroke="#fff"
-                                        strokeWidth={2}
-                                    />
-                                ))}
-                            </Pie>
-                            <Tooltip content={renderTooltip} />
-                            <Legend content={renderLegend} layout="horizontal" verticalAlign="bottom" align="center" />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </PieChartContainer>
+            <ChartContainer>
+                <ChartSection>
+                    <PieChartWrapper>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie
+                                    data={chartData}
+                                    cx="50%"
+                                    cy="50%"
+                                    labelLine={false}
+                                    outerRadius={150}
+                                    innerRadius={35}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                    nameKey="name"
+                                    animationDuration={800}
+                                    animationBegin={200}
+                                    animationEasing="ease-out"
+                                    minAngle={10}
+                                >
+                                    {chartData.map((_, i) => (
+                                        <Cell
+                                            key={i}
+                                            fill={COLORS[i % COLORS.length]}
+                                            stroke="#fff"
+                                            strokeWidth={2}
+                                        />
+                                    ))}
+                                </Pie>
+                                <Tooltip content={renderTooltip} />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </PieChartWrapper>
+                </ChartSection>
 
-                {/* Блок с общей стоимостью всех активов */}
-                <TotalValueContainer>
-                    <p>Общая стоимость активов:</p>
-                    <p>{formatNumber(totalCost)} ₽</p>
-                </TotalValueContainer>
-            </ChartWrapper>
+                <InfoSection>
+                    <TotalValueContainer>
+                        <p>Общая стоимость активов:</p>
+                        <p>{formatNumber(totalCost)} ₽</p>
+                    </TotalValueContainer>
 
+                    {renderCustomLegend()}
+                </InfoSection>
 
-            <ButtonBox>
-                <Button>
-                    <Icon viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
-                    </Icon>
-                    Выгрузка ИД по собственности
-                </Button>
-            </ButtonBox>
+                <ButtonBox>
+                    <StatsButton>
+                        <DownloadCloud size={18} />
+                        Выгрузка ИД по собственности
+                    </StatsButton>
+                </ButtonBox>
+            </ChartContainer>
         </>
     );
 }

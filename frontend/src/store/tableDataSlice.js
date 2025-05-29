@@ -1,14 +1,28 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import {activesAPI} from "../api/index.js";
+import {setLoading} from "./appStatusSlice.js";
 
 
 export const fetchTableData = createAsyncThunk(
-    "actives/fetchTableData",
-    async (region) => {
-        const response = await activesAPI.getTables("Index", region);
-        return response.data;
+    'actives/fetchTableData',
+    async ({ pageKey, region }, { dispatch, rejectWithValue }) => {
+        console.log('pageKey', pageKey)
+        try {
+            dispatch(setLoading(true));
+            const response = await activesAPI.getTables(pageKey, region);
+
+            // await new Promise((resolve) => setTimeout(resolve, 500));
+
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data || error.message);
+        } finally {
+            dispatch(setLoading(false));
+        }
     }
 );
+
+
 
 const tableDataSlice = createSlice({
     name: "tableData",

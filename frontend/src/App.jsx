@@ -11,5 +11,5 @@ export default function App() {
 
   useLogoutUser(isAuth);
 
-  return <AppRoutes isAuth={isAuth} />
+  return <AppRoutes isAuth={isAuth}  />
 }

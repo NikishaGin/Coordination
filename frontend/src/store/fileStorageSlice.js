@@ -9,6 +9,7 @@ export const fetchGetDocuments = createAsyncThunk(
         try {
             const source = pathname.split("-").pop()
             const response = await fileStorageAPI.getDocuments(source)
+            console.log('response.data:', response.data);
             return response.data;
         } catch (error) {
             console.error('Ошибка при загрузке данных:', error);
@@ -46,6 +47,7 @@ const fileStorageSlice = createSlice({
                 state.documents = action.payload;
             })
             .addCase(fetchSaveDocument.fulfilled, (state, action) => {
+                console.log('Новый документ:', action.payload);
                 state.documents = [...state.documents, action.payload];
             })
     }

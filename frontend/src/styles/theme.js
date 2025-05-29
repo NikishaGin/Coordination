@@ -1,0 +1,47 @@
+export const theme = {
+  colors: {
+    background: '#171722',
+    surface: '#1a1a2e',
+    header: '#1e1e1e',
+    primary: '#a0a0ff',
+    primaryHover: '#c0c0ff',
+    secondary: '#3a3a6a',
+    secondaryHover: '#4a4a7a',
+    text: '#ffffff',
+    textSecondary: '#d0d0d0',
+    border: '#333',
+    inputBg: '#252535',
+    activeItem: '#2a2a4a',
+    activeItemHover: '#3a3a6a',
+    inactiveItem: 'transparent',
+    inactiveItemHover: '#2a2a3a',
+    success: '#4caf50',
+    warning: '#ff9800',
+    error: '#f44336',
+  },
+  spacing: {
+    xs: '4px',
+    sm: '8px',
+    md: '16px',
+    lg: '24px',
+    xl: '32px',
+    xxl: '48px',
+  },
+  borderRadius: {
+    sm: '4px',
+    md: '6px',
+    lg: '8px',
+  },
+  shadows: {
+    sm: '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)',
+    md: '0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23)',
+    lg: '0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23)',
+  },
+  transition: {
+    default: 'all 0.2s ease-in-out',
+  },
+  fonts: {
+    primary: "'Inter', sans-serif",
+    secondary: "Arial, sans-serif",
+  },
+};

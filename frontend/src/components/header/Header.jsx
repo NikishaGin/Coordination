@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import styled from "styled-components";
+import styled from 'styled-components';
+import { NavLink } from 'react-router';
+import DropdownNavItem from './DropdownNavItem';
 import {Logo} from "./Logo/Logo.jsx";
-import {NavItem} from "./NavItem.jsx";
-import {DropdownNavItem} from "./DropdownNavItem.jsx";
-import {NavLink} from "react-router";
 
 const Container = styled.header`
   display: flex;
   align-items: center;
   height: 65px;
-  background-color: rgb(12, 16, 23); // Фон совпадает с заголовком
+  background-color: ${props => props.theme.colors.header || '#0C1017'};
+  box-shadow: ${props => props.theme.shadows.sm || '0 1px 3px rgba(0, 0, 0, 0.1)'};
   border-width: 0px 0px 1px;
   border-style: solid;
   border-color: rgba(51, 60, 77, 0.6);
@@ -20,96 +20,35 @@ const Container = styled.header`
 
 const Navigation = styled.ul`
   width: 100%;
+  height: 60%;
   list-style: none;
   display: flex;
   justify-content: space-evenly;
+  font-family: 'Inter', sans-serif;
 `;
 
-// Общие стили
-export const StyledItem = styled.li`
-  display: flex;
-  position: relative;
-  text-decoration: none;
-  font-size: 1rem;
-  font-weight: 400;
-  line-height: 1.5;
-  letter-spacing: 0.00938em;
-  color: #fff;
-  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
-`;
-
-export const StyledNavLink = styled(NavLink)`
-  cursor: pointer;
+const NavItem = styled(NavLink)`
+  border-radius: ${props => props.theme.borderRadius.md};
   display: flex;
   align-items: center;
-  white-space: nowrap;
-  padding: 8px 16px;
+  height: 100%;
+  padding: 10px 20px;
+  font-weight: 500;
+  transition: ${props => props.theme.transition.default || 'all 0.2s ease'};
+  background-color: transparent;
+  color: ${props => props.theme.colors.textSecondary || '#94A0B8'};
   text-decoration: none;
-  color: #fff;
-  border-radius: 4px;
-  position: relative;
-  transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1), color 150ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1);
-
-  /* Базовый стиль */
-  background-color: rgba(25, 118, 210, 0.1);
-  border: 1px solid rgba(25, 118, 210, 0.3);
-  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
+  font-family: 'Inter', sans-serif;
+  
+  &.active {
+    background-color: ${props => props.theme.colors.secondary || 'rgba(25, 118, 210, 0.1)'};
+    color: ${props => props.theme.colors.text || '#F5F6FA'};
+  }
 
   &:hover {
-    background-color: rgba(30, 136, 229, 0.2);
-    border-color: rgba(30, 136, 229, 0.5);
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    background-color: ${props => props.theme.colors.inactiveItemHover || 'rgba(255, 255, 255, 0.05)'};
   }
-
-  &:active {
-    background-color: rgba(21, 101, 192, 0.3);
-    border-color: rgba(21, 101, 192, 0.6);
-    box-shadow: inset 0px 1px 2px rgba(0, 0, 0, 0.2);
-  }
-  &.active {
-    background-color: rgba(21, 101, 192, 0.3); // Тёмно-голубой фон для активной кнопки
-    color: #fff; // Белый цвет текста
-    font-weight: 500;
-    border-color: rgba(21, 101, 192, 0.6); // Усиленная тёмно-голубая обводка
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); // Усиленная тень
-  }
-
-  &.active:hover {
-    background-color: rgba(30, 136, 229, 0.4); // Яркий голубой фон при наведении на активную кнопку
-    border-color: rgba(30, 136, 229, 0.7); // Усиленная голубая обводка
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); // Усиленная тень
-  }
-  
-  @keyframes rippleFadeOut {
-    to {
-      opacity: 0;
-    }
-  }
-
-  /* Адаптивное поведение для маленьких экранов */
-  @media (max-width: 600px) {
-    padding: 8px 8px; // Уменьшаем отступы
-    font-size: 0.75rem; // Уменьшаем размер шрифта
-  }
-`;
-
-export const Text = styled.span`
-  font-size: 0.875rem; // Уменьшенный размер шрифта
-  font-weight: 400;
-  line-height: 1.5;
-  letter-spacing: 0.00938em;
-  color: inherit;
-
-  /* Адаптивный размер шрифта */
-  @media (max-width: 600px) {
-    font-size: 0.75rem; // Еще меньше на маленьких экранах
-  }
-
-  /* Обрезка текста с многоточием */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%; // Ограничение ширины текста
 `;
 
 export const Header = () => {
@@ -119,23 +58,21 @@ export const Header = () => {
     const handleMouseLeave = () => setOpenDropdown(null);
 
     const archiveItems = [
-        { to: '/coordination-archive', label: 'Взыскание по 47 ст.' },
-        { to: '/derivative-archive', label: 'Производный долг' },
+        {to: '/coordination-archive', label: 'Взыскание по 47 ст.'},
+        {to: '/derivative-archive', label: 'Производный долг'},
     ];
 
     const libraryItems = [
-        { to: '/library-documentation', label: 'Правовая документация' },
-        { to: '/library-practice', label: 'Положительная практика' },
+        {to: '/library-documentation', label: 'Правовая документация'},
+        {to: '/library-practice', label: 'Положительная практика'},
     ];
 
     return (
         <Container>
             <Logo />
             <Navigation>
-                <NavItem path={'/coordination'} title={'Взыскание по 47 ст.'}/>
-                <NavItem path={'/derivative'} title={'Производный долг'}/>
-
-                {/* Контейнер для кнопки и выпадающего меню */}
+                <NavItem to="/coordination">Взыскание по 47 ст.</NavItem>
+                <NavItem to="/derivative">Производный долг</NavItem>
                 <DropdownNavItem
                     title="Архив"
                     items={archiveItems}
@@ -143,7 +80,6 @@ export const Header = () => {
                     onMouseEnter={() => handleMouseEnter('archive')}
                     onMouseLeave={handleMouseLeave}
                 />
-
                 <DropdownNavItem
                     title="Библиотека решений"
                     items={libraryItems}
@@ -151,9 +87,8 @@ export const Header = () => {
                     onMouseEnter={() => handleMouseEnter('library')}
                     onMouseLeave={handleMouseLeave}
                 />
-
-                {/* <NavItem path={'directory'} title={'Справочник ГМУ ФССП'}/>
-                <NavItem path={'feedback'} title={'Обратная связь'}/> */}
+                {/*<NavItem to="/directory">Справочник ГМУ ФССП</NavItem>*/}
+                {/*<NavItem to="/feedback">Обратная связь</NavItem>*/}
             </Navigation>
         </Container>
     );

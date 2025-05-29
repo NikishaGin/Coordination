@@ -1,6 +1,5 @@
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
-import { serviceAPI, userAPI } from "../api/index.js";
-import resetStore from "./store.js";
+import { serviceAPI } from "../api/index.js";
 
 
 

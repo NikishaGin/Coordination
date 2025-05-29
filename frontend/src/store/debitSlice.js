@@ -1,7 +1,16 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {formatNumber, transformDateForInput} from "../utils/formatData.js";
 import {activesAPI} from "../api/index.js";
-import {cleanTotalSum} from "../pages/Client/sections/Info/subsections/DebtorIndebtedness.jsx";
+
+function  cleanTotalSum(value){
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+        return Number(value.replace(/\s/g, '').replace(',', '.'));
+    }
+    return 0; // или выбросить ошибку
+};
+
+
 
 // Асинхронный thunk для загрузки данных
 export const fetchDebit = createAsyncThunk(
@@ -26,6 +35,7 @@ export const fetchDebit = createAsyncThunk(
 export const saveDebitRow = createAsyncThunk(
     'debit/saveDebitRow',
     async ({inn, updatedRow}, {dispatch, getState, rejectWithValue}) => {
+        console.log('updatedRow', updatedRow)
         try {
             const oldRow = getState().debit.data.find(item => item.id === updatedRow.id)
             const cleanedRow = {

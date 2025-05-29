@@ -1,7 +1,8 @@
 import React, {useState} from 'react';
-import Button from "./Button.jsx";
 import Input from "./Input.jsx";
 import Modal from "./Modal.jsx";
+import {IconButton} from "../../../../components/IconButton.jsx";
+import {ResetButton} from "../../../../components/ResetButton.jsx";
 
 
 const AddDebitModal = ({isOpen, onClose, onSave}) => {
@@ -112,16 +113,16 @@ const AddDebitModal = ({isOpen, onClose, onSave}) => {
 
     const modalFooter = (
         <>
-            <Button variant="outline" onClick={handleCancel}>
+            <ResetButton variant="outline" onClick={handleCancel}>
                 Отменить
-            </Button>
-            <Button
+            </ResetButton>
+            <IconButton
                 variant="primary"
                 disabled={!isValid}
                 onClick={handleSave}
             >
                 Сохранить
-            </Button>
+            </IconButton>
         </>
     );
 

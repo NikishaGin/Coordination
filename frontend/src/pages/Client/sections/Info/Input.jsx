@@ -38,12 +38,7 @@ const ErrorMessage = styled.span`
   margin-top: 4px;
 `;
 
-const Input = ({
-                   label,
-                   error,
-                   errorMessage,
-                   ...props
-               }) => {
+const Input = ({label, error, errorMessage, ...props}) => {
     return (
         <InputContainer>
             {label && <Label>{label}</Label>}

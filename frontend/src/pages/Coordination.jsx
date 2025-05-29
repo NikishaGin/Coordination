@@ -2,6 +2,8 @@ import React from 'react';
 import styled from "styled-components";
 import {Sidebar} from "../components/sidebar/Sidebar.jsx";
 import {Main} from "../components/main/Main.jsx";
+import {useLocation} from "react-router";
+import {Derivative} from "./Derivative.jsx";
 
 
 export const Container = styled.div`
@@ -37,6 +39,33 @@ export const Coordination = () => {
                 <Main/>
             </TablesContainer>
         </>
-
 };
 
+
+
+
+
+// export const Coordination = () => {
+//     const location = useLocation();
+//
+//     let content = null;
+//
+//     if (location.pathname.startsWith("/coordination")) {
+//         content = <Main />;
+//     } else if (location.pathname.startsWith("/derivative")) {
+//         content = <Derivative />;
+//     }
+//
+//
+//
+//     return (
+//         <>
+//             <FiltersContainer>
+//                 <Sidebar />
+//             </FiltersContainer>
+//             <TablesContainer>
+//                 {content}
+//             </TablesContainer>
+//         </>
+//     );
+// };

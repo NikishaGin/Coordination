@@ -1,146 +1,297 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router";
-import styled from "styled-components";
-import { NavItem } from "../../components/buttons/Button.jsx";
-import Info from "./sections/Info/Info.jsx"
-import Actives from "./sections/Actives/Actives.jsx"
-import Hodatai from "./sections/Hodatai.jsx"
-import Tno from "./sections/Tno.jsx"
-import Details from "./sections/Details.jsx"
-import { useSelector } from "react-redux";
-import { activesAPI } from "../../api/index.js";
+import React, {useState, useEffect, useMemo, useCallback, Suspense, lazy} from 'react';
+import {useNavigate, useParams} from "react-router";
+import styled, {createGlobalStyle} from "styled-components";
+import {activesAPI} from "../../api/index.js";
+import {TableResolutions} from "./sections/Info/TableResolutions.jsx";
+import DebitTable from "./sections/Info/TableAccountsReceivable.jsx";
+import ActivesStatistics from "./sections/Info/ActivesStatistics.jsx";
+import {TableRowTransport} from "./sections/Actives/TableRowTransport.jsx";
+import {TableRowProperty} from "./sections/Actives/TableRowProperty.jsx";
+import {TableRowDebit} from "./sections/Actives/TableRowDebit.jsx";
+import InteractionResultForm from "./sections/Interaction/InteractionResultForm.jsx";
+import {TableOtherAssets} from "./sections/Actives/TableOtherAssets.jsx";
+import {
+    tableHeadersAnother,
+    tableHeadersDebit,
+    tableHeadersGround,
+    tableHeadersProperty,
+    tableHeadersTransport
+} from "./tableHeaders.js";
 
+const GlobalStyle = createGlobalStyle`
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family: 'Inter', sans-serif;
+  }
+`;
 
 const Container = styled.div`
-  height: 100vh;
+  min-height: 100vh;
   display: grid;
-  grid-template-columns: 330px minmax(0, 100%);
-  grid-template-rows: 220px 1fr;
+  grid-template-columns: 330px minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  background-color: #121212;
 
   & > :first-child {
     grid-column: 1 / span 2;
   }
+`;
 
-  & > :nth-child(2):nth-last-child(1) {
-    grid-column: 1 / span 2;
-  }
-`
-
-/*
-  & > :first-child:nth-last-child(2) {
-    grid-row: 1;
-    grid-column: 1 / -1;
-    height: 250px; // Высота шапки
-}
-
-& > :nth-child(2):nth-last-child(1) {
-  grid-row: 2;
-  grid-column: 1 / -1;
-}
-
-& > :first-child:nth-last-child(3) {
-  grid-row: 1;
-  grid-column: 1 / -1;
-  height: 250px; // Высота шапки
-}
-
-& > :nth-child(2):nth-last-child(2) {
-  grid-row: 2;
-  grid-column: 1;
-  width: 330px; // Ширина второго элемента
-}
-*/
-
-
-
-
-export const InfoBlock = styled.div`
-    padding: 15px;
-    border: 1px solid rgba(51, 60, 77, 0.6);
-`
+const InfoBlock = styled.div`
+  padding: 24px 32px;
+  background-color: #1e1e1e;
+  border-bottom: 1px solid #333;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+`;
 
 const Back = styled.div`
-    position: relative;
-    width: 105px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    margin-bottom: 20px;
-    font-weight: bolder;
+  position: relative;
+  width: 105px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 20px;
+  font-weight: 500;
+  color: #a0a0ff;
+  transition: color 0.2s ease-in-out;
 
-    &:hover {
-        cursor: pointer;
-    }
-    
-    &:hover::after {
-        content: "";
-        position: absolute;
-        left: 0;
-        bottom: 0px;
-        width: 100%;
-        height: 1px;
-        background: currentColor;
-    }
+  &:hover {
+    cursor: pointer;
+    color: #c0c0ff;
+  }
 
-    & svg {
-        width: 30px;
-        height: 30px;
-        fill: currentColor;
-    }
-`
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 0;
+    height: 1px;
+    background: currentColor;
+    transition: width 0.3s ease-in-out;
+  }
+
+  &:hover::after {
+    width: 100%;
+  }
+
+  & svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+    transition: transform 0.2s ease;
+  }
+
+  &:hover svg {
+    transform: translateX(-3px);
+  }
+`;
+
+const CompanyTitle = styled.h2`
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 16px 0;
+  letter-spacing: 0.5px;
+`;
 
 const InfoBox = styled.div`
-    margin-top: 15px;
-    display: flex;
-    flex-direction: row;
-    gap: 150px;
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
 
-    & > div {
+  & > div {
+    padding: 8px 0;
+  }
 
-    }
-
-    & span {
-        font-weight: bolder;
-
-    }
-`
+  & span {
+    font-weight: 600;
+    color: #a0a0ff;
+  }
+`;
 
 const Nav = styled.div`
-    margin-top: 30px;
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-`
+  margin-top: 30px;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 10px;
+`;
 
+const StyledNavItem = styled.div`
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  background-color: ${props => props.active ? '#3a3a6a' : 'transparent'};
+  color: ${props => props.active ? '#ffffff' : '#a0a0a0'};
+
+  &:hover {
+    cursor: pointer;
+    background-color: ${props => props.active ? '#3a3a6a' : '#2a2a3a'};
+  }
+`;
+
+const Sidebar = styled.div`
+  background-color: #1a1a2e;
+  padding: 20px 0;
+  border-right: 1px solid #333;
+  grid-row: 2;
+  grid-column: 1;
+`;
+
+const MenuItem = styled.div`
+  padding: 14px 20px;
+  font-weight: 500;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  background-color: ${props => props.active ? '#2a2a4a' : 'transparent'};
+  color: ${props => props.active ? '#ffffff' : '#d0d0d0;'};
+
+  &:hover {
+    background-color: ${props => props.active ? '#3a3a6a' : '#2a2a3a'};
+    cursor: pointer;
+    color: #ffffff;
+  }
+`;
+
+const ContentArea = styled.div`
+  grid-row: 2;
+  grid-column: 2;
+  padding: 20px;
+  background-color: #171722;
+  overflow: auto;
+`;
+
+const TableUniversal = lazy(() => import('./TableUniversal.jsx'));
 
 export function Client() {
-    const [info, setInfo] = useState({})
-    const [nav, setNav] = useState("info")
-    // const [isCoordination, setIsCoordination] = useState(false)
-    const { inn } = useParams()
-    const navigate = useNavigate()
-    // const urlHistory = useSelector((state) => state.global.urlHistory);
+    const {inn} = useParams();
+    const navigate = useNavigate();
 
+    const [nav, setNav] = useState("info");
+    const [sidebarNav, setSidebarNav] = useState("");
+    const [info, setInfo] = useState({});
 
     useEffect(() => {
-        activesAPI.getInfo(inn).then(data => setInfo(data.data)).catch(console.log)
-        // setIsCoordination(urlHistory[1] === "/coordination")
-    }, [])
+        activesAPI.getInfo(inn)
+            .then(data => setInfo(data.data))
+            .catch(console.log)
+    }, [inn]);
+
+    const mainNavItems = useMemo(() => [
+        {key: "info", label: "Информация о должнике"},
+        {key: "actives", label: "Активы должника"},
+        {key: "interaction", label: "Взаимодействие"},
+    ], []);
+
+    const sidebarItems = useMemo(() => ({
+        info: ["Постановления", "Статистика по активам", "Дебиторская задолженность"],
+        actives: ["Транспорт", "Недвижимость", "Земельные участки", "Дебиторская задолженность", "Иные активы"],
+        interaction: ["Направление ходатайства в ГМУ", "Примечание ТНО"]
+    }), []);
+
+
+    const MyButton = () => (
+        <button>Нажми меня</button>
+    );
+
+    const contentMap = useMemo(() => ({
+        info: {
+            "Постановления": <TableResolutions/>,
+            "Статистика по активам": <ActivesStatistics/>,
+            "Дебиторская задолженность": <DebitTable/>,
+        },
+        actives: {
+            'Транспорт': (
+                <TableUniversal
+                    type="transport"
+                    headers={tableHeadersTransport}
+                    selectorKey="transport"
+                    RowComponent={TableRowTransport}
+                />
+            ),
+            'Недвижимость': (
+                <TableUniversal
+                    type="property"
+                    headers={tableHeadersProperty}
+                    selectorKey="property"
+                    RowComponent={TableRowProperty}
+                />
+            ),
+            'Земельные участки': (
+                <TableUniversal
+                    type="ground"
+                    headers={tableHeadersGround}
+                    selectorKey="ground"
+                    RowComponent={TableRowProperty}
+                />
+            ),
+            'Дебиторская задолженность': (
+                <TableUniversal
+                    type="debit"
+                    headers={tableHeadersDebit}
+                    selectorKey="debit"
+                    RowComponent={TableRowDebit}
+                />
+            ),
+            "Иные активы": (
+                <TableUniversal
+                    type="another"
+                    headers={tableHeadersAnother}
+                    selectorKey="another"
+                    RowComponent={TableOtherAssets}
+                    Button={MyButton}
+                />
+            )
+        },
+        interaction: {
+            "Направление ходатайства в ГМУ": (
+                <InteractionResultForm/>
+            ),
+            'Примечание ТНО': (
+                'Примечание ТНО'
+            )
+        }
+    }), []);
+
+    const handleNavClick = useCallback((key) => {
+        setNav(key);
+        setSidebarNav("");
+    }, []);
+
+    const handleSidebarClick = useCallback((item) => {
+        setSidebarNav(item);
+    }, []);
+
+    const handleBackClick = useCallback(() => {
+        navigate(-1);
+    }, [navigate]);
+
+    const currentContent = useMemo(() => {
+        if (!nav || !sidebarNav) return <div>Выберите раздел</div>;
+        return contentMap[nav]?.[sidebarNav] || <div>Выберите раздел</div>;
+    }, [nav, sidebarNav, contentMap]);
 
     return (
         <>
-            <div></div>
+            <GlobalStyle/>
             <Container>
                 <InfoBlock>
-                    <Back onClick={() => navigate(-1)}>
+                    <Back onClick={handleBackClick}>
                         <svg viewBox="0 0 24 24">
-                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
                         </svg>
                         &emsp;
                         Назад
                     </Back>
-                    <h2>{info.name}</h2>
+                    <CompanyTitle>{info.name}</CompanyTitle>
                     <InfoBox>
                         <div><span>ИНН:</span>&emsp;{info.inn}</div>
                         <div><span>Код НО:</span>&emsp;{info.kno}</div>
@@ -148,19 +299,39 @@ export function Client() {
                         {(info.sosp_code) && <div><span>Код СОСП:</span>&emsp;{info.sosp_code}</div>}
                     </InfoBox>
                     <Nav>
-                        <NavItem active={nav === "info"} onClick={() => setNav("info")}>Информация о должнике</NavItem>
-                        <NavItem active={nav === "actives"} onClick={() => setNav("actives")}>Активы должника</NavItem>
-                        {/* (isCoordination) && <NavItem active={nav === "hodatai"} onClick={() => setNav("hodatai")}>Направление ходатайства в ГМУ</NavItem> */}
-                        {/* (isCoordination) && <NavItem active={nav === "tno"} onClick={() => setNav("tno")}>Примечание ТНО</NavItem> */}
-                        {/* <NavItem active={nav === "details"} onClick={() => setNav("details")}>Детализация индикаторов работы </NavItem> */}
+                        {mainNavItems.map(({key, label}) => (
+                            <StyledNavItem
+                                key={key}
+                                active={nav === key}
+                                onClick={() => handleNavClick(key)}
+                            >
+                                {label}
+                            </StyledNavItem>
+                        ))}
                     </Nav>
                 </InfoBlock>
-                {(nav === "info") && <Info />}
-                {(nav === "actives") && <Actives />}
-                {/* {(nav === "hodatai") && <Hodatai />}
-                {(nav === "tno") && <Tno />}
-                {(nav === "details") && <Details />} */}
+
+                <Sidebar>
+                    {sidebarItems[nav]?.map(item => (
+                        <MenuItem
+                            key={item}
+                            active={sidebarNav === item}
+                            onClick={() => handleSidebarClick(item)}
+                        >
+                            {item}
+                        </MenuItem>
+                    ))}
+                </Sidebar>
+
+                <ContentArea>
+                    <Suspense fallback={<div>Загрузка...</div>}>
+                        {currentContent}
+                    </Suspense>
+                </ContentArea>
             </Container>
         </>
-    )
+    );
 }
+
+export default React.memo(Client);
+
