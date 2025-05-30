@@ -205,15 +205,22 @@ export const Main = () => {
 
     console.log('tableData', tableData)
 
-    const {pageKey, headings} = useMemo(() => {
-        if (location.pathname.includes("/coordination")) {
-            return {pageKey: "Index", headings: headingsCoordination};
-        } else if (location.pathname.includes("/derivative")) {
-            return {pageKey: "DerivativeDebt", headings: headingsDerivative};
+
+    const { pageKey, headings } = useMemo(() => {
+        if (location.pathname === "/coordination-archive") {
+            return { pageKey: "IndexArchive", headings: headingsCoordination };
+        } else if (location.pathname === "/coordination") {
+            return { pageKey: "Index", headings: headingsCoordination };
+        } else if (location.pathname === "/derivative-archive") {
+            return { pageKey: "DerivativeDebtArchive", headings: headingsDerivative };
+        } else if (location.pathname === "/derivative") {
+            return { pageKey: "DerivativeDebt", headings: headingsDerivative };
         } else {
-            return {pageKey: "default", headings: []};
+            return { pageKey: "default", headings: [] };
         }
     }, [location.pathname]);
+
+
 
 
     useEffect(() => {
@@ -276,7 +283,7 @@ export const Main = () => {
     }
 
     const renderTableCells = (row, rowIndex, pageKey) => {
-        if (pageKey === "Index") {
+        if (pageKey === "Index" || pageKey === "IndexArchive") {
             return (
                 <>
                     <td>{rowIndex + 1}</td>
@@ -296,7 +303,7 @@ export const Main = () => {
                     <td className={codeIndicators[row.indicators.collectionAccountsReceivable]}>{formatNumber(row.debitor)}</td>
                 </>
             );
-        } else if (pageKey === "DerivativeDebt") {
+        } else if (pageKey === "DerivativeDebt" || pageKey === 'DerivativeDebtArchive') {
             return (
                 <>
                     <td>{rowIndex + 1}</td>

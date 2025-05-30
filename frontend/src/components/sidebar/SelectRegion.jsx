@@ -10,18 +10,38 @@ export const SelectRegion = () => {
     const regions = useSelector((state) => state.global.regions);
     const selectedRegion = useSelector((state) => state.global.selectedRegion);
 
+    // useEffect(() => {
+    //     let pageKey = "default";
+    //
+    //     if (location.pathname.startsWith("/coordination")) {
+    //         pageKey = "Index";
+    //     } else if (location.pathname.startsWith("/derivative")) {
+    //         pageKey = "DerivativeDebt";
+    //     }
+    //
+    //     dispatch(fetchGetRegions(pageKey));
+    //     dispatch(setSelectedRegion(null)); // сбрасываем регион при смене страницы
+    // }, [dispatch, location.pathname]);
+
     useEffect(() => {
         let pageKey = "default";
 
-        if (location.pathname.startsWith("/coordination")) {
+        if (location.pathname === "/coordination-archive") {
+            pageKey = "IndexArchive";
+        } else if (location.pathname === "/coordination") {
             pageKey = "Index";
-        } else if (location.pathname.startsWith("/derivative")) {
+        } else if (location.pathname === "/derivative-archive") {
+            pageKey = "DerivativeDebtArchive";
+        } else if (location.pathname === "/derivative") {
             pageKey = "DerivativeDebt";
         }
 
         dispatch(fetchGetRegions(pageKey));
         dispatch(setSelectedRegion(null)); // сбрасываем регион при смене страницы
     }, [dispatch, location.pathname]);
+
+
+
 
 
 

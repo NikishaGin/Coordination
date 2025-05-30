@@ -1,10 +1,14 @@
 import { service } from "../../queries/selectors.js"
+import { isArchive, isDerivedDebt } from "../../utils/controllers_utils.js";
 
 
 export function getRegions(request, response) {
     const page = request.params.page
-    const is_derivative_debt = +["DerivativeDebt", "DerivativeDebtArchive"].includes(page)
-    const is_archive = +["IndexArchive", "DerivativeDebtArchive"].includes(page)
+    const is_derivative_debt = isDerivedDebt(page)
+    const is_archive = isArchive(page)
+
+    console.log(page, is_derivative_debt, is_archive)
+
     service.getRegions(is_derivative_debt, is_archive).then(data => response.end(JSON.stringify(data))).catch(console.log)
 }
 
