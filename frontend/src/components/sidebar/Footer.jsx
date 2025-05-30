@@ -3,7 +3,7 @@ import {useNavigate} from "react-router";
 import styled from 'styled-components';
 import {useDispatch, useSelector} from "react-redux";
 import resetStore from "../../store/store"
-import {fetchChangeServiceMode, fetchCheckServiceMode} from "../../store/globalSlice.js";
+import {fetchChangeServiceMode} from "../../store/globalSlice.js";
 import {ButtonContainer, Button} from "../buttons/Button.jsx";
 
 

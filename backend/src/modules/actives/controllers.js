@@ -9,9 +9,6 @@ export async function getTables(request, response) {
     const is_derivative_debt = +["DerivativeDebt", "DerivativeDebtArchive"].includes(page)
     const is_archive = +["IndexArchive", "DerivativeDebtArchive"].includes(page)
     const activesAggregatedData = await actives.getTables(regionCode, is_derivative_debt, is_archive)
-
-    console.log(actives.getTables(regionCode, is_derivative_debt, is_archive).toString())
-
     for (const row of activesAggregatedData) {
         for (const fieldName in row) {
             if (typeof row[fieldName] === "number") {

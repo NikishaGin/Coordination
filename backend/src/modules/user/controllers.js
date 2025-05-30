@@ -25,6 +25,7 @@ export async function loginUser(request, response) {
 export async function checkServiceMode(_, response) {
     const data = await service.checkServiceMode()
     const serviceMode = Boolean(data.value)
+    console.log(serviceMode)
     response.status(200).json(serviceMode)
 }
 

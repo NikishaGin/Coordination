@@ -40,6 +40,7 @@ export const useLogoutUser = (isAuth) => {
 
         if (serviceMode && (role !== "admin")) {
             resetStore()
+            window.location.reload()
             return
         }
 

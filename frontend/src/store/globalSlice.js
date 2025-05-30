@@ -1,5 +1,6 @@
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
-import { serviceAPI } from "../api/index.js";
+import {serviceAPI, userAPI} from "../api/index.js";
+import * as response from "react-router";
 
 
 
@@ -35,7 +36,8 @@ export const fetchCheckServiceMode = createAsyncThunk(
     "global/fetchCheckServiceMode",
     async (_, {rejectWithValue}) => {
         try {
-            const response = await serviceAPI.checkServiceMode();
+            const response = await userAPI.checkServiceMode();
+            console.log(response.data);
             return response.data
         } catch (error) {
             console.error('Ошибка при загрузке данных:', error);
@@ -47,9 +49,11 @@ export const fetchCheckServiceMode = createAsyncThunk(
 
 export const fetchChangeServiceMode = createAsyncThunk(
     "global/fetchChangeServiceMode",
-    async (_, {rejectWithValue}) => {
+    async (_, {rejectWithValue, dispatch}) => {
         try {
-            await serviceAPI.changeServiceMode();
+            await userAPI.changeServiceMode();
+            console.log("111111111111111111111");
+            dispatch(fetchCheckServiceMode())
         } catch (error) {
             console.error('Ошибка при загрузке данных:', error);
             return rejectWithValue(error.message);
@@ -115,9 +119,6 @@ const globalSlice = createSlice({
             })
             .addCase(fetchCheckServiceMode.fulfilled, (state, action) => {
                 state.serviceMode = action.payload;
-            })
-            .addCase(fetchChangeServiceMode.fulfilled, (state) => {
-                state.serviceMode = !state.serviceMode;
             })
     }
 });

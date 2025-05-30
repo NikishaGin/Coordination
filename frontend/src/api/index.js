@@ -22,7 +22,8 @@ instance.interceptors.request.use(config => {
 // API для управления авторизацией пользователя
 export const userAPI = {
     loginUser: (login, password) => instance.post("/user/login", { login, password }), // Авторизация с предоставлением информации о пользователе и JWT-токена
-    verifyUser: () => instance.get("/user/verify")                                          // Верифекация пользователя - проверка валидности JWT-токена
+    checkServiceMode: () => instance.get(`/user/check-service-mode`),
+    changeServiceMode: () => instance.post(`/user/change-service-mode`)
 }
 
 
@@ -30,8 +31,6 @@ export const userAPI = {
 export const serviceAPI = {
     getRegions: (page) => instance.get(`/service/get-regions/${page}`),
     getDebtTypes: () => instance.get(`/service/get-debt-types`),
-    checkServiceMode: () => instance.get(`/service/check-service-mode`),
-    changeServiceMode: () => instance.post(`/service/change-service-mode`)
 }
 
 // API для получения информации, связанной с активыми
@@ -48,8 +47,9 @@ export const activesAPI = {
 
 
 export const downloadAPI = {
-    getStatistics: (isDerived, regionCode, innList) => instance.get("/download/get-statistics", { params: { isDerived, regionCode, innList }, responseType: 'blob' }),
-    getStatisticsIP: (isDerived, regionCode, innList) => instance.get("/download/get-statistics-IP", { params: { isDerived, regionCode, innList }, responseType: 'blob' })
+    getStatistics: (innList, isDerived, isArchive) => instance.get("/download/get-statistics", { params: {innList, isDerived, isArchive}, responseType: 'blob' }),
+    getStatisticsIP: (innList, isDerived, isArchive) => instance.get("/download/get-statistics-IP", { params: {innList, isDerived, isArchive}, responseType: 'blob' }),
+    getDebtorActivesStat: (inn, isDerived, isArchive) => instance.get("/download/get-debtor-actives-stat", { params: {inn, isDerived, isArchive}, responseType: 'blob' }),
 }
 
 
