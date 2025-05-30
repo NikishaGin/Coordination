@@ -23,13 +23,12 @@ const fadeIn = keyframes`
 // Main Container
 export const Container = styled.div`
   height: 100%;
-  overflow: auto;
+  overflow-y: auto;
   padding: 16px;
   color: ${textColor};
   font-family: 'Inter', sans-serif;
 
   /* Custom scrollbar styles */
-
   &::-webkit-scrollbar {
     width: 8px;
   }
@@ -49,28 +48,6 @@ export const Container = styled.div`
   }
 `;
 
-export const Title = styled.h2`
-  font-size: 20px;
-  margin-bottom: 16px;
-  color: ${textColor};
-  font-weight: 500;
-`;
-
-export const AddButton = styled.button`
-  background-color: #3a3a6a;
-  color: #ffffff;
-  border: 1px solid #3a3a6a;
-  padding: 10px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-bottom: 16px;
-
-  &:hover {
-    background-color: #4a4a7a;
-  }
-`;
-
 export const FormContainer = styled.form`
   background-color: ${secondaryColor};
   padding: 16px;
@@ -78,6 +55,27 @@ export const FormContainer = styled.form`
   margin-bottom: 16px;
   animation: ${fadeIn} 0.3s ease;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  max-height: 90vh;
+  overflow-y: auto;
+  
+  /* Custom scrollbar styles */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
 `;
 
 export const FormGroup = styled.div`
@@ -107,6 +105,51 @@ export const DateInput = styled.input`
 
   &::-webkit-calendar-picker-indicator {
     filter: invert(1);
+  }
+`;
+
+export const NumericInput = styled.input`
+  width: 100%;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: ${textColor};
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3);
+  }
+  
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+`;
+
+export const NotesTextarea = styled.textarea`
+  width: 100%;
+  min-height: 80px;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: ${textColor};
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3);
+  }
+  
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.5);
   }
 `;
 
@@ -186,6 +229,11 @@ export const FormActions = styled.div`
   display: flex;
   gap: 12px;
   margin-top: 16px;
+  position: sticky;
+  bottom: 0;
+  background-color: ${secondaryColor};
+  padding-top: 16px;
+  z-index: 1;
 `;
 
 export const SaveButton = styled.button`
@@ -229,6 +277,28 @@ export const CancelButton = styled.button`
 
   &:active {
     transform: translateY(0);
+  }
+`;
+
+export const Title = styled.h2`
+  font-size: 20px;
+  margin-bottom: 16px;
+  color: ${textColor};
+  font-weight: 500;
+`;
+
+export const AddButton = styled.button`
+  background-color: #3a3a6a;
+  color: #ffffff;
+  border: 1px solid #3a3a6a;
+  padding: 10px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 16px;
+
+  &:hover {
+    background-color: #4a4a7a;
   }
 `;
 
@@ -335,7 +405,6 @@ export const NoDataText = styled.span`
 `;
 
 export const EmptyState = styled.div`
-  
   text-align: center;
   padding: 24px 16px;
   color: ${textColor};

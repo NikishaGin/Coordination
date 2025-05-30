@@ -17,6 +17,7 @@ import debitReducer from "./debitSlice.js";
 import fileStorageReducer from "./fileStorageSlice.js";
 import activesReducer from "./activesSlice.js";
 import appStatusReducer from "./appStatusSlice.js";
+import interactionsReducer from "./interactionsSlice.js";
 
 
 const persistConfig = {
@@ -33,6 +34,7 @@ const rootReducer = combineReducers({
     fileStorage: fileStorageReducer,
     actives: activesReducer,
     appStatus: appStatusReducer,
+    interactions: interactionsReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

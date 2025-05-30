@@ -4,7 +4,7 @@ import { fileStorageAPI } from "../api/index.js";
 
 
 export const fetchGetDocuments = createAsyncThunk(
-    "fileStoragefetchGetDosuments",
+    "fileStorage/fetchGetDosuments",
     async (pathname, {rejectWithValue}) => {
         try {
             const source = pathname.split("-").pop()

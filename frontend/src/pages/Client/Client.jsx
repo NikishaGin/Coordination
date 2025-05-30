@@ -17,6 +17,7 @@ import {
     tableHeadersProperty,
     tableHeadersTransport
 } from "./tableHeaders.js";
+import TnoInteractionResultForm from "./sections/Interaction/TnoInteractionResultForm.jsx";
 
 const GlobalStyle = createGlobalStyle`
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -256,7 +257,7 @@ export function Client() {
                 <InteractionResultForm/>
             ),
             'Примечание ТНО': (
-                'Примечание ТНО'
+                <TnoInteractionResultForm/>
             )
         }
     }), []);

@@ -6,10 +6,6 @@ import { ACTIVES } from "../types.js"
 
 const sumPrices = (tableNames, field) => db.ref(db.raw(tableNames.map(table => `IFNULL(${table}.${field}, 0.00)`).join(" + "))).as(field)
 
-
-
-
-
 export async function tableActives(inn, modifyFunc=() => undefined) {
     return {
         transport: await db("transport")
@@ -38,8 +34,6 @@ export async function tableActives(inn, modifyFunc=() => undefined) {
 }
 
 
-
-
 export const service = {
     async getUser(login) {
         return await db("users").select([
@@ -59,12 +53,15 @@ export const service = {
     },
 
     async changeServiceMode() {
-        const currValue = await db("settings").first("value")
-        return await db("settings").update({ value: !currValue.value })
+        let currValue = await db("settings").first("value")
+        console.log(currValue)
+        return await db("settings").update({
+            value: !currValue.value
+        })
     },
 
     getRegions(is_derivative_debt, is_archive) {
-        const query = db('meta')
+        return db('meta')
             .select(db.raw('DISTINCT meta.region AS regionCode'), 'regions.regionName AS regionName')
             .leftJoin('resolutions', 'meta.inn', 'resolutions.inn')
             .leftJoin('regions', db.raw('meta.region COLLATE utf8mb4_general_ci = regions.regionCode'))
@@ -73,11 +70,6 @@ export const service = {
                 'resolutions.is_archive': is_archive
             })
             .orderBy('meta.region', 'asc')
-
-        // console.log(query.toString())
-
-
-        return query
     },
 
     getDebtTypes() {
@@ -126,16 +118,6 @@ export const actives = {
         }
         return await tableActives(inn, modify).then(Boolean)
     },
-
-
-
-
-
-
-
-
-
-
 
     getTables(regionCode, is_derivative_debt, is_archive) {
         return db('meta')
@@ -211,44 +193,13 @@ export const actives = {
             .select("total_sum")
             .where("inn", inn)
     },
-
-
-
-
-    getActives(inn, nameActive, modifyFunc=() => undefined) {
-        const tableName = (nameActive === "ground") ? "property" : nameActive
-        db.modify(modifyFunc).from(function () {
-            this
-                .from(tableName)
-                .select([
-                    "id", "is_verified", "obj_status", "obj_status_manual",
-                    "arrest_propperty", "arrest_sum", "wanted_open", "wanted_close", "wanted_result",
-                    "evaluation_submit", "evaluation_accept", "evaluation_sum",
-                    "realization_submit", "realization_sum_1", "realization_date_1", "realization_result_1",
-                    "realization_property_sum" , "not_realization_notification", "price_reduction_resolution",
-                    "price_reduction_sum", "realization_sum_2", "not_realization_notification_2", "realization_date_2",
-                    "realization_result_2", "property_to_debtor_act", "property_to_debtor_sum", "comment"
-                ])
-                .modify(query => {
-                    if (tableName !== "debit")
-                        query.select(["name", "cost", "lizing_name", "is_fns_lizing", "encumbrance_type", "encumbrance_date"])
-                    else
-                        query
-                            .select({ name: "debitor_names" })
-                            .select({ cost: "total_sum" })
-                            .select("date")
-                })
-        })
-
-
-        /*
+    getActives(inn, nameActive) {
         if (nameActive === "transport")
             return subqueries
                 .getActivesDetails("transport")
                 .select({ number: "state_number" })
                 .where("inn", inn)
                 .andWhere("status", "<>", 2)
-                .modify(modifyFunc)
         else if (nameActive === "property")
             return subqueries
                 .getActivesDetails("property")
@@ -259,7 +210,6 @@ export const actives = {
                 .where("inn", inn)
                 .andWhere("status", "<>", 2)
                 .andWhere("type_id", 2)
-                .modify(modifyFunc)
         else if (nameActive === "ground")
             return subqueries
                 .getActivesDetails("property")
@@ -270,7 +220,6 @@ export const actives = {
                 .where("inn", inn)
                 .andWhere("status", "<>", 2)
                 .andWhere("type_id", 4)
-                .modify(modifyFunc)
         else if (nameActive === "debit")
             return subqueries.getActivesDetails("debit")
                 .select("dz_foreclose_date")
@@ -279,14 +228,10 @@ export const actives = {
                 .select("dz_cancel_foreclose_sum")
                 .select("debitor_address")
                 .where("inn", inn)
-                .modify(modifyFunc)
         else if (nameActive === "another")
             return subqueries
                 .getActivesDetails("another")
                 .where("inn", inn)
-                .modify(modifyFunc)
-
-         */
     }
 }
 
@@ -310,7 +255,7 @@ const buildCommonFieldsQuery = (withActives=true, withDebit=true, regionCode, in
         "property_to_debtor_sum"
     ];
 
-     return db("meta")
+    return db("meta")
         .select([
             "meta.kno as kno",
             "meta.inn as inn",
@@ -328,7 +273,7 @@ const buildCommonFieldsQuery = (withActives=true, withDebit=true, regionCode, in
                 query.sumFieldsOfFewTables(tables, field); // предполагается, что тут тоже alias'ы
             });
         })
-         .groupBy("meta.inn")
+        .groupBy("meta.inn")
         .whereIn("meta.inn", innList)
         .andWhere("meta.region", regionCode);
 };
@@ -378,4 +323,14 @@ export const fileStorage = {
     saveDocument: (data) => {
         return db("library").insert(data)
     }
+}
+
+
+export const interactions = {
+    getInteractions: (source, inn) => {
+        return db("interactions")
+            .select(["referral_date", "referral_date", "result", "kno", "note", "filename_1", "filename_2"])
+            .where({ source, inn })
+    },
+    //saveInteraction: ()
 }

@@ -1,14 +1,22 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import InteractionCard from './TnoInteractionCard.jsx';
 import {Container, AddButton, InteractionsList, EmptyState} from './styles.js';
 import TnoInteractionForm from "./TnoInteractionForm.jsx";
 import TnoInteractionCard from "./TnoInteractionCard.jsx";
+import { fetchGetInteractions } from "../../../../store/interactionsSlice.js";
+import { useParams } from "react-router";
+import { useDispatch, useSelector } from "react-redux";
 
 const TnoInteractionResultForm = () => {
-    const [interactions, setInteractions] = useState([]);
+    const {inn} = useParams()
+    const dispatch = useDispatch();
+    const interactions = useSelector((state) => state.interactions.interactions);
     const [isFormOpen, setIsFormOpen] = useState(false); // флаг открыта ли форма
     const [editingIndex, setEditingIndex] = useState(null); // Если null значит добавляется новая запись
 
+    useEffect(() => {
+        dispatch(fetchGetInteractions({source: "tno", inn}))
+    }, [])
 
     const handleAddClick = () => {
         setIsFormOpen(true);
@@ -24,9 +32,9 @@ const TnoInteractionResultForm = () => {
         if (editingIndex !== null) {
             const updatedInteractions = [...interactions];
             updatedInteractions[editingIndex] = interactionData;
-            setInteractions(updatedInteractions);
+            setInteractions(updatedInteractions); ////////////////////////
         } else {
-            setInteractions([...interactions, interactionData]);
+            setInteractions([...interactions, interactionData]); //////////////////
         }
         setIsFormOpen(false);
         setEditingIndex(null);

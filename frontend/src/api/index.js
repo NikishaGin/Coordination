@@ -57,3 +57,9 @@ export const fileStorageAPI = {
     getDocuments: (source) => instance.get(`/file-storage/get-documents/${source}`),
     saveDocument: (source, formData) => instance.post(`/file-storage/save-document/${source}`, formData)
 }
+
+
+export const interactionAPI = {
+    getInteractions: (source, inn) => instance.get(`/interactions/get-interactions/${source}/${inn}`),
+    saveInteraction: (source, inn, type, formData) => instance.post(`/interactions/save-interaction/${source}/${inn}/${type}`, formData)
+}

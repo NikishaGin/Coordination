@@ -6,9 +6,6 @@ export function getRegions(request, response) {
     const page = request.params.page
     const is_derivative_debt = isDerivedDebt(page)
     const is_archive = isArchive(page)
-
-    console.log(page, is_derivative_debt, is_archive)
-
     service.getRegions(is_derivative_debt, is_archive).then(data => response.end(JSON.stringify(data))).catch(console.log)
 }
 
