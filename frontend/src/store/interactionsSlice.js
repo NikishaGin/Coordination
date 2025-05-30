@@ -20,8 +20,11 @@ export const fetchGetInteractions = createAsyncThunk(
 
 export const fetchSaveInteraction = createAsyncThunk(
     "interactions/fetchSaveInteraction",
-    async ({pathname, name, file}, {rejectWithValue}) => {
+    async ({type, data}, {rejectWithValue}) => {
         try {
+
+
+
             // const source = pathname.split("-").pop()
             // const formData = new FormData();
             // formData.append('name', name)

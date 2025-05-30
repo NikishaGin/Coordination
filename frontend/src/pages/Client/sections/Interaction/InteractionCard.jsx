@@ -1,4 +1,6 @@
 import {Card, CardHeader, CardBody, CardRow, RowLabel, RowValue, FileLink, EditButton, NoDataText} from './styles.js';
+import downloadExcel from '../../../../utils/downloadExcel.js'
+
 
 const InteractionCard = ({ data, onEdit }) => {
     const formatDate = (dateString) => {
@@ -30,25 +32,6 @@ const InteractionCard = ({ data, onEdit }) => {
         return file.name || 'Файл';
     };
 
-    const handleFileDownload = (file) => {
-        if (!file) return;
-
-        // Create a URL for the file
-        const fileUrl = URL.createObjectURL(file);
-
-        // Create a temporary link element
-        const link = document.createElement('a');
-        link.href = fileUrl;
-        link.download = file.name;
-
-        // Append to body, click, and remove
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        // Clean up the URL
-        URL.revokeObjectURL(fileUrl);
-    };
 
     return (
         <Card>
@@ -92,7 +75,7 @@ const InteractionCard = ({ data, onEdit }) => {
                                 href="#"
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    handleFileDownload(data.submissionFiles);
+                                    downloadExcel(data.submissionFiles);
                                 }}
                             >
                                 {getFileName(data.submissionFiles)}
@@ -111,7 +94,7 @@ const InteractionCard = ({ data, onEdit }) => {
                                 href="#"
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    handleFileDownload(data.resultFiles);
+                                    downloadExcel(data.resultFiles);
                                 }}
                             >
                                 {getFileName(data.resultFiles)}

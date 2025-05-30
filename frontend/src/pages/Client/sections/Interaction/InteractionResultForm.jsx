@@ -3,7 +3,7 @@ import InteractionForm from './InteractionForm.jsx';
 import InteractionCard from './InteractionCard.jsx';
 import {Container, AddButton, InteractionsList, EmptyState} from './styles.js';
 import { useDispatch, useSelector } from "react-redux";
-import { fetchGetInteractions } from "../../../../store/interactionsSlice.js";
+import { fetchGetInteractions, fetchSaveInteraction } from "../../../../store/interactionsSlice.js";
 import { useParams } from "react-router";
 
 const InteractionResultForm = () => {
@@ -28,24 +28,11 @@ const InteractionResultForm = () => {
     };
 
     const handleFormSubmit = (interactionData) => {
-
-
-        console.log(interactionData);
-
-
-        // if (editingIndex !== null) {
-        //
-        //
-        //     const updatedInteractions = [...interactions];
-        //     updatedInteractions[editingIndex] = interactionData;
-        //     setInteractions(updatedInteractions); ///////////////////////////////////////
-        // } else {
-        //     setInteractions([...interactions, interactionData]); ///////////////////////
-        // }
-
-
-
-
+        if (editingIndex !== null) {
+            dispatch(fetchSaveInteraction({type: "insert", data: interactionData}));
+        } else {
+            dispatch(fetchSaveInteraction({type: "update", data: interactionData}));
+        }
         setIsFormOpen(false);
         setEditingIndex(null);
     };

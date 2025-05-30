@@ -13,8 +13,18 @@ export async function getInteractions(request, response) {
     const { source, inn } = request.params
     const data = await interactions.getInteractions(source, inn)
 
+    const documents = data.map(item => {
 
-    response.status(200).json(data)
+
+
+        return {
+            name: item.original_filename,
+            filename: item.original_filename + "." + item.new_filename.split('.').pop()?.toLowerCase(),
+            url: `${DIR_FILE_STORE}/${item.new_filename}`
+        }
+    })
+
+    response.status(200).json(documents)
 }
 
 
