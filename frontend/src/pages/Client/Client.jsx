@@ -3,7 +3,7 @@ import {useNavigate, useParams} from "react-router";
 import styled, {createGlobalStyle} from "styled-components";
 import {activesAPI} from "../../api/index.js";
 import {TableResolutions} from "./sections/Info/TableResolutions.jsx";
-import DebitTable from "./sections/Info/TableAccountsReceivable.jsx";
+import DebitTable from "./sections/Info/DebitTable.jsx";
 import ActivesStatistics from "./sections/Info/ActivesStatistics.jsx";
 import {TableRowTransport} from "./sections/Actives/TableRowTransport.jsx";
 import {TableRowProperty} from "./sections/Actives/TableRowProperty.jsx";

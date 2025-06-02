@@ -11,8 +11,6 @@ export const fetchTableData = createAsyncThunk(
             dispatch(setLoading(true));
             const response = await activesAPI.getTables(pageKey, region);
 
-            // await new Promise((resolve) => setTimeout(resolve, 500));
-
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);

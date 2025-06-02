@@ -58,31 +58,6 @@ const EditInput = styled.input`
   }
 `;
 
-const DateEditInput = styled(EditInput)`
-  &::-webkit-calendar-picker-indicator {
-    filter: invert(1);
-    margin-right: 8px;
-  }
-`;
-
-const TextareaInput = styled.textarea`
-  background-color: transparent;
-  border: none;
-  outline: none;
-  font-size: inherit;
-  color: #ffffff;
-  width: 100%;
-  padding: 4px;
-  box-sizing: border-box;
-  resize: none;
-  min-height: 24px;
-  
-  &:focus {
-    background-color: #2a2a4a;
-    border-radius: 4px;
-  }
-`;
-
 const IconsContainer = styled.div`
   position: absolute;
   right: 8px;
@@ -121,16 +96,13 @@ export function EditableCell({ value, onSave, type = "text", isEditable = true }
     const [tempValue, setTempValue] = useState(formatValue(value, type));
     const [hasChanges, setHasChanges] = useState(false);
     const inputRef = useRef(null);
-    const [inputHeight, setInputHeight] = useState('auto');
 
-    // Check if the content is long enough to need a textarea
     const isLongText = type === "text" && value && value.length > 50;
 
     useEffect(() => {
         if (editing) {
             inputRef.current?.focus();
 
-            // Auto-resize for textarea
             if (inputRef.current && isLongText) {
                 adjustTextareaHeight();
             }

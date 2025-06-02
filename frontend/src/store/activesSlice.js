@@ -1,5 +1,6 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {activesAPI} from "../api/index.js";
+import {setLoading} from "./appStatusSlice.js";
 
 function  cleanTotalSum(value){
     if (typeof value === 'number') return value;
@@ -7,7 +8,7 @@ function  cleanTotalSum(value){
         return Number(value.replace(/\s/g, '').replace(',', '.'));
     }
     return 0; // или выбросить ошибку
-};
+}
 
 // Общая асинхронная загрузка
 export const fetchActives = createAsyncThunk(
@@ -28,9 +29,8 @@ export const updateActiveThunk = createAsyncThunk(
     'actives/updateActive',
     async ({id, type, inn, updatedRow}, {rejectWithValue}) => {
         try {
-            console.log('updatedRow', updatedRow)
             await activesAPI.updateActives(type, inn, {[id]: updatedRow});
-
+            console.log('updatedRow', updatedRow)
             return updatedRow;
         } catch (error) {
             console.error("Ошибка при обновлении:", error);

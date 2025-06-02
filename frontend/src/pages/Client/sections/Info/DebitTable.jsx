@@ -13,7 +13,6 @@ const Container = styled.div`
   overflow: hidden;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 `;
-
 const TableWrapper = styled.div`
   width: 100%;
   height: 100%;
@@ -33,7 +32,6 @@ const TableWrapper = styled.div`
     border-radius: 4px;
   }
 `;
-
 const Table = styled.table`
   width: 100%;
   table-layout: fixed;
@@ -41,7 +39,6 @@ const Table = styled.table`
   margin-top: 10px;
   font-size: 14px;
 `;
-
 const TableHeader = styled.thead`
   background-color: #2a2a40;
 
@@ -53,7 +50,6 @@ const TableHeader = styled.thead`
     letter-spacing: 0.5px;
   }
 `;
-
 const TableRow = styled.tr`
   border-bottom: 1px solid #333;
   transition: background-color 0.2s ease;
@@ -66,22 +62,17 @@ const TableRow = styled.tr`
     background-color: #2a2a50;
   }
 `;
-
 const TableCell = styled.td`
   padding: 12px 15px;
   color: #e0e0e0;
 `;
-
 const NumberCell = styled(TableCell)`
   font-family: 'Inter', monospace;
   color: #a0d0ff;
 `;
-
 const DateCell = styled(TableCell)`
   color: #c0c0c0;
 `;
-
-
 const ButtonBox = styled.div`
   display: flex;
   justify-content: flex-start;
@@ -92,8 +83,6 @@ const ButtonBox = styled.div`
   bottom: 0;
   z-index: 2;
 `;
-
-
 
 export default function DebitTable() {
     const dispatch = useDispatch();

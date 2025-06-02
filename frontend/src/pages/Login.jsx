@@ -15,18 +15,21 @@ const Wrapper = styled.div`
   align-items: center;
   height: 100vh;
   width: 100vw;
+  background-color: ${props => props.theme.colors.background};
 `;
 
 const Container = styled.div`
+  background-color: ${props => props.theme.colors.surface};
+  border: 1px solid ${props => props.theme.colors.border};
   width: 35vw;
   padding: 32px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  border: 1px solid rgba(148, 160, 184, 0.4);
-  border-radius: 8px;
+  
+  border-radius: 4px;
   box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px -1px, rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px;
-  background-color: rgb(12, 16, 23);
+  
 `;
 
 const FieldGroup = styled.div`
@@ -35,8 +38,23 @@ const FieldGroup = styled.div`
   width: 100%;
   margin-bottom: 16px;
 
-  &:focus-within label {
-    color: rgb(2, 122, 242); // Цвет лейбла при фокусе на инпуте
+  input {
+    width: 100%;
+    padding: 10px 10px;
+    background-color: #232339;
+    border: 1px solid #333;
+    border-radius: ${props => props.theme.borderRadius.sm};
+    color: #ffffff;
+    transition: border-color 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: #a0a0ff;
+    }
+
+    &::placeholder {
+      color: #888;
+    }
   }
 `;
 
@@ -65,22 +83,17 @@ const Input = styled.input`
 `;
 
 const Button = styled.button`
-  color: black;
-  background-color: rgb(245, 246, 250);
-  box-shadow: rgb(189, 199, 219) 0px -1px 0px inset;
+  background-color: #3a3a6a;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
   padding: 8px 22px;
-  border: 1px solid rgb(245, 246, 250);
   cursor: pointer;
   width: 100%;
-  border-radius: 8px;
-  transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1),
-  box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1),
-  border-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
-    background-color: rgb(168, 170, 178); // Изменение фона при наведении
-    box-shadow: rgb(150, 160, 180) 0px -1px 0px inset; // Изменение тени
-    border-color: rgb(200, 210, 230); // Изменение цвета границы
+    background-color: #4a4a7a;
   }
 `;
 

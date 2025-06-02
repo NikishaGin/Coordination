@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import AssetForm from './AssetForm';
 import {useParams} from "react-router";
 import {useDispatch} from "react-redux";
-import {createDebitRow} from "../../../../store/debitSlice.js";
 import {createRow} from "../../../../store/activesSlice.js";
 
 const ModalOverlay = styled.div`

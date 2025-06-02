@@ -1,8 +1,12 @@
 import { Router } from 'express'
 import * as controllers from "./controllers.js"
+import {getUserMiddleware} from "../../middleware.js";
+
 
 
 const router = Router()
+
+router.use(getUserMiddleware)
 
 router.get("/get-table/:page/:regionCode", controllers.getTables)
 router.get("/get-info/:inn", controllers.getInfo)

@@ -1,10 +1,12 @@
-import React, {useEffect, useMemo} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {useParams} from 'react-router';
 import {useDispatch, useSelector} from 'react-redux';
 import {Container, TableWrapper, Table, TableHeader} from './TableStyles';
 import {fetchActives, updateActiveField, updateActiveThunk} from "../../store/activesSlice.js";
 import styled from "styled-components";
 import {AddOtherAssetsButton} from "./sections/Actives/AddOtherAssetsButton.jsx";
+import Snackbar from "./Snacbar.jsx";
+import LinearColor from "../../LinearColor.jsx";
 
 const ButtonBox = styled.div`
   display: flex;
@@ -20,7 +22,7 @@ const TableUniversal = ({type, headers, selectorKey, RowComponent, Button}) => {
     const dispatch = useDispatch();
     const data = useSelector((state) => state.actives[selectorKey]);
 
-    console.log('dataUnisersol', data)
+    const [snackbarVisible, setSnackbarVisible] = useState(false);
 
     useEffect(() => {
         if (!data || data.length === 0) {
@@ -28,11 +30,17 @@ const TableUniversal = ({type, headers, selectorKey, RowComponent, Button}) => {
         }
     }, [inn, dispatch, data, type]);
 
-    const handleValueChange = (id, field, newValue) => {
-        const updatedRow = {[field]: newValue};
-
-        dispatch(updateActiveThunk({id, type, inn, updatedRow}));
-        dispatch(updateActiveField({id, field, value: newValue, type}));
+    const handleValueChange = async (id, field, newValue) => {
+        const updatedRow = { [field]: newValue };
+        try {
+            const response = await dispatch(updateActiveThunk({ id, type, inn, updatedRow })).unwrap();
+            dispatch(updateActiveField({ id, field, value: newValue, type }));
+            if (response) {
+                setSnackbarVisible(true);
+            }
+        } catch (error) {
+            console.error("Ошибка при обновлении:", error);
+        }
     };
 
     const tableHeaders = useMemo(() => {
@@ -40,6 +48,18 @@ const TableUniversal = ({type, headers, selectorKey, RowComponent, Button}) => {
             <th key={i}>{header}</th>
         ));
     }, [headers]);
+
+
+    // Оптимизированный рендеринг строк
+    const renderRows = useMemo(() => {
+        return data.map((row) => (
+            <RowComponent
+                key={row.id}
+                row={row}
+                onValueChange={handleValueChange}
+            />
+        ));
+    }, [data, handleValueChange]);
 
     return (
         <>
@@ -52,15 +72,7 @@ const TableUniversal = ({type, headers, selectorKey, RowComponent, Button}) => {
                             </tr>
                         </TableHeader>
                         <tbody>
-                        {data.map((row) => {
-                            return (
-                                <RowComponent
-                                    key={row.id}
-                                    row={row}
-                                    onValueChange={handleValueChange}
-                                />
-                            );
-                        })}
+                        {renderRows}
                         </tbody>
                     </Table>
                 </TableWrapper>
@@ -70,6 +82,11 @@ const TableUniversal = ({type, headers, selectorKey, RowComponent, Button}) => {
                     <AddOtherAssetsButton titleBtn={'Добавить иные активы'}/>
                 </ButtonBox>
             }
+            <Snackbar
+                message="Данные успешно сохранены!"
+                visible={snackbarVisible}
+                onClose={() => setSnackbarVisible(false)}
+            />
         </>
     );
 };

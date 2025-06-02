@@ -23,7 +23,7 @@ export function isPasswordValid(password, passwordHash) {
 // Декодирование информации из JWT-токена
 export function decodeToken(token) {
     try {
-        const payload = jwt.verify(token)
+        const payload = jwt.verify(token, SECRET_KEY)
         return { isValid: true, payload }
     } catch(error) {
         return { isValid: false }

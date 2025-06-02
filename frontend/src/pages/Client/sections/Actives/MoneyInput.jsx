@@ -64,54 +64,59 @@ const IconButton = styled.button`
   }
 `;
 
-const formatValue = (val) => {
-    val = String(val ?? ""); // гарантируем, что это строка, даже если null/undefined
-    let cleanValue = val.replace(/[^\d.,]/g, "");
-    cleanValue = cleanValue.replace(",", ".");
-    const [int, frac] = cleanValue.split(".");
-    const intFormatted = int.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-    return frac !== undefined ? `${intFormatted},${frac}` : intFormatted;
+const formatMoney = (value) => {
+    if (value === null || value === undefined || value === "") return "";
+    const str = String(value);
+    const parts = str.replace(/\s/g, "").split(".");
+    const int = parts[0];
+    const frac = parts[1] ?? "";
+    const formattedInt = int.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    return frac ? `${formattedInt},${frac}` : formattedInt;
+};
+
+
+const parseMoney = (value) => {
+    const cleaned = value.replace(/\s/g, "").replace(",", ".");
+    const number = parseFloat(cleaned);
+    return isNaN(number) ? null : number;
 };
 
 export const MoneyInput = memo(({ value, onChange }) => {
-    const [editValue, setEditValue] = useState(formatValue(value || ""));
+    const [editValue, setEditValue] = useState(formatMoney(value));
     const [isEditing, setIsEditing] = useState(false);
     const inputRef = useRef(null);
 
     const handleInputChange = (e) => {
-        const formatted = formatValue(e.target.value);
-        setEditValue(formatted);
+        const raw = e.target.value;
+        // Оставляем только цифры и максимум одну запятую
+        const cleaned = raw
+            .replace(/[^\d,]/g, "")
+            .replace(/^([^,]*),?(.*)$/, (_, intPart, rest) => {
+                const restDigits = rest.replace(/,/g, "");
+                return `${intPart}${restDigits ? "," + restDigits : ""}`;
+            });
+
+        setEditValue(cleaned);
         setIsEditing(true);
     };
 
     const handleSave = () => {
-        if (onChange) {
-            const numericValue = parseFloat(
-                editValue.replace(/\s/g, "").replace(",", ".")
-            );
-
-            if (!isNaN(numericValue)) {
-                onChange(numericValue); // передаём число в базу
-            } else {
-                onChange(""); // или null, если поле пустое
-            }
-        }
+        const parsed = parseMoney(editValue);
+        onChange?.(parsed);
+        setEditValue(formatMoney(parsed));
         setIsEditing(false);
+        inputRef.current?.blur();
     };
 
-
     const handleCancel = () => {
-        setEditValue(formatValue(value || ""));
+        setEditValue(formatMoney(value));
         setIsEditing(false);
-        inputRef.current.blur();
+        inputRef.current?.blur();
     };
 
     const handleKeyDown = (e) => {
-        if (e.key === "Enter") {
-            handleSave();
-        } else if (e.key === "Escape") {
-            handleCancel();
-        }
+        if (e.key === "Enter") handleSave();
+        if (e.key === "Escape") handleCancel();
     };
 
     const hasText = editValue.trim().length > 0;
@@ -139,4 +144,5 @@ export const MoneyInput = memo(({ value, onChange }) => {
     );
 });
 
-MoneyInput.displayName = 'MoneyInput';
+MoneyInput.displayName = "MoneyInput";
+

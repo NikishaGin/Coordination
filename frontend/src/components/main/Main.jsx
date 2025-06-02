@@ -11,8 +11,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchTableData } from "../../store/tableDataSlice.js";
 import { DownloadCloud } from 'lucide-react';
 
-
-
 const Container = styled.div`
   background-color: ${props => props.theme.colors.background};
   padding-right: 24px;
@@ -210,23 +208,23 @@ export const Main = () => {
     const filters = useSelector((state) => state.global.filters);
     const tableData = useSelector((state) => state.tableData.tableData);
 
-
     const { pageKey, headings } = useMemo(() => {
-        const addrMap = {
-            "/coordination-archive": { pageKey: "IndexArchive",   headings: headingsCoordination },
-            "/coordination":         { pageKey: "Index",          headings: headingsCoordination },
-            "/derivative-archive":   { pageKey: "Index",          headings: headingsCoordination },
-            "/derivative":           { pageKey: "DerivativeDebt", headings: headingsDerivative   },
-            _:                       { pageKey: "default",        headings: [] },
-        };
-        return addrMap[location.pathname] || addrMap._;
+        if (location.pathname === "/coordination-archive") {
+            return { pageKey: "IndexArchive", headings: headingsCoordination };
+        } else if (location.pathname === "/coordination") {
+            return { pageKey: "Index", headings: headingsCoordination };
+        } else if (location.pathname === "/derivative-archive") {
+            return { pageKey: "DerivativeDebtArchive", headings: headingsDerivative };
+        } else if (location.pathname === "/derivative") {
+            return { pageKey: "DerivativeDebt", headings: headingsDerivative };
+        } else {
+            return { pageKey: "default", headings: [] };
+        }
     }, [location.pathname]);
-
 
     useEffect(() => {
         dispatch(fetchTableData({pageKey, region: selectedRegion}));
     }, [dispatch, pageKey, selectedRegion]);
-
 
     const filteredData = useMemo(() => {
         let data = [...tableData];

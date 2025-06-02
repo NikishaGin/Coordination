@@ -15,7 +15,10 @@ export const rootErrorHandler = (err, req, res, _) => {
 
 
 const authenticateOrSendError = (req, res, next) => {
-    const { isValid, payload } = decodeToken(req)
+    const token = req.headers.authorization
+    const { isValid, payload } = decodeToken(token)
+    console.log(isValid, payload)
+
     const errMessage = "Authentication faild"
 
     if (!isValid) {

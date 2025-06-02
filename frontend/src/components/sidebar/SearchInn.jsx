@@ -41,29 +41,32 @@ const SearchInput = styled.div`
 
 
 export const SearchInn = () => {
-
     const dispatch = useDispatch();
-    const inputValueInn = useSelector((state) => state.global.filters.inputValueInn);
+    const inputValueInn = useSelector(state => state.global.filters.inputValueInn);
 
-    const handleChange = (event) => {
-        dispatch(setInputValueInn(event.target.value)); // Обновляем значение инпута
+    const handleChange = (e) => {
+        const value = e.target.value;
+        if (/^\d*$/.test(value)) {
+            dispatch(setInputValueInn(value));
+        }
     };
 
     return (
         <FilterGroup>
             <SearchInput>
                 <Search size={18} />
-                <input type="text"
-                       value={inputValueInn}
-                       onChange={handleChange}
-                       onKeyPress={handlesInputInn.handleKeyPress}
-                       onPaste={handlesInputInn.handlePaste}
-                       placeholder="Поиск по ИНН"
+                <input
+                    type="text"
+                    inputMode="numeric"
+                    value={inputValueInn}
+                    onChange={handleChange}
+                    placeholder="Поиск по ИНН"
                 />
             </SearchInput>
         </FilterGroup>
     );
 };
+
 
 
 

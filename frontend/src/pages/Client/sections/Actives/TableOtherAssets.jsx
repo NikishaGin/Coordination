@@ -5,7 +5,6 @@ import {CustomInput} from "./CustomInput.jsx";
 import {MoneyInput} from "./MoneyInput.jsx";
 import {DatePickerCell} from "./DatePickerCell.jsx";
 import {formatNumber} from "../../../../utils/formatData.js";
-import {AddDebitButton} from "../Info/AddDebitButton.jsx";
 
 const objStatusOptions = [
     {text: "Арест", value: "arrest"},
@@ -44,11 +43,7 @@ export const TableOtherAssets = memo(({ row, onValueChange }) => {
     };
 
     const handleInputChange = (fieldName) => (val) => {
-        let cleanedVal = val;
-        if (fieldName.includes('sum')) {
-            cleanedVal = Number(val.replace(/\s/g, ''));
-        }
-        onValueChange(row.id, fieldName, cleanedVal);
+        onValueChange(row.id, fieldName, val); // val — уже число или null
     };
 
     const handleDateChange = (fieldName) => (date) => {
