@@ -1,35 +1,46 @@
-import crypto from "crypto"
 import fs from "fs";
-import { interactions } from "../../queries/selectors.js"
+import {createStorageDir, getExtension, saveFile} from "../fileStorage/service.js"
+import * as models from "./models.js"
 
 
-const DIR_FILE_STORE = "./FileStore/Interactions"
-if (!fs.existsSync(DIR_FILE_STORE))
-    fs.mkdirSync(DIR_FILE_STORE, { recursive: true })
 
+const DIR_STORAGE = "./FileStore/Interactions"
+createStorageDir(DIR_STORAGE)
 
 
 export async function getInteractions(request, response) {
     const { source, inn } = request.params
-    const data = await interactions.getInteractions(source, inn)
-
-    const documents = data.map(item => {
-
+    try {
+        const data = await models.getInteractions(source, inn)
 
 
-        return {
-            name: item.original_filename,
-            filename: item.original_filename + "." + item.new_filename.split('.').pop()?.toLowerCase(),
-            url: `${DIR_FILE_STORE}/${item.new_filename}`
-        }
-    })
+        const documents = data.map(item => {
+            return {
+                id: item.id,
+                submissionDate: item.submissionDate,
+                reviewDate: item.reviewDate,
+                result: item.result,
+                kno: item.kno,
+                note: item.note,
 
-    response.status(200).json(documents)
+                url_1: `${DIR_STORAGE}/${item.filename_1}`,
+                url_2: `${DIR_STORAGE}/${item.filename_2}`
+            }
+        })
+
+
+
+
+        const existingDocuments = documents.filter(({url}) => fs.existsSync(url));
+        response.status(200).json(existingDocuments);
+    } catch (error) {
+        console.log(error)
+        response.status(500).json([])
+    }
 }
 
 
-export
-function  saveInteraction(request, response) {
+export async function saveInteraction(request, response) {
     const { source, inn, type } = request.params
 
 }

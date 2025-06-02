@@ -1,3 +1,5 @@
+import db from '../../../connection.js';
+
 const getSourceName = isDerived =>
     isDerived
         ? "исполнительного листа"
@@ -69,3 +71,174 @@ export const headerStatisticsIP = isDerived => {
         status_ip:   `Статус ИП`
     }
 }
+
+const commonHeaders = {
+    region:          "Регион",
+    kno:             "Код НО",                     // kno без изменений
+    inn:             "ИНН должника",              // inn — в таблицах совпадает
+    metaName:        "Наименование должника",
+    status:          "Код статуса верификации выгрузки",
+    statusName:      "Статус верификации выгрузки",
+    load_date:       "Дата добавления/обновления данных",
+    debtor_category:        "Категория должника",
+    post_sum:        "Сумма всего по постановлениям по статье 47 НК РФ",
+    cur_debt:        "Текущий остаток по постановлениям по статье 47 НК РФ",
+};
+
+const enforcementHeaders = {
+    is_verified:                    "Верифицированы активы ФССП",
+    arrest_propperty:               "Арест имущества",
+    arrest_sum:                    "Сумма ареста (руб.)",
+    arrest_status:                 "Статус ареста",
+    evaluation_submit:             "Передано на оценку",
+    evaluation_accept:             "Принятие результатов оценки имущества",
+    evaluation_sum:                "Сумма оценки (руб.)",
+    appraisal_status:              "Статус оценки",
+    realization_submit:            "Передано на реализацию",
+    realization_property_sum:      "Сумма переданного имущества на реализацию",
+    sale_transfer_status:          "Статус передачи на реализацию",
+    realization_date_1:            "Дата первых торгов",
+    realization_result_1:          "Отчет о реализации (1 этап)",
+    realization_sum_1:             "Сумма реализованного имущества (руб.) (1 этап)",
+    realization_status_1:          "Статус реализации 1 этап",
+    not_realization_notification:  "Уведомление о не реализации",
+    price_reduction_resolution:    "Постановление о снижении цены",
+    price_reduction_sum:           "Сумма снижения цены (руб.)",
+    realization_status_2:          "Статус передачи на реализацию 2 этап",
+    realization_date_2:            "Дата вторых торгов",
+    realization_result_2:          "Отчет о реализации (2 этап)",
+    realization_sum_2:             "Сумма реализованного имущества (руб.) (2 этап)",
+    not_realization_notification_2:"Уведомление о нереализации (2 этап)",
+    realization_status_2_final:    "Статус реализации 2 этап",
+    property_to_debtor_act:        "Акт передачи имущества должнику",
+    return_sum:                    "Сумма возврата имущества должнику",
+    property_to_debtor_sum:        "Взыскано всего в ходе исполнительного производства (руб.)",
+    proceeding_end_date:           "Дата окончания (прекращения) исполнительного производства",
+    proceeding_end_reason:         "Основание окончания (прекращения) исполнительного производства",
+    proceeding_stop_date:          "Дата приостановления исполнительного производства",
+    proceeding_pending_date:       "Дата отложения исполнительного производства",
+    proceeding_terminate_date:     "Дата прекращения исполнительного производства",
+    comment:                       "Примечание"
+};
+
+const transportHeaders = {
+    ...commonHeaders,
+    category:           "Вид объекта собственности",      // type_id вместо property_type
+    name:           "Марка",                          // brand — название в таблице 'name' - поправь на name ниже
+    vin:             "VIN-номер",
+    state_number:    "Государственный номер",
+    year:            "Год выпуска",
+    cost:            "Стоимость",
+    encumbrance_type: "Вид обременения",
+    encumbrance_date: "Дата обременения",
+    lizing_name:      "Наименование залогодержателя/лизингодателя", // lizing_name вместо holder_name
+    ...enforcementHeaders
+};
+
+const realEstateHeaders = {
+    ...commonHeaders,
+    category:          "Вид объекта собственности",   // type_id вместо type
+    name:             "Наименование",
+    area:             "Площадь",
+    cadastral_number:  "Кадастровый номер",
+    address:          "Адрес",
+    cost:             "Стоимость",
+    share:            "Размер доли в праве",
+    encumbrance_type:  "Вид обременения",
+    encumbrance_date:  "Дата обременения",
+    lizing_name:       "Наименование залогодержателя/лизингодателя", // lizing_name вместо holder_name
+    ...enforcementHeaders
+};
+
+const debtorHeaders = {
+    ...commonHeaders,
+    request_date:                   "Дата ходатайства",
+    debtor_name:                   "Наименование дебиторов",
+    debtor_inn:                    "ИНН дебиторов",
+    request_sum:                   "Сумма по ходатайству",
+    ...enforcementHeaders,
+    claim_filing:                  "Обращение на взыскание ДЗ",
+    claim_filing_sum:              "Сумма обращения на взыскание ДЗ (руб.)",
+    claim_filing_status:           "Статус обращения взыскания на ДЗ",
+    claim_cancel_resolution:       "Постановление об отмене обращения на взыскания ДЗ",
+    claim_cancel_reason:           "Основание отмены  обращения на ДЗ",
+    note:                         "Примечание"
+};
+
+const otherAssetsHeaders = {
+    ...commonHeaders,
+    category:          "Вид объекта собственности",     // type_id вместо property_type
+    name:             "Наименование",
+    cost:             "Стоимость",
+    encumbrance_type: "Вид обременения",
+    encumbrance_date: "Дата обременения",
+    lizing_name:      "Наименование залогодержателя/лизингодателя", // lizing_name вместо holder_name
+    ...enforcementHeaders
+};
+
+export const activeSheetConfigs = {
+    transport: {
+        name: "Транспорт",
+        headers: transportHeaders,
+        withLizing: true,
+    },
+    property: {
+        name: "Недвижимость",
+        headers: realEstateHeaders,
+        withLizing: true,
+    },
+    ground: {
+        name: "Зем. участ.",
+        headers: realEstateHeaders,
+        withLizing: true,
+    },
+    debit: {
+        name: "Дебит. задолж.",
+        headers: debtorHeaders,
+        withLizing: false,
+    },
+    another: {
+        name: "Иные активы",
+        headers: otherAssetsHeaders,
+        withLizing: true,
+    }
+};
+
+
+export const headersActivesStatistics = (lizingKeyPostfix = "") => {
+    const headers = {};
+
+    for (const [
+        key,
+        { headers: baseHeaders, withLizing }
+    ] of Object.entries(activeSheetConfigs)) {
+        headers[key] = baseHeaders;
+        if (withLizing) {
+            headers[key + lizingKeyPostfix] = baseHeaders;
+        }
+    }
+
+    return headers;
+};
+
+
+export const activesSheets = (
+    lizingKeyPostfix = "",
+    lizingTextPostfix = ""
+) => {
+    const sheetNames = {};
+
+    for (const [
+        key,
+        { withLizing, name }
+    ] of Object.entries(activeSheetConfigs)) {
+        sheetNames[key] = name;
+
+        if (withLizing && lizingKeyPostfix) {
+            sheetNames[key + lizingKeyPostfix] = name + lizingTextPostfix;
+        }
+    }
+
+    return sheetNames;
+};
+

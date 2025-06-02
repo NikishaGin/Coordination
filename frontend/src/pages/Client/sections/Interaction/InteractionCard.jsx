@@ -1,5 +1,5 @@
 import {Card, CardHeader, CardBody, CardRow, RowLabel, RowValue, FileLink, EditButton, NoDataText} from './styles.js';
-import downloadExcel from '../../../../utils/downloadExcel.js'
+import {downloadExcel} from '../../../../utils/downloadExcel.js'
 
 
 const InteractionCard = ({ data, onEdit }) => {

@@ -3,202 +3,204 @@ import styled from "styled-components";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import {AlertCircle, DownloadCloud} from "lucide-react";
 import { useParams } from "react-router";
-import { activesAPI } from "../../../../api/index.js";
+import { activesAPI, downloadAPI } from "../../../../api/index.js";
 import { Button} from "../../../../components/buttons/Button.jsx";
+import { downloadExcel } from '../../../../utils/downloadExcel.js';
+import { enqueueSnackbar, SnackbarProvider } from 'notistack';
 
 const ChartContainer = styled.div`
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.5rem;
-  width: 100%;
-  margin-bottom: 2rem; // Add margin to create space before the button
-  
-  @media (min-width: 1024px) {
-    grid-template-columns: 3fr 2fr;
-    align-items: center;
-  }
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    width: 100%;
+    margin-bottom: 2rem; // Add margin to create space before the button
+
+    @media (min-width: 1024px) {
+        grid-template-columns: 3fr 2fr;
+        align-items: center;
+    }
 `;
 
 const ChartSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 `;
 
 const InfoSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  
-  @media (max-width: 1023px) {
-    order: -1; // Move info section above chart on mobile
-  }
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+
+    @media (max-width: 1023px) {
+        order: -1; // Move info section above chart on mobile
+    }
 `;
 
 const PieChartWrapper = styled.div`
-  width: 100%;
-  height: 25rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    width: 100%;
+    height: 25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 `;
 
 const TotalValueContainer = styled.div`
-  text-align: center;
-  padding: 1.5rem;
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
-  
-  &:hover {
-    transform: translateY(-2px);
-  }
+    text-align: center;
+    padding: 1.5rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
 
-  p:first-child {
-    color: rgb(255, 255, 255);
-    font-size: 1rem;
-    margin-bottom: 0.5rem;
-  }
+    &:hover {
+        transform: translateY(-2px);
+    }
 
-  p:last-child {
-    color: rgb(255, 255, 255);
-    font-size: 1.5rem;
-    font-weight: 600;
-  }
+    p:first-child {
+        color: rgb(255, 255, 255);
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    p:last-child {
+        color: rgb(255, 255, 255);
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
 `;
 
 const TooltipWrapper = styled.div`
-  background-color: white;
-  padding: 0.75rem;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-  border-radius: 0.375rem;
+    background-color: white;
+    padding: 0.75rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    border-radius: 0.375rem;
 
-  p {
-    font-weight: 500;
-    font-size: 1.5rem;
-    margin: 0;
-    color: black;
-  }
+    p {
+        font-weight: 500;
+        font-size: 1.5rem;
+        margin: 0;
+        color: black;
+    }
 
-  p:first-child {
-    font-weight: 500;
-    font-size: 1rem;
-  }
+    p:first-child {
+        font-weight: 500;
+        font-size: 1rem;
+    }
 
-  p:nth-child(2), p:nth-child(3) {
-    margin-top: 0.25rem;
-    color: #374151;
-    font-size: 0.875rem;
-  }
+    p:nth-child(2), p:nth-child(3) {
+        margin-top: 0.25rem;
+        color: #374151;
+        font-size: 0.875rem;
+    }
 
-  p:last-child {
-    margin-top: 0.25rem;
-    color: #6b7280;
-    font-size: 0.75rem;
-  }
+    p:last-child {
+        margin-top: 0.25rem;
+        color: #6b7280;
+        font-size: 0.75rem;
+    }
 `;
 
 const LegendContainer = styled.div`
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 0.5rem;
-  padding: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 `;
 
 const LegendTitle = styled.h3`
-  color: rgb(255, 255, 255);
-  font-size: 1.125rem;
-  margin-bottom: 1rem;
-  text-align: center;
+    color: rgb(255, 255, 255);
+    font-size: 1.125rem;
+    margin-bottom: 1rem;
+    text-align: center;
 `;
 
 const LegendWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.875rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
 `;
 
 const LegendItem = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.25rem;
-  background-color: rgba(255, 255, 255, 0.03);
-  transition: background-color 0.2s ease;
-  
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-  }
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.25rem;
+    background-color: rgba(255, 255, 255, 0.03);
+    transition: background-color 0.2s ease;
+
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+    }
 `;
 
 const LegendLabel = styled.div`
-  display: flex;
-  align-items: center;
-  
-  span {
-    font-size: 0.875rem;
-    color: rgb(255, 255, 255);
-  }
+    display: flex;
+    align-items: center;
+
+    span {
+        font-size: 0.875rem;
+        color: rgb(255, 255, 255);
+    }
 `;
 
 const LegendColorBox = styled.div`
-  width: 1rem;
-  height: 1rem;
-  border-radius: 0.125rem;
-  margin-right: 0.5rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 0.125rem;
+    margin-right: 0.5rem;
 `;
 
 const LegendValue = styled.span`
-  font-size: 0.875rem;
-  color: rgb(255, 255, 255);
-  font-weight: 500;
+    font-size: 0.875rem;
+    color: rgb(255, 255, 255);
+    font-weight: 500;
 `;
 
 const NoDataWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 16rem;
-  color: #6b7280;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 16rem;
+    color: #6b7280;
 
-  svg {
-    color: #9ca3af;
-    margin-bottom: 0.75rem;
-  }
+    svg {
+        color: #9ca3af;
+        margin-bottom: 0.75rem;
+    }
 `;
 
 const ButtonBox = styled.div`
-  display: flex;
-  justify-content: center;
-  padding: 1.5rem 0;
-  width: 100%;
-  grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    padding: 1.5rem 0;
+    width: 100%;
+    grid-column: 1 / -1;
 `;
 
 const StatsButton = styled(Button)`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background-color: #3a3a6a;
-  color: #ffffff;
-  border: none;
-  border-radius: 4px;
-  padding: 10px 16px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: #4a4a7a;
-  }
-
-  svg {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #3a3a6a;
     color: #ffffff;
-  }
+    border: none;
+    border-radius: 4px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+        background-color: #4a4a7a;
+    }
+
+    svg {
+        color: #ffffff;
+    }
 `;
 
 // Форматирование числа по российскому стандарту без десятичных знаков
@@ -315,6 +317,22 @@ export default function PieChartAssets() {
         </LegendContainer>
     );
 
+    const handleDownload = async (e) => {
+        e.preventDefault();
+
+        try{
+            enqueueSnackbar("Начало загрузки...", { variant: "info" });
+
+            const response = await downloadAPI.getDebtorActivesStat(inn);
+            downloadExcel(response);
+
+            enqueueSnackbar("Загружено",  { variant: "info" });
+        } catch (error) {
+            console.log(error);
+            enqueueSnackbar("Ошибка загрузки файла", { variant: "error" });
+        }
+    };
+
     // Основной JSX, содержащий диаграмму и общую стоимость
     return (
         <>
@@ -363,11 +381,16 @@ export default function PieChartAssets() {
                 </InfoSection>
 
                 <ButtonBox>
-                    <StatsButton>
+                    <StatsButton onClick={handleDownload}>
                         <DownloadCloud size={18} />
                         Выгрузка ИД по собственности
                     </StatsButton>
                 </ButtonBox>
+                <SnackbarProvider
+                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                    maxSnack={1}
+                    autoHideDuration={5000}
+                />
             </ChartContainer>
         </>
     );

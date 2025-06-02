@@ -1,4 +1,4 @@
-export default function(response, fileName = "Выгрузка.xlsx") {
+export function downloadExcel(response, fileName = "Выгрузка.xlsx") {
     const contentDisposition = response.headers['content-disposition'];
     if (contentDisposition) {
       const match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);

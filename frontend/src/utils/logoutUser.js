@@ -2,7 +2,7 @@ import {useLocation} from "react-router";
 import {useDispatch, useSelector} from "react-redux";
 import resetStore from "../store/store.js"
 import {useEffect} from "react";
-import {fetchCheckServiceMode} from "../store/globalSlice.js";
+import {fetchGetServiceMode} from "../store/globalSlice.js";
 
 
 
@@ -36,7 +36,7 @@ export const useLogoutUser = (isAuth) => {
     useEffect(() => {
         if (!isAuth) return
 
-        dispatch(fetchCheckServiceMode())
+        dispatch(fetchGetServiceMode())
 
         if (serviceMode && (role !== "admin")) {
             resetStore()

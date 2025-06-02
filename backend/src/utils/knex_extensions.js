@@ -15,8 +15,8 @@
  * @returns {object} - knex-запрос с результатом
  */
 function selectFromTable(
-    table, 
-    fields = [], 
+    table,
+    fields = [],
     renamedFields = {},
     // where = {},
     keepOriginal = false
@@ -28,7 +28,7 @@ function selectFromTable(
     const original = keepOriginal
         ? Object.keys(renamedFields).map(
             field => this.client.ref(`${table}.${field}`)
-        ) 
+        )
         : [];
 
     const renamed = Object.entries(renamedFields).map(
@@ -128,29 +128,94 @@ function sumIfCheckedFieldNotNull(checkField, sumField, alias = sumField) {
  *  .
  *  ```
  * @param {string} table - таблица, флаги которой должны маппиться
- * @param {string} sumField - поле, которое суммируется
- * @param {string} [alias=sumField] - псевдоним результата
+ * @param {string} sumField - новео поле которое будет содержать полученный статус
+ * @param {boolean} keepOriginal – флаг, указывающий, надо ли также сохранять старые флаги.
  * @returns {object} - knex-запрос с результатом
  */
-function reduceFlagsToStatusField(table, statusField, flagsMapping, keepFlags = false) {
-    return function () {
-        const {
-            _: defaultVal = "Ошибка статуса",
-            ...switchMapping
-        } = flagsMapping
+function reduceFlagsToStatusField(table, newField, flagsMapping, keepOriginal = false) {
+    const {
+        _: defaultVal = "Ошибка статуса",
+        ...switchMapping
+    } = flagsMapping;
 
-        const casesStr = Object.entries(switchMapping)
-            .map(([ field, label ]) =>
-                `WHEN \`${table}\`.\`${field}\` IS NOT NULL THEN '${label}'`
-            )
-            .join(' ')
+    const casesStr = Object.entries(switchMapping)
+        .map(([field, label]) =>
+            `WHEN \`${table}\`.\`${field}\` IS NOT NULL THEN '${label}'`
+        )
+        .join(' ');
 
-        const rawCase = `CASE ${casesStr} ELSE '${defaultVal}' END`
+    const rawCase = `CASE ${casesStr} ELSE '${defaultVal}' END`;
 
-        return this.select(
-            this.client.raw(`${rawCase} AS \`${statusField}\``)
-        );
-    };
+    const columns = [
+        this.client.raw(`${rawCase} AS \`${newField}\``)
+    ];
+
+    if (keepOriginal) {
+        for (const field of Object.keys(switchMapping)) {
+            columns.push(`${table}.${field}`);
+        }
+    }
+
+    return this.select(...columns);
+}
+
+
+/**
+ * Превращает набор значений статусного поля (числовых или строковых)
+ * в конкретное значение статуса, удаляя при необходимости флаги из данных.
+ *
+ * ```
+ * // Вот это:
+ * CASE
+ *     WHEN users.status = 1 THEN "Активен"
+ *     WHEN users.status = 2 THEN "Заблокирован"
+ *     ELSE "Неизвестный статус"
+ * END
+ *
+ * // Будет реализовано вот так:
+ * .mapStatusToTextField("users", "status", {
+ *     1: "Активен",
+ *     2: "Заблокирован",
+ *     _: "Неизвестный статус"  // значение по умолчанию
+ * }, "status_text")
+ * ```
+ *
+ * @param {string} table – Имя таблицы, из которой берётся поле со статусом.
+ * @param {string} originField – Название исходного поля со статусом.
+ * @param {Object<string|number, string>} statusMapping – Маппинг кодов статусов и их текстовых представлений.
+ *                                                        Ключ '_' задаёт текст по умолчанию, если значение не совпадает.
+ * @param {string} [newField=originField] – Имя нового поля, в которое будет помещён результат.
+ *                                          Не влияет на наличие или отсутствие других полей в SELECT.
+ * @returns {function(): import('knex').QueryBuilder} – Функция для использования в цепочке knex-запроса.
+ */
+function mapStatusToTextField(table, originField, statusMapping, options = {}) {
+    const {
+        keepOriginal = false,
+        newField = originField
+    } = options;
+
+    const {
+        _: defaultText = 'Неизвестный статус',
+        ...cases
+    } = statusMapping;
+
+    const caseExpr = Object.entries(cases)
+        .map(([ key, value ]) => {
+            const formattedKey = isNaN(key) ? `'${key}'` : key;
+            return `WHEN \`${table}\`.\`${originField}\` = ${formattedKey} THEN '${value}'`;
+        }).join(' ');
+
+    const fullCase = `CASE ${caseExpr} ELSE '${defaultText}' END`;
+
+    const selections = [];
+
+    if (keepOriginal) {
+        selections.push(`${table}.${originField}`);
+    }
+
+    selections.push(this.client.raw(`${fullCase} AS \`${newField}\``));
+
+    return this.select(...selections);
 }
 
 
@@ -188,6 +253,7 @@ export const mountKnexExtensions = knexClass => {
         countNotNull,
         sumIfCheckedFieldNotNull,
         reduceFlagsToStatusField,
+        mapStatusToTextField,
         sumFieldsOfFewTables,
     };
 

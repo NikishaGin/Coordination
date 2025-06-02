@@ -1,6 +1,5 @@
 import db from "../connection.js"
 import * as subqueries from "./subqueries.js"
-import { ACTIVES } from "../types.js"
 
 
 
@@ -33,49 +32,6 @@ export async function tableActives(inn, modifyFunc=() => undefined) {
     }
 }
 
-
-export const service = {
-    async getUser(login) {
-        return await db("users").select([
-            "id",
-            db.ref("password").as("passwordHash"),
-            db.ref("name").as("firstname"),
-            db.ref("surname").as("secondname"),
-            db.ref("patronymic").as("lastname"),
-            db.ref("region").as("regionCode"),
-            "role"
-        ])
-            .where({ username: login })
-    },
-
-    checkServiceMode() {
-        return db("settings").first("value")
-    },
-
-    async changeServiceMode() {
-        let currValue = await db("settings").first("value")
-        console.log(currValue)
-        return await db("settings").update({
-            value: !currValue.value
-        })
-    },
-
-    getRegions(is_derivative_debt, is_archive) {
-        return db('meta')
-            .select(db.raw('DISTINCT meta.region AS regionCode'), 'regions.regionName AS regionName')
-            .leftJoin('resolutions', 'meta.inn', 'resolutions.inn')
-            .leftJoin('regions', db.raw('meta.region COLLATE utf8mb4_general_ci = regions.regionCode'))
-            .where({
-                'resolutions.is_derivative_debt': is_derivative_debt,
-                'resolutions.is_archive': is_archive
-            })
-            .orderBy('meta.region', 'asc')
-    },
-
-    getDebtTypes() {
-        return db("debt_type").select("debt_type");
-    }
-}
 
 
 
@@ -144,7 +100,6 @@ export const actives = {
             .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "realization_sum_2"))
             .select(sumPrices(["transport_data", "nedvizh_data", "debit_data"], "return_sum"))
             .select(db.ref(db.raw("IFNULL(debit_data.foreclose, 0.00)")).as("debitor"))
-            // .select(db.ref(db.raw( )).as("indicators"))
             .leftJoin("debt_type", "debt_type.id", "meta.debt_type")
             .leftJoin(db.raw('(??) as resolutions_data', [subqueries.getResolutions]), 'meta.inn', 'resolutions_data.inn')
             .leftJoin(db.raw('(??) as transport_data', [subqueries.getActives("transport")]), 'meta.inn', 'transport_data.inn')
@@ -154,7 +109,11 @@ export const actives = {
             .where({
                 'meta.region': regionCode,
                 'resolutions_data.is_derivative_debt': is_derivative_debt,
-                'resolutions_data.is_archive': is_archive
+            })
+            .modify(query => {
+                is_archive
+                    ? query.havingRaw(`COUNT(*) = SUM(CASE WHEN resolutions_data.is_archive = true THEN 1 ELSE 0 END)`)
+                    : query.havingRaw(`SUM(CASE WHEN resolutions_data.is_archive = false THEN 1 ELSE 0 END) > 0`);
             })
             .groupBy('inn')
     },
@@ -236,16 +195,14 @@ export const actives = {
 }
 
 
-const buildCommonFieldsQuery = (withActives=true, withDebit=true, regionCode, innList) => {
-    const tables = [
-        ...(withActives ? [
-            ACTIVES.Transport,
-            "property",
-            ACTIVES.Another
-        ] : []),
-        ...(withDebit ? [ACTIVES.Debit] : [])
-    ].map(table => table.toLowerCase());
 
+const buildCommonFieldsQuery = async (
+    withActives,
+    withDebit,
+    innList,
+    isDerived,
+    isArchive,
+) => {
     const activesFieldsToSum = [
         "arrest_sum",
         "evaluation_sum",
@@ -255,7 +212,31 @@ const buildCommonFieldsQuery = (withActives=true, withDebit=true, regionCode, in
         "property_to_debtor_sum"
     ];
 
-    return db("meta")
+    const buildActivesSubquery = (table) => {
+        return db(table)
+            .select("inn")
+            .groupBy("inn")
+            .modify(q => {
+                activesFieldsToSum.forEach(field => {
+                    q.sum({ [`${field}_${table}`]: field });
+                });
+            });
+    };
+
+    // Построим список сабквери для активов
+    const subqueries = {};
+
+    if (withActives) {
+        for (const table of ["transport", "property", "another"]) {
+            subqueries[table] = buildActivesSubquery(table);
+        }
+    }
+
+    if (withDebit) {
+        subqueries["debit"] = buildActivesSubquery("debit");
+    }
+
+    const query = db("meta")
         .select([
             "meta.kno as kno",
             "meta.inn as inn",
@@ -263,31 +244,127 @@ const buildCommonFieldsQuery = (withActives=true, withDebit=true, regionCode, in
             "resolutions.post_sum as post_sum",
             "resolutions.cur_debt as cur_debt"
         ])
+        .leftJoin("resolutions", "meta.inn", "resolutions.inn");
+
+    for (const [table, subq] of Object.entries(subqueries)) {
+        query.leftJoin(
+            db.from(subq.as(table)).as(table),
+            "meta.inn",
+            `${table}.inn`
+        );
+    }
+
+    if (innList) {
+        query.whereIn("meta.inn", innList);
+    } else {
+        query
+            .where("resolutions.is_derivative_debt", isDerived)
+            .where("resolutions.is_archive", isArchive)
+    }
+
+    query.groupBy("meta.inn");
+
+    return query;
+};
+
+
+const getActivesDownloadingData = async ({
+                                             inn,
+                                             nameActive,
+                                             isDerivate = null,
+                                             isArchive = null,
+                                             isNotFnsLizing = null
+                                         }) => {
+    const table  = nameActive === 'ground' ? 'property' : nameActive;
+    const active = db(table + " as t")
+        .select('t.*')
+        .whereNotNull('t.status')
         .modify(query => {
-            ["resolutions", "transport", "debit", "property", "another"].forEach(table =>
-                query.leftJoin(table, "meta.inn", `${table}.inn`)
-            );
+            if (inn) query.where({ inn });
+            if (table !== 'debit') {
+                isNotFnsLizing
+                    ? query.where('t.is_fns_lizing', 2)
+                    : query.where('t.is_fns_lizing', '<>', 2);
+            }
         })
-        .modify(query => {
-            activesFieldsToSum.forEach(field => {
-                query.sumFieldsOfFewTables(tables, field); // предполагается, что тут тоже alias'ы
-            });
-        })
-        .groupBy("meta.inn")
-        .whereIn("meta.inn", innList)
-        .andWhere("meta.region", regionCode);
+        .mapStatusToTextField("t", "status", {
+            0: "Данные из АИС",
+            2: "Данные из ГМУ",
+            3: "Пара АИС-ГМУ",
+        }, { newField: "statusName"})
+        .leftJoin("types as at", "type_id", "at.id")
+        .select("at.name as category")
+
+
+    const subResolutions = db('resolutions')
+        .select('inn')
+        .max('exec_date as max_exec_date')
+        .sum('post_sum as post_sum')
+        .sum('cur_debt as cur_debt')
+        .where('is_derivative_debt', isDerivate)
+        .where('is_archive', isArchive)
+        .groupBy('inn');
+
+    console.log(table)
+
+
+    const result = await db('meta')
+        .select([
+            'meta.region',
+            'meta.kno',
+            'meta.name as metaName',
+            'meta.inn',
+            'res.post_sum',
+            'res.cur_debt',
+            'res.max_exec_date',
+            'a.*',
+        ])
+        .innerJoin(active.as('a'), 'meta.inn', 'a.inn')
+        .leftJoin("debt_type as dt", "meta.debt_type", "dt.id")
+        .select("dt.debt_type as debtor_category")
+
+        .leftJoin(subResolutions.as('res'), 'meta.inn', 'res.inn')
+
+
+    return result;
 };
 
 
 export const download = {
-    getStatistics: async (regionCode, innList, isDerived) => {
-        return {
-            general: await buildCommonFieldsQuery(true, true, regionCode, innList),
-            actives: await buildCommonFieldsQuery(true, false, regionCode, innList),
-            debit: await buildCommonFieldsQuery(false, true, regionCode, innList),
-        };
+    getStatistics: async (innList, isDerived, isArchive) => {
+        const makeQuery = (withActives, withDebit) => buildCommonFieldsQuery(
+            withActives, withDebit,
+            innList, isDerived, isArchive
+        );
+
+        const [general, actives, debit] = await Promise.all([
+            makeQuery(true, true),
+            makeQuery(true, false),
+            makeQuery(false, true),
+        ]);
+
+        return { general, actives, debit };
     },
-    getStatisticsIP(regionCode, innList) {
+    getActivesStatistics: async (inn, isDerivate, isArchive, activeSheetConfigs, lizingKeyPostfix) => {
+        const stats = {};
+
+        for (const [ nameActive,  { withLizing } ]  of Object.entries(activeSheetConfigs)) {
+            const props = { inn, nameActive,  isDerivate, isArchive } ;
+
+            stats[nameActive] = await getActivesDownloadingData({
+                ...props, isNotFnsLizing: false
+            });
+
+            if (withLizing) {
+                stats[nameActive + lizingKeyPostfix] = await getActivesDownloadingData({
+                    ...props, isNotFnsLizing: false
+                });
+            }
+        }
+
+        return stats;
+    },
+    getStatisticsIP(innList) {
         return db("meta")
             .select(db.ref("meta.kno").as("kno"))
             .select(db.ref("meta.inn").as("inn"))
@@ -311,26 +388,5 @@ export const download = {
         `)).as("status_ip"))
             .leftJoin("resolutions", 'meta.inn', 'resolutions.inn')
             .whereIn("meta.inn", innList)
-            .andWhere("meta.region", regionCode)
-    }
-}
-
-
-export const fileStorage = {
-    getDocuments: (source) => {
-        return db("library").select("*").where({ source })
     },
-    saveDocument: (data) => {
-        return db("library").insert(data)
-    }
-}
-
-
-export const interactions = {
-    getInteractions: (source, inn) => {
-        return db("interactions")
-            .select(["referral_date", "referral_date", "result", "kno", "note", "filename_1", "filename_2"])
-            .where({ source, inn })
-    },
-    //saveInteraction: ()
 }

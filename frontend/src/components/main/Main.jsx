@@ -1,15 +1,17 @@
 import React, {useState, useEffect, useMemo} from "react";
 import {useLocation, useNavigate} from "react-router";
 import styled from "styled-components";
-import {SnackbarProvider, enqueueSnackbar} from 'notistack'
-import {TableContainer, Tr} from "../tables/Table.jsx";
-import {ButtonContainer} from "../buttons/Button.jsx";
-import {downloadAPI} from "../../api/index.js";
-import downloadExcel from "../../utils/downloadExcel.js"
-import {formatNumber} from "../../utils/formatData.js"
-import {useDispatch, useSelector} from "react-redux";
-import {fetchTableData} from "../../store/tableDataSlice.js";
-import {DownloadCloud} from 'lucide-react';
+import { SnackbarProvider, enqueueSnackbar } from 'notistack'
+import { TableContainer, Tr } from "../tables/Table.jsx";
+import { ButtonContainer } from "../buttons/Button.jsx";
+import { downloadAPI } from "../../api/index.js";
+import { downloadExcel } from "../../utils/downloadExcel.js"
+import {formatNumber } from "../../utils/formatData.js"
+import { useDispatch, useSelector } from "react-redux";
+import { fetchTableData } from "../../store/tableDataSlice.js";
+import { DownloadCloud } from 'lucide-react';
+
+
 
 const Container = styled.div`
   background-color: ${props => props.theme.colors.background};
@@ -17,6 +19,7 @@ const Container = styled.div`
   padding-left: 24px;
   height: 100%;
 `;
+
 const CustomCheckbox = styled.label`
   display: inline-block;
   position: relative;
@@ -54,8 +57,7 @@ const CustomCheckbox = styled.label`
     border-width: 0 2px 2px 0;
     transform: translate(-50%, -60%) rotate(45deg);
   }
-
-
+    
   span {
     display: inline-block;
     position: absolute;
@@ -69,45 +71,7 @@ const CustomCheckbox = styled.label`
     transition: all 0.3s ease;
   }
 `;
-const headingsCoordination = [
-    "",
-    "№",
-    "ИНН",
-    "Наименование",
-    "Сумма по постановлениям",
-    "Остаток по постановлениям",
-    "Категория должника",
-    "Сумма активов и дебиторской задолженности",
-    "Статус ИП",
-    "Арест имущества",
-    "Оценка имущества",
-    "Принудительная реализация",
-    "Торги 2 этап",
-    "Результат принудительной реализации",
-    "Сумма возврата имущества плательщику",
-    "Обращение взыскания на дебиторскую задолженность",
-];
 
-const headingsDerivative = [
-    "",
-    "№",
-    'ИНН',
-    'Наименование',
-    'Сумма исполнительного листа, ₽',
-    'Остаток исполнительного листа, ₽',
-    'Категория должника',
-    'Сумма активов и дебиторской задолженности, ₽',
-    'Статус ИП',
-    'Арест имущества, ₽',
-    'Оценка имущества, ₽',
-    'Принудительная реализация, ₽',
-    'Торги 2 этап, ₽',
-    'Результат принудительной реализации, ₽',
-    'Сумма возврата имущества плательщику, ₽',
-    'Обращение взыскания на дебиторскую задолженность',
-    'Обращение взыскания на заработную плату',
-    'Детализация индикаторов работы',
-];
 const StatsButton = styled.button`
   display: flex;
   align-items: center;
@@ -128,6 +92,7 @@ const StatsButton = styled.button`
     color: #ffffff;
   }
 `;
+
 export const StatusIndicators = styled.div`
   font-family: 'Inter', sans-serif;
   display: flex;
@@ -181,6 +146,47 @@ const MainContent = styled.div`
 `;
 
 
+
+const headingsCoordination = [
+    "",
+    "№",
+    "ИНН",
+    "Наименование",
+    "Сумма по постановлениям",
+    "Остаток по постановлениям",
+    "Категория должника",
+    "Сумма активов и дебиторской задолженности",
+    "Статус ИП",
+    "Арест имущества",
+    "Оценка имущества",
+    "Принудительная реализация",
+    "Торги 2 этап",
+    "Результат принудительной реализации",
+    "Сумма возврата имущества плательщику",
+    "Обращение взыскания на дебиторскую задолженность",
+];
+
+const headingsDerivative = [
+    "",
+    "№",
+    'ИНН',
+    'Наименование',
+    'Сумма исполнительного листа, ₽',
+    'Остаток исполнительного листа, ₽',
+    'Категория должника',
+    'Сумма активов и дебиторской задолженности, ₽',
+    'Статус ИП',
+    'Арест имущества, ₽',
+    'Оценка имущества, ₽',
+    'Принудительная реализация, ₽',
+    'Торги 2 этап, ₽',
+    'Результат принудительной реализации, ₽',
+    'Сумма возврата имущества плательщику, ₽',
+    'Обращение взыскания на дебиторскую задолженность',
+    'Обращение взыскания на заработную плату',
+    'Детализация индикаторов работы',
+];
+
 const codeIndicators = {
     1: "status executed-on-time",
     2: "status executed-with-violation",
@@ -188,6 +194,7 @@ const codeIndicators = {
     isLizingFNS: "status pledged-to-tax",
     isUpdated: "status data-updated"
 }
+
 
 
 export const Main = () => {
@@ -203,24 +210,17 @@ export const Main = () => {
     const filters = useSelector((state) => state.global.filters);
     const tableData = useSelector((state) => state.tableData.tableData);
 
-    console.log('tableData', tableData)
-
 
     const { pageKey, headings } = useMemo(() => {
-        if (location.pathname === "/coordination-archive") {
-            return { pageKey: "IndexArchive", headings: headingsCoordination };
-        } else if (location.pathname === "/coordination") {
-            return { pageKey: "Index", headings: headingsCoordination };
-        } else if (location.pathname === "/derivative-archive") {
-            return { pageKey: "DerivativeDebtArchive", headings: headingsDerivative };
-        } else if (location.pathname === "/derivative") {
-            return { pageKey: "DerivativeDebt", headings: headingsDerivative };
-        } else {
-            return { pageKey: "default", headings: [] };
-        }
+        const addrMap = {
+            "/coordination-archive": { pageKey: "IndexArchive",   headings: headingsCoordination },
+            "/coordination":         { pageKey: "Index",          headings: headingsCoordination },
+            "/derivative-archive":   { pageKey: "Index",          headings: headingsCoordination },
+            "/derivative":           { pageKey: "DerivativeDebt", headings: headingsDerivative   },
+            _:                       { pageKey: "default",        headings: [] },
+        };
+        return addrMap[location.pathname] || addrMap._;
     }, [location.pathname]);
-
-
 
 
     useEffect(() => {
@@ -269,18 +269,22 @@ export const Main = () => {
     }
 
 
-    const downloadStatistics = flagButton => {
-        if (selectedInn.length > 0) {
-            if (flagButton) {
-                downloadAPI.getStatistics(false, selectedRegion, selectedInn)
-                    .then(downloadExcel).catch(console.log)
-            } else {
-                downloadAPI.getStatisticsIP(false, selectedRegion, selectedInn)
-                    .then(downloadExcel).catch(console.log)
-            }
-        } else
-            enqueueSnackbar("Выберете регион и строки, которые необходимо включить в статистику", {variant: "info"})
-    }
+    const downloadStatistics = async flagButton => {
+        if (!selectedInn.length > 0) {
+            enqueueSnackbar("Выберете регион и строки, которые необходимо включить в статистику", { variant: "info" })
+            return
+        }
+        const target = flagButton ? downloadAPI.getStatistics : downloadAPI.getStatisticsIP;
+        try {
+            enqueueSnackbar("Начало загрузки...", { variant: "info" });
+            const response = await target(selectedInn);
+            downloadExcel(response);
+            enqueueSnackbar("Загружено", { variant: "info" });
+        } catch (error) {
+            console.log(error);
+            enqueueSnackbar("Ошибка загрузки файла", { variant: "error" });
+        }
+    };
 
     const renderTableCells = (row, rowIndex, pageKey) => {
         if (pageKey === "Index" || pageKey === "IndexArchive") {
@@ -399,30 +403,3 @@ export const Main = () => {
         </Container>
     );
 };
-
-
-// useEffect(() => {
-//   dispatch(fetchTableData(selectedRegion));
-// }, [dispatch, selectedRegion]);
-
-
-// useEffect(() => {
-//   let pageKey = "default";
-//
-//   if (location.pathname.includes("/coordination")) {
-//     pageKey = "Index";
-//   } else if (location.pathname.includes("/derivative")) {
-//     pageKey = "DerivativeDebt";
-//   }
-//
-//   dispatch(fetchTableData({ pageKey, region: selectedRegion }));
-// }, [dispatch, location.pathname, selectedRegion]);
-//
-//
-// let headings = [];
-//
-// if (location.pathname.includes("/coordination")) {
-//   headings = headingsCoordination;
-// } else if (location.pathname.includes("/derivative")) {
-//   headings = headingsDerivative;
-// }

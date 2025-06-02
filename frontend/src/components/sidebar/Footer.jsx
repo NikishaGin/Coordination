@@ -3,7 +3,7 @@ import {useNavigate} from "react-router";
 import styled from 'styled-components';
 import {useDispatch, useSelector} from "react-redux";
 import resetStore from "../../store/store"
-import {fetchChangeServiceMode} from "../../store/globalSlice.js";
+import {fetchToggleServiceMode} from "../../store/globalSlice.js";
 import {ButtonContainer, Button} from "../buttons/Button.jsx";
 
 
@@ -252,7 +252,7 @@ export const Footer = () => {
   }
 
   const handleSubmit = () => {
-    dispatch(fetchChangeServiceMode())
+    dispatch(fetchToggleServiceMode())
     setIsModalVisible(false)
   }
 

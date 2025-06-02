@@ -1,6 +1,5 @@
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 import {serviceAPI, userAPI} from "../api/index.js";
-import * as response from "react-router";
 
 
 
@@ -22,7 +21,7 @@ export const fetchGetDebitTypes = createAsyncThunk(
     "global/fetchGetDebitTypes",
     async (_, {rejectWithValue}) => {
         try {
-            const response = await serviceAPI.getDebtTypes();
+            const response = await serviceAPI.getTypesDebtorCategory();
             return response.data
         } catch (error) {
             console.error('Ошибка при загрузке данных:', error);
@@ -32,11 +31,11 @@ export const fetchGetDebitTypes = createAsyncThunk(
 )
 
 
-export const fetchCheckServiceMode = createAsyncThunk(
-    "global/fetchCheckServiceMode",
+export const fetchGetServiceMode = createAsyncThunk(
+    "global/fetchGetServiceMode",
     async (_, {rejectWithValue}) => {
         try {
-            const response = await userAPI.checkServiceMode();
+            const response = await userAPI.getServiceMode();
             console.log(response.data);
             return response.data
         } catch (error) {
@@ -47,13 +46,12 @@ export const fetchCheckServiceMode = createAsyncThunk(
 )
 
 
-export const fetchChangeServiceMode = createAsyncThunk(
-    "global/fetchChangeServiceMode",
+export const fetchToggleServiceMode = createAsyncThunk(
+    "global/fetchToggleServiceMode",
     async (_, {rejectWithValue, dispatch}) => {
         try {
-            await userAPI.changeServiceMode();
-            console.log("111111111111111111111");
-            dispatch(fetchCheckServiceMode())
+            await userAPI.toggleServiceMode();
+            dispatch(fetchGetServiceMode())
         } catch (error) {
             console.error('Ошибка при загрузке данных:', error);
             return rejectWithValue(error.message);
@@ -117,7 +115,7 @@ const globalSlice = createSlice({
             .addCase(fetchGetDebitTypes.fulfilled, (state, action) => {
                 state.debitTypes = action.payload;
             })
-            .addCase(fetchCheckServiceMode.fulfilled, (state, action) => {
+            .addCase(fetchGetServiceMode.fulfilled, (state, action) => {
                 state.serviceMode = action.payload;
             })
     }

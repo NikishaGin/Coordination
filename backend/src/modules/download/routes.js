@@ -12,5 +12,7 @@ router.use((_, response, next) => {
 
 router.get("/get-statistics", controllers.getStatistics)
 router.get("/get-statistics-IP", controllers.getStatisticsIP)
+router.get("/get-debtor-actives-stat", controllers.getDebtorActivesStat)
+
 
 export default router

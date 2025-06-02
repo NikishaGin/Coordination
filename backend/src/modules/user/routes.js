@@ -5,7 +5,7 @@ import * as controllers from "./controllers.js"
 const router = Router()
 
 router.post("/login", controllers.loginUser)
-router.get("/check-service-mode", controllers.checkServiceMode)
-router.post("/change-service-mode", controllers.changeServiceMode)
+router.get("/get-service-mode", controllers.getServiceMode)
+router.post("/toggle-service-mode", controllers.toggleServiceMode)
 
 export default router

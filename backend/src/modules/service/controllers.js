@@ -1,15 +1,29 @@
-import { service } from "../../queries/selectors.js"
+import * as models from "./model.js"
 import { isArchive, isDerivedDebt } from "../../utils/controllers_utils.js";
 
 
-export function getRegions(request, response) {
+
+export async function getRegions(request, response) {
     const page = request.params.page
     const is_derivative_debt = isDerivedDebt(page)
     const is_archive = isArchive(page)
-    service.getRegions(is_derivative_debt, is_archive).then(data => response.end(JSON.stringify(data))).catch(console.log)
+    try {
+        const regions = await models.getRegions(is_derivative_debt, is_archive)
+        response.status(200).json(regions)
+    } catch (error) {
+        console.log(error)
+        response.status(500).json([])
+    }
 }
 
 
-export function getDebtTypes(_, response) {
-    service.getDebtTypes().then(data => response.end(JSON.stringify(data.map(item => item.debt_type)))).catch(console.log)
+export async function getTypesDebtorCategory(_, response) {
+    try {
+        const typesDebtorCategory = await models.getTypesDebtorCategory()
+        const result = typesDebtorCategory.map(item => item.debt_type)
+        response.status(200).json(result)
+    } catch (error) {
+        console.log(error)
+        response.status(500).json([])
+    }
 }

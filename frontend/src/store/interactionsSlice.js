@@ -8,7 +8,6 @@ export const fetchGetInteractions = createAsyncThunk(
     async ({source, inn}, {rejectWithValue}) => {
         try {
             const response = await interactionAPI.getInteractions(source, inn);
-            console.log("interactions/fetchGetInteractions", response.data);
             return response.data;
         } catch (error) {
             console.error('Ошибка при загрузке данных:', error);
@@ -23,7 +22,9 @@ export const fetchSaveInteraction = createAsyncThunk(
     async ({type, data}, {rejectWithValue}) => {
         try {
 
+            const sendData = Object.fromEntries(Object.entries(data).filter(([_, value]) => !!value))
 
+            console.log(sendData)
 
             // const source = pathname.split("-").pop()
             // const formData = new FormData();
@@ -31,6 +32,9 @@ export const fetchSaveInteraction = createAsyncThunk(
             // formData.append('file', file)
             // const response = await fileStorageAPI.saveDocument(source, formData);
             // return response.data;
+
+
+            return (Object.keys(sendData) > 0) ? sendData : null;
         } catch (error) {
             console.error('Ошибка при загрузке данных:', error);
             return rejectWithValue(error.message);
@@ -50,8 +54,8 @@ const interactionsSlice = createSlice({
                 state.interactions = action.payload;
             })
             .addCase(fetchSaveInteraction.fulfilled, (state, action) => {
-                console.log('Новый документ:', action.payload);
-                state.interactions = [...state.interactions, action.payload];
+                if (action.payload)
+                    state.interactions = [...state.interactions, action.payload];
             })
     }
 })
