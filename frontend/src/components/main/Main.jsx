@@ -204,7 +204,6 @@ export const Main = () => {
 
     const [selectedInn, setSelectedInn] = useState([]);
 
-    const selectedRegion = useSelector((state) => state.global.selectedRegion);
     const filters = useSelector((state) => state.global.filters);
     const tableData = useSelector((state) => state.tableData.tableData);
 
@@ -221,6 +220,10 @@ export const Main = () => {
             return { pageKey: "default", headings: [] };
         }
     }, [location.pathname]);
+
+    const selectedRegionByPage = useSelector((state) => state.global.selectedRegionByPage);
+    const selectedRegion = selectedRegionByPage?.[pageKey] || null;
+
 
     useEffect(() => {
         dispatch(fetchTableData({pageKey, region: selectedRegion}));

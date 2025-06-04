@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from "styled-components";
-import { NavLink } from 'react-router';
+import {NavLink, useLocation, useNavigate} from 'react-router';
 
 const StyledItem = styled.li`
   display: flex;
@@ -162,12 +162,17 @@ const StyledDropdownLink = styled(NavLink)`
 `;
 
 const DropdownNavItem = ({ title, items, isOpen, onMouseEnter, onMouseLeave }) => {
+
+    const location = useLocation();
+
+    const isAnyItemActive = items.some(item => location.pathname.startsWith(item.to));
+
     return (
         <StyledItem
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
         >
-            <DropdownTrigger isOpen={isOpen}>
+            <DropdownTrigger isOpen={isOpen || isAnyItemActive}>
                 <Text>{title}</Text>
                 <ArrowIcon
                     viewBox="0 0 24 24"

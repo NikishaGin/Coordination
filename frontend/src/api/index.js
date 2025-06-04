@@ -35,7 +35,10 @@ export const serviceAPI = {
 
 // API для получения информации, связанной с активыми
 export const activesAPI = {
-    getTables: (page, regionCode) => instance.get(`/actives/get-table/${page}/${regionCode}`),   // Таблицы для страниц "Взыскание по 47 ст.", и т.д.
+    getTables: (page, regionCode, signal) =>
+        instance.get(`/actives/get-table/${page}/${regionCode}`, {
+            signal, // <-- вот это важно
+        }),
     getInfo: inn => instance.get(`/actives/get-info/${inn}`),
     getResolutions: inn => instance.get(`/actives/get-info/${inn}/resolutions`),
     getActivesStatistics: inn => instance.get(`/actives/get-info/${inn}/actives-statistics`),
@@ -61,5 +64,5 @@ export const fileStorageAPI = {
 
 export const interactionAPI = {
     getInteractions: (source, inn) => instance.get(`/interactions/get-interactions/${source}/${inn}`),
-    saveInteraction: (source, inn, type, formData) => instance.post(`/interactions/save-interaction/${source}/${inn}/${type}`, formData)
+    saveInteraction: (source, formData) => instance.post(`/interactions/save-interaction/${source}`, formData)
 }

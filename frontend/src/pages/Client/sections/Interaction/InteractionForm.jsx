@@ -15,20 +15,31 @@ import {
     RemoveFileButton
 } from './styles.js';
 
+
+
 const InteractionForm = ({ onSubmit, onCancel, initialData }) => {
     const [formData, setFormData] = useState({
         submissionDate: '',
         reviewDate: '',
         result: '',
+        filenameSubmission: '',
+        filenameResult: '',
         submissionFiles: null,
         resultFiles: null
     });
 
     useEffect(() => {
         if (initialData) {
-            setFormData({ ...initialData });
+            setFormData({
+                submissionDate: initialData.submissionDate,
+                reviewDate: initialData.reviewDate,
+                result: initialData.result,
+                filenameSubmission:  initialData.name_1,
+                filenameResult: initialData.name_2
+            });
         }
-    }, [initialData]);
+    }, []);
+
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -51,15 +62,20 @@ const InteractionForm = ({ onSubmit, onCancel, initialData }) => {
     };
 
     const removeFile = (fieldName) => {
+        const filename = {
+            submissionFiles: "filenameSubmission",
+            resultFiles: "filenameResult"
+        }
         setFormData({
             ...formData,
-            [fieldName]: null
+            [fieldName]: null,
+            [filename[fieldName]]: ""
         });
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSubmit(formData);
+        onSubmit({id: initialData?.id, ...formData});
     };
 
     return (
@@ -91,19 +107,19 @@ const InteractionForm = ({ onSubmit, onCancel, initialData }) => {
                     value={formData.result}
                     onChange={handleInputChange}
                 >
-                    <option value="">Выберите результат</option>
-                    <option value="approved">Удовлетворено</option>
-                    <option value="rejected">Отказано</option>
-                    <option value="partial">Частично удовлетворено</option>
+                    <option value={undefined}>Выберите результат</option>
+                    <option>Удовлетворено</option>
+                    <option>Отказано</option>
+                    <option>Частично удовлетворено</option>
                 </Select>
             </FormGroup>
 
             <FormGroup>
                 <Label>Направленные в ГМУ файлы</Label>
                 <FileUploadContainer>
-                    {formData.submissionFiles ? (
+                    {(formData.submissionFiles || formData.filenameSubmission) ? (
                         <SelectedFile>
-                            {formData.submissionFiles.name}
+                            {formData.submissionFiles?.name ?? formData.filenameSubmission}
                             <RemoveFileButton
                                 type="button"
                                 onClick={() => removeFile('submissionFiles')}
@@ -128,9 +144,9 @@ const InteractionForm = ({ onSubmit, onCancel, initialData }) => {
             <FormGroup>
                 <Label>Файлы результатов рассмотрения</Label>
                 <FileUploadContainer>
-                    {formData.resultFiles ? (
+                    {(formData.resultFiles || formData.filenameResult) ? (
                         <SelectedFile>
-                            {formData.resultFiles.name}
+                            {formData.resultFiles?.name ?? formData.filenameResult}
                             <RemoveFileButton
                                 type="button"
                                 onClick={() => removeFile('resultFiles')}

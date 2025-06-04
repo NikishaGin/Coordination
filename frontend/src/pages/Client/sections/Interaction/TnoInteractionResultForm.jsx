@@ -3,7 +3,7 @@ import InteractionCard from './TnoInteractionCard.jsx';
 import {Container, AddButton, InteractionsList, EmptyState} from './styles.js';
 import TnoInteractionForm from "./TnoInteractionForm.jsx";
 import TnoInteractionCard from "./TnoInteractionCard.jsx";
-import { fetchGetInteractions } from "../../../../store/interactionsSlice.js";
+import { fetchGetInteractions, fetchSaveInteraction } from "../../../../store/interactionsSlice.js";
 import { useParams } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -12,7 +12,7 @@ const TnoInteractionResultForm = () => {
     const dispatch = useDispatch();
     const interactions = useSelector((state) => state.interactions.interactions);
     const [isFormOpen, setIsFormOpen] = useState(false); // флаг открыта ли форма
-    const [editingIndex, setEditingIndex] = useState(null); // Если null значит добавляется новая запись
+    const [editingId, setEditingId] = useState(null); // Если null значит добавляется новая запись
 
     useEffect(() => {
         dispatch(fetchGetInteractions({source: "tno", inn}))
@@ -20,28 +20,22 @@ const TnoInteractionResultForm = () => {
 
     const handleAddClick = () => {
         setIsFormOpen(true);
-        setEditingIndex(null);
+        setEditingId(null);
     };
 
     const handleFormCancel = () => {
         setIsFormOpen(false);
-        setEditingIndex(null);
+        setEditingId(null);
     };
 
-    const handleFormSubmit = (interactionData) => {
-        if (editingIndex !== null) {
-            const updatedInteractions = [...interactions];
-            updatedInteractions[editingIndex] = interactionData;
-            setInteractions(updatedInteractions); ////////////////////////
-        } else {
-            setInteractions([...interactions, interactionData]); //////////////////
-        }
+    const handleFormSubmit = (data) => {
+        dispatch(fetchSaveInteraction({source: "tno", inn, data}));
         setIsFormOpen(false);
-        setEditingIndex(null);
+        setEditingId(null);
     };
 
-    const handleEdit = (index) => {
-        setEditingIndex(index);
+    const handleEdit = (id) => {
+        setEditingId(id);
         setIsFormOpen(true);
     };
 
@@ -58,16 +52,16 @@ const TnoInteractionResultForm = () => {
                 <TnoInteractionForm
                     onSubmit={handleFormSubmit}
                     onCancel={handleFormCancel}
-                    initialData={editingIndex !== null ? interactions[editingIndex] : null}
+                    initialData={editingId !== null ? interactions.find(({id}) => id === editingId) : null}
                 />
             )}
             <InteractionsList>
                 {interactions.length > 0 ? (
-                    interactions.map((interaction, index) => (
+                    interactions.map(interaction => (
                         <TnoInteractionCard
-                            key={index}
+                            key={interaction.id}
                             data={interaction}
-                            onEdit={() => handleEdit(index)}
+                            onEdit={() => handleEdit(interaction.id)}
                         />
                     ))
                 ) : (

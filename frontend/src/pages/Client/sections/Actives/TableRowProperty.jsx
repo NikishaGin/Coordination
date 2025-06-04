@@ -43,14 +43,6 @@ export const TableRowProperty = memo(({ row, onValueChange }) => {
         onValueChange(row.id, fieldName, val);
     };
 
-    // const handleInputChange = (fieldName) => (val) => {
-    //     let cleanedVal = val;
-    //     if (fieldName.includes('sum')) {
-    //         cleanedVal = Number(val.replace(/\s/g, ''));
-    //     }
-    //     onValueChange(row.id, fieldName, cleanedVal);
-    // };
-
     const handleInputChange = (fieldName) => (val) => {
         onValueChange(row.id, fieldName, val); // val — уже число или null
     };
@@ -312,3 +304,19 @@ export const TableRowProperty = memo(({ row, onValueChange }) => {
 });
 
 TableRowProperty.displayName = 'TableRowProperty';
+
+
+
+
+
+
+
+
+
+// const handleInputChange = (fieldName) => (val) => {
+//     let cleanedVal = val;
+//     if (fieldName.includes('sum')) {
+//         cleanedVal = Number(val.replace(/\s/g, ''));
+//     }
+//     onValueChange(row.id, fieldName, cleanedVal);
+// };

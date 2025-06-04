@@ -1,5 +1,5 @@
 import {Card, CardHeader, CardBody, CardRow, RowLabel, RowValue, FileLink, EditButton, NoDataText} from './styles.js';
-import {downloadExcel} from '../../../../utils/downloadExcel.js'
+
 
 
 const InteractionCard = ({ data, onEdit }) => {
@@ -16,20 +16,6 @@ const InteractionCard = ({ data, onEdit }) => {
         } catch (error) {
             return dateString;
         }
-    };
-
-    const getResultText = (result) => {
-        switch(result) {
-            case 'approved': return 'Удовлетворено';
-            case 'rejected': return 'Отказано';
-            case 'partial': return 'Частично удовлетворено';
-            default: return null;
-        }
-    };
-
-    const getFileName = (file) => {
-        if (!file) return null;
-        return file.name || 'Файл';
     };
 
 
@@ -61,7 +47,7 @@ const InteractionCard = ({ data, onEdit }) => {
                 <CardRow>
                     <RowLabel>Результат рассмотрения:</RowLabel>
                     <RowValue>
-                        {getResultText(data.result) || (
+                        {data.result || (
                             <NoDataText>Информация не заполнена</NoDataText>
                         )}
                     </RowValue>
@@ -70,15 +56,12 @@ const InteractionCard = ({ data, onEdit }) => {
                 <CardRow>
                     <RowLabel>Направленные файлы:</RowLabel>
                     <RowValue>
-                        {data.submissionFiles ? (
+                        {data.url_1 ? (
                             <FileLink
-                                href="#"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    downloadExcel(data.submissionFiles);
-                                }}
+                                href={data.url_1}
+                                download={data.name_1}
                             >
-                                {getFileName(data.submissionFiles)}
+                                Файл прикреплен
                             </FileLink>
                         ) : (
                             <NoDataText>Файлы не прикреплены</NoDataText>
@@ -89,15 +72,12 @@ const InteractionCard = ({ data, onEdit }) => {
                 <CardRow>
                     <RowLabel>Файлы результата:</RowLabel>
                     <RowValue>
-                        {data.resultFiles ? (
+                        {data.url_2 ? (
                             <FileLink
-                                href="#"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    downloadExcel(data.resultFiles);
-                                }}
+                                href={data.url_2}
+                                download={data.name_2}
                             >
-                                {getFileName(data.resultFiles)}
+                                Файл прикреплен
                             </FileLink>
                         ) : (
                             <NoDataText>Файлы не прикреплены</NoDataText>

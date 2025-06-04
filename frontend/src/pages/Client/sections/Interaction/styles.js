@@ -27,6 +27,7 @@ export const Container = styled.div`
   padding: 16px;
   color: ${textColor};
   font-family: 'Inter', sans-serif;
+  //max-height: 60vh;
 
   /* Custom scrollbar styles */
   &::-webkit-scrollbar {
@@ -55,7 +56,7 @@ export const FormContainer = styled.form`
   margin-bottom: 16px;
   animation: ${fadeIn} 0.3s ease;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  max-height: 90vh;
+  max-height: 60vh;
   overflow-y: auto;
   
   /* Custom scrollbar styles */
@@ -229,11 +230,8 @@ export const FormActions = styled.div`
   display: flex;
   gap: 12px;
   margin-top: 16px;
-  position: sticky;
-  bottom: 0;
   background-color: ${secondaryColor};
   padding-top: 16px;
-  z-index: 1;
 `;
 
 export const SaveButton = styled.button`

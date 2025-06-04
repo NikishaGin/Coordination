@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import React, {useEffect, useState} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {fetchGetRegions, setSelectedRegion} from "../../store/globalSlice.js";
+import {fetchGetRegions, setSelectedRegionForPage} from "../../store/globalSlice.js";
 import {CustomIcon, FilterGroup, Select, SelectWrapper} from "../select/Select.jsx";
 import { useLocation } from "react-router";
 
@@ -8,30 +8,36 @@ export const SelectRegion = () => {
     const location = useLocation();
     const dispatch = useDispatch();
     const regions = useSelector((state) => state.global.regions);
-    const selectedRegion = useSelector((state) => state.global.selectedRegion);
+    const selectedRegionByPage = useSelector((state) => state.global.selectedRegionByPage);
+
+    const [pageKey, setPageKey] = useState("default");
 
     useEffect(() => {
-        let pageKey = "default";
+        let key = "default";
 
         if (location.pathname === "/coordination-archive") {
-            pageKey = "IndexArchive";
+            key = "IndexArchive";
         } else if (location.pathname === "/coordination") {
-            pageKey = "Index";
+            key = "Index";
         } else if (location.pathname === "/derivative-archive") {
-            pageKey = "DerivativeDebtArchive";
+            key = "DerivativeDebtArchive";
         } else if (location.pathname === "/derivative") {
-            pageKey = "DerivativeDebt";
+            key = "DerivativeDebt";
         }
 
-        dispatch(fetchGetRegions(pageKey));
-        dispatch(setSelectedRegion(null)); // сбрасываем регион при смене страницы
-    }, [dispatch, location.pathname]);
+        setPageKey(key);
 
+        dispatch(fetchGetRegions(key));
+        // не сбрасываем выбранный регион — он сохраняется в state по pageKey
+    }, [dispatch, location.pathname]);
 
     const handleChange = (event) => {
         const selectedValue = event.target.value;
-        dispatch(setSelectedRegion(selectedValue));
+        dispatch(setSelectedRegionForPage({ pageKey, regionCode: selectedValue }));
+
     };
+
+    const selectedRegion = selectedRegionByPage?.[pageKey] || "";
 
     return (
         <FilterGroup>

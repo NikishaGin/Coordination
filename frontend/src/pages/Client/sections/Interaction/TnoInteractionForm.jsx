@@ -22,18 +22,24 @@ const TnoInteractionForm = ({ onSubmit, onCancel, initialData }) => {
         submissionDate: '',
         reviewDate: '',
         result: '',
+        kno: '',
+        note: '',
+        filenameSubmission: '',
+        filenameResult: '',
         submissionFiles: null,
-        resultFiles: null,
-        tnoCode: '',
-        notes: ''
+        resultFiles: null
     });
 
     useEffect(() => {
         if (initialData) {
             setFormData({
-                ...initialData,
-                tnoCode: initialData.tnoCode || '',
-                notes: initialData.notes || ''
+                submissionDate: initialData.submissionDate,
+                reviewDate: initialData.reviewDate,
+                result: initialData.result,
+                kno: initialData.kno,
+                note: initialData.note,
+                filenameSubmission:  initialData.name_1,
+                filenameResult: initialData.name_2
             });
         }
     }, [initialData]);
@@ -69,15 +75,20 @@ const TnoInteractionForm = ({ onSubmit, onCancel, initialData }) => {
     };
 
     const removeFile = (fieldName) => {
+        const filename = {
+            submissionFiles: "filenameSubmission",
+            resultFiles: "filenameResult"
+        }
         setFormData({
             ...formData,
-            [fieldName]: null
+            [fieldName]: null,
+            [filename[fieldName]]: ""
         });
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSubmit(formData);
+        onSubmit({id: initialData?.id, ...formData});
     };
 
     return (
@@ -96,8 +107,8 @@ const TnoInteractionForm = ({ onSubmit, onCancel, initialData }) => {
                 <Label>Код ТНО</Label>
                 <NumericInput
                     type="text"
-                    name="tnoCode"
-                    value={formData.tnoCode}
+                    name="kno"
+                    value={formData.kno}
                     onChange={handleNumericInputChange}
                     placeholder="Введите код ТНО (только цифры)"
                 />
@@ -106,9 +117,9 @@ const TnoInteractionForm = ({ onSubmit, onCancel, initialData }) => {
             <FormGroup>
                 <Label>Запрос в ТНО</Label>
                 <FileUploadContainer>
-                    {formData.submissionFiles ? (
+                    {(formData.submissionFiles || formData.filenameSubmission) ? (
                         <SelectedFile>
-                            {formData.submissionFiles.name}
+                            {formData.submissionFiles?.name ?? formData.filenameSubmission}
                             <RemoveFileButton
                                 type="button"
                                 onClick={() => removeFile('submissionFiles')}
@@ -147,20 +158,20 @@ const TnoInteractionForm = ({ onSubmit, onCancel, initialData }) => {
                     value={formData.result}
                     onChange={handleInputChange}
                 >
-                    <option value="">Выберите статус</option>
-                    <option value="approved">Исполнено</option>
-                    <option value="partially_approved">Исполнено частично</option>
-                    <option value="in_progress">Промежуточный ответ</option>
-                    <option value="rejected">Не исполнено</option>
+                    <option>Выберите статус</option>
+                    <option>Исполнено</option>
+                    <option>Исполнено частично</option>
+                    <option>Промежуточный ответ</option>
+                    <option>Не исполнено</option>
                 </Select>
             </FormGroup>
 
             <FormGroup>
                 <Label>Ответ ТНО</Label>
                 <FileUploadContainer>
-                    {formData.resultFiles ? (
+                    {(formData.resultFiles || formData.filenameResult) ? (
                         <SelectedFile>
-                            {formData.resultFiles.name}
+                            {formData.resultFiles?.name ?? formData.filenameResult}
                             <RemoveFileButton
                                 type="button"
                                 onClick={() => removeFile('resultFiles')}
@@ -185,8 +196,8 @@ const TnoInteractionForm = ({ onSubmit, onCancel, initialData }) => {
             <FormGroup>
                 <Label>Примечание</Label>
                 <NotesTextarea
-                    name="notes"
-                    value={formData.notes}
+                    name="note"
+                    value={formData.note}
                     onChange={handleInputChange}
                     placeholder="Введите примечание"
                 />

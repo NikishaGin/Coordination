@@ -105,7 +105,30 @@ const activesSlice = createSlice({
                     });
                 }
             }
+        },
+        clearActives: (state) => {
+            state.transport = [];
+            state.property = [];
+            state.ground = [];
+            state.debit = [];
+            state.another = [];
+            // Сбросим статус и ошибки тоже (по желанию)
+            state.status = {
+                transport: 'idle',
+                property: 'idle',
+                ground: 'idle',
+                debit: 'idle',
+                another: 'idle',
+            };
+            state.error = {
+                transport: null,
+                property: null,
+                ground: null,
+                debit: null,
+                another: null,
+            };
         }
+
     },
     extraReducers: (builder) => {
         builder
@@ -133,4 +156,4 @@ const activesSlice = createSlice({
 });
 
 export default activesSlice.reducer;
-export const {updateActiveField} = activesSlice.actions;
+export const {updateActiveField, clearActives} = activesSlice.actions;

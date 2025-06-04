@@ -8,7 +8,7 @@ const Container = styled.header`
   display: flex;
   align-items: center;
   height: 65px;
-  background-color: ${props => props.theme.colors.header || '#0C1017'};
+  background-color: #1e1e1e;
   box-shadow: ${props => props.theme.shadows.sm || '0 1px 3px rgba(0, 0, 0, 0.1)'};
   border-width: 0px 0px 1px;
   border-style: solid;

@@ -30,7 +30,6 @@ const GlobalStyle = createGlobalStyle`
     font-family: 'Inter', sans-serif;
   }
 `;
-
 const Container = styled.div`
   min-height: 100vh;
   display: grid;
@@ -42,14 +41,12 @@ const Container = styled.div`
     grid-column: 1 / span 2;
   }
 `;
-
 const InfoBlock = styled.div`
   padding: 24px 32px;
   background-color: #1e1e1e;
   border-bottom: 1px solid #333;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 `;
-
 const Back = styled.div`
   position: relative;
   width: 105px;
@@ -92,7 +89,6 @@ const Back = styled.div`
     transform: translateX(-3px);
   }
 `;
-
 const CompanyTitle = styled.h2`
   font-size: 28px;
   font-weight: 700;
@@ -100,7 +96,6 @@ const CompanyTitle = styled.h2`
   margin: 0 0 16px 0;
   letter-spacing: 0.5px;
 `;
-
 const InfoBox = styled.div`
   margin-top: 20px;
   display: flex;
@@ -116,7 +111,6 @@ const InfoBox = styled.div`
     color: #a0a0ff;
   }
 `;
-
 const Nav = styled.div`
   margin-top: 30px;
   display: flex;
@@ -125,7 +119,6 @@ const Nav = styled.div`
   border-bottom: 1px solid #333;
   padding-bottom: 10px;
 `;
-
 const StyledNavItem = styled.div`
   padding: 10px 20px;
   border-radius: 6px;
@@ -139,7 +132,6 @@ const StyledNavItem = styled.div`
     background-color: ${props => props.active ? '#3a3a6a' : '#2a2a3a'};
   }
 `;
-
 const Sidebar = styled.div`
   background-color: #1a1a2e;
   padding: 20px 0;
@@ -147,7 +139,6 @@ const Sidebar = styled.div`
   grid-row: 2;
   grid-column: 1;
 `;
-
 const MenuItem = styled.div`
   padding: 14px 20px;
   font-weight: 500;
@@ -161,13 +152,11 @@ const MenuItem = styled.div`
     color: #ffffff;
   }
 `;
-
 const ContentArea = styled.div`
   grid-row: 2;
   grid-column: 2;
   padding: 20px;
   background-color: #171722;
-  overflow: auto;
 `;
 
 const TableUniversal = lazy(() => import('./TableUniversal.jsx'));
@@ -186,6 +175,14 @@ export function Client() {
             .catch(console.log)
     }, [inn]);
 
+    useEffect(() => {
+        const firstSidebarItem = sidebarItems[nav]?.[0];
+        if (firstSidebarItem) {
+            setSidebarNav(firstSidebarItem);
+        }
+    }, [nav]);
+
+
     const mainNavItems = useMemo(() => [
         {key: "info", label: "Информация о должнике"},
         {key: "actives", label: "Активы должника"},
@@ -197,7 +194,6 @@ export function Client() {
         actives: ["Транспорт", "Недвижимость", "Земельные участки", "Дебиторская задолженность", "Иные активы"],
         interaction: ["Направление ходатайства в ГМУ", "Примечание ТНО"]
     }), []);
-
 
     const MyButton = () => (
         <button>Нажми меня</button>
@@ -275,10 +271,11 @@ export function Client() {
         navigate(-1);
     }, [navigate]);
 
+
     const currentContent = useMemo(() => {
-        if (!nav || !sidebarNav) return <div>Выберите раздел</div>;
-        return contentMap[nav]?.[sidebarNav] || <div>Выберите раздел</div>;
+        return contentMap[nav]?.[sidebarNav];
     }, [nav, sidebarNav, contentMap]);
+
 
     return (
         <>
@@ -325,7 +322,7 @@ export function Client() {
                 </Sidebar>
 
                 <ContentArea>
-                    <Suspense fallback={<div>Загрузка...</div>}>
+                    <Suspense>
                         {currentContent}
                     </Suspense>
                 </ContentArea>
@@ -336,3 +333,8 @@ export function Client() {
 
 export default React.memo(Client);
 
+
+// const currentContent = useMemo(() => {
+//     if (!nav || !sidebarNav) return <div>Выберите раздел</div>;
+//     return contentMap[nav]?.[sidebarNav] || <div>Выберите раздел</div>;
+// }, [nav, sidebarNav, contentMap]);

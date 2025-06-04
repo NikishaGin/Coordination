@@ -6,39 +6,37 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchGetInteractions, fetchSaveInteraction } from "../../../../store/interactionsSlice.js";
 import { useParams } from "react-router";
 
+
+
 const InteractionResultForm = () => {
     const {inn} = useParams()
     const dispatch = useDispatch();
     const interactions = useSelector((state) => state.interactions.interactions);
     const [isFormOpen, setIsFormOpen] = useState(false); // флаг открыта ли форма
-    const [editingIndex, setEditingIndex] = useState(null); // Если null значит добавляется новая запись
+    const [editingId, setEditingId] = useState(null); // Если null значит добавляется новая запись
 
     useEffect(() => {
-        dispatch(fetchGetInteractions({source: "gmu", inn}))
+        dispatch(fetchGetInteractions({ source: "gmu", inn }))
     }, [])
 
     const handleAddClick = () => {
         setIsFormOpen(true);
-        setEditingIndex(null);
+        setEditingId(null);
     };
 
     const handleFormCancel = () => {
         setIsFormOpen(false);
-        setEditingIndex(null);
+        setEditingId(null);
     };
 
-    const handleFormSubmit = (interactionData) => {
-        if (editingIndex !== null) {
-            dispatch(fetchSaveInteraction({type: "insert", data: interactionData}));
-        } else {
-            dispatch(fetchSaveInteraction({type: "update", data: interactionData}));
-        }
+    const handleFormSubmit = (data) => {
+        dispatch(fetchSaveInteraction({ source: "gmu", inn, data }));
         setIsFormOpen(false);
-        setEditingIndex(null);
+        setEditingId(null);
     };
 
-    const handleEdit = (index) => {
-        setEditingIndex(index);
+    const handleEdit = (id) => {
+        setEditingId(id);
         setIsFormOpen(true);
     };
 
@@ -55,16 +53,16 @@ const InteractionResultForm = () => {
                 <InteractionForm
                     onSubmit={handleFormSubmit}
                     onCancel={handleFormCancel}
-                    initialData={editingIndex !== null ? interactions[editingIndex] : null}
+                    initialData={editingId !== null ? interactions.find(({id}) => id === editingId) : null}
                 />
             )}
             <InteractionsList>
                 {interactions.length > 0 ? (
-                    interactions.map((interaction, index) => (
+                    interactions.map(interaction => (
                         <InteractionCard
-                            key={index}
+                            key={interaction.id}
                             data={interaction}
-                            onEdit={() => handleEdit(index)}
+                            onEdit={() => handleEdit(interaction.id)}
                         />
                     ))
                 ) : (

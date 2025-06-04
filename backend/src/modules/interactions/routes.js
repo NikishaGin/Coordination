@@ -8,36 +8,20 @@ const router = Router()
 const upload = multer({storage: multer.memoryStorage()})
 const uploadConfig = [
     {
-        name: "inn",
+        name: "data",
         maxCount: 1
     },
     {
-        name: "referral_date",
+        name: "firstFile",
         maxCount: 1
     },
     {
-        name: "review_date",
+        name: "secondFile",
         maxCount: 1
-    },
-    {
-        name: "result",
-        maxCount: 1
-    },
-    {
-        name: "kno",
-        maxCount: 1
-    },
-    {
-        name: "note",
-        maxCount: 1
-    },
-    {
-        name: "file",
-        maxCount: 2
     }
 ]
 
 router.get("/get-interactions/:source/:inn", controllers.getInteractions)
-router.post("/save-interaction/:source/:inn/:type", upload.fields(uploadConfig), controllers.saveInteraction)
+router.post("/save-interaction/:source", upload.fields(uploadConfig), controllers.saveInteraction)
 
 export default router

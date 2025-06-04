@@ -75,7 +75,7 @@ const TnoInteractionCard = ({ data, onEdit }) => {
                 <CardRow>
                     <RowLabel>Код ТНО</RowLabel>
                     <RowValue>
-                        {data.tnoCode || <NoDataText>Информация не заполнена</NoDataText>}
+                        {data.kno || <NoDataText>Информация не заполнена</NoDataText>}
                     </RowValue>
                 </CardRow>
 
@@ -100,15 +100,12 @@ const TnoInteractionCard = ({ data, onEdit }) => {
                 <CardRow>
                     <RowLabel>Направленные файлы:</RowLabel>
                     <RowValue>
-                        {data.submissionFiles ? (
+                        {data.url_1 ? (
                             <FileLink
-                                href="#"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    handleFileDownload(data.submissionFiles);
-                                }}
+                                href={data.url_1}
+                                download={data.name_1}
                             >
-                                {getFileName(data.submissionFiles)}
+                                Файл прикреплен
                             </FileLink>
                         ) : (
                             <NoDataText>Файлы не прикреплены</NoDataText>
@@ -119,15 +116,12 @@ const TnoInteractionCard = ({ data, onEdit }) => {
                 <CardRow>
                     <RowLabel>Файлы результата:</RowLabel>
                     <RowValue>
-                        {data.resultFiles ? (
+                        {data.url_2 ? (
                             <FileLink
-                                href="#"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    handleFileDownload(data.resultFiles);
-                                }}
+                                href={data.url_2}
+                                download={data.name_2}
                             >
-                                {getFileName(data.resultFiles)}
+                                Файл прикреплен
                             </FileLink>
                         ) : (
                             <NoDataText>Файлы не прикреплены</NoDataText>
@@ -138,7 +132,7 @@ const TnoInteractionCard = ({ data, onEdit }) => {
                 <CardRow>
                     <RowLabel>Примечание:</RowLabel>
                     <RowValue>
-                        {data.notes || <NoDataText>Информация не заполнена</NoDataText>}
+                        {data.note || <NoDataText>Информация не заполнена</NoDataText>}
                     </RowValue>
                 </CardRow>
             </CardBody>

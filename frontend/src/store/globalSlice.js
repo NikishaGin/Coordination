@@ -66,7 +66,8 @@ const initialState = {
     serviceMode: false,
     regions: [],
     debitTypes: [],
-    selectedRegion: null,
+    selectedRegionByPage: {}, // добавили
+    // selectedRegion: null,
     filters: {
         inputValueInn: "",
         status_ip: "",
@@ -85,8 +86,9 @@ const globalSlice = createSlice({
         updateUrlHistory(state, action) {
             state.urlHistory = [state.urlHistory[1], action.payload];
         },
-        setSelectedRegion(state, action) {
-            state.selectedRegion = action.payload;
+        setSelectedRegionForPage(state, action) {
+            const { pageKey, regionCode } = action.payload;
+            state.selectedRegionByPage[pageKey] = regionCode;
         },
         setInputValueInn(state, action) {
             state.filters.inputValueInn = action.payload;
@@ -103,8 +105,8 @@ const globalSlice = createSlice({
         },
         resetGlobal(state) {
             Object.keys(state).forEach(key => {
-                state[key] = initialState[key]
-            })
+                state[key] = initialState[key];
+            });
         }
     },
     extraReducers: builder => {
@@ -117,15 +119,16 @@ const globalSlice = createSlice({
             })
             .addCase(fetchGetServiceMode.fulfilled, (state, action) => {
                 state.serviceMode = action.payload;
-            })
+            });
     }
 });
 
+
 // Экспортируем действия и редьюсер
-export const { 
+export const {
     updateUrlHistory,
+    setSelectedRegionForPage,
     setInputValueInn,
-    setSelectedRegion,
     setFilterStatusIp,
     setFilterCategory,
     setFilterSum,
