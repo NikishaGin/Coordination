@@ -1,6 +1,6 @@
-import { actives } from "../../queries/selectors.js"
+import { actives, selectFieldsOccupancy, tableActives } from "../../queries/selectors.js"
 import * as updates from "../../queries/updates.js"
-import { aggregateIndicators } from "../indicators/service.js";
+import { aggregateIndicators, securingArrest } from "../indicators/service.js";
 
 
 export async function getTables(request, response) {
@@ -8,16 +8,23 @@ export async function getTables(request, response) {
     const regionCode = request.params.regionCode
     const is_derivative_debt = +["DerivativeDebt", "DerivativeDebtArchive"].includes(page)
     const is_archive = +["IndexArchive", "DerivativeDebtArchive"].includes(page)
-    const activesAggregatedData = await actives.getTables(regionCode, is_derivative_debt, is_archive)
-    for (const row of activesAggregatedData) {
+    const data = await actives.getTables(regionCode, is_derivative_debt, is_archive)
+    for (const row of data) {
         for (const fieldName in row) {
             if (typeof row[fieldName] === "number") {
                 row[fieldName] = row[fieldName].toString()
             }
         }
-        row.indicators = await aggregateIndicators(row.inn)
+        const activesTables = await tableActives(row.inn, (query, nameActive) => {
+            query.select({ cost: ((nameActive === "debit") ? "total_sum" : "cost") }).modify(selectFieldsOccupancy)
+        })
+        row.indicators = await aggregateIndicators(row.inn, activesTables)
+        if (page === "Index")
+            row.securingArrest = await securingArrest(row, activesTables)
     }
-    response.json(activesAggregatedData)
+
+
+    response.json(data)
 }
 
 

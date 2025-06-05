@@ -12,6 +12,7 @@ export const getResolutions = db('resolutions')
     .sum({ is_archive: 'is_archive' })
     .sum({ is_derivative_debt: 'is_derivative_debt' })
     .max({ max_exec_date: 'exec_date' })
+    .where({ end_date: null, end_reason: null })
     .groupBy('inn')
 
 

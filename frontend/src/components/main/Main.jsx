@@ -150,45 +150,31 @@ const headingsCoordination = [
     "№",
     "ИНН",
     "Наименование",
-    "Сумма по постановлениям",
-    "Остаток по постановлениям",
+    "Сумма по постановлениям, ₽",
+    "Остаток по постановлениям, ₽",
     "Категория должника",
-    "Сумма активов и дебиторской задолженности",
+    "Сумма активов и дебиторской задолженности, ₽",
     "Статус ИП",
-    "Арест имущества",
-    "Оценка имущества",
-    "Принудительная реализация",
-    "Торги 2 этап",
-    "Результат принудительной реализации",
-    "Сумма возврата имущества плательщику",
+    "Код СОСП",
+    "Код НО",
+    "Направление ходатайства в ГМУ",
+    "Взаимодействие с ТНО",
+    "Арест имущества, ₽",
+    "Обеспечение арестом",
+    "Оценка имущества, ₽",
+    "Принудительная реализация, ₽",
+    "Торги 2 этап, ₽",
+    "Результат принудительной реализации, ₽",
+    "Сумма возврата имущества плательщику, ₽",
     "Обращение взыскания на дебиторскую задолженность",
+
 ];
 
-const headingsDerivative = [
-    "",
-    "№",
-    'ИНН',
-    'Наименование',
-    'Сумма исполнительного листа, ₽',
-    'Остаток исполнительного листа, ₽',
-    'Категория должника',
-    'Сумма активов и дебиторской задолженности, ₽',
-    'Статус ИП',
-    'Арест имущества, ₽',
-    'Оценка имущества, ₽',
-    'Принудительная реализация, ₽',
-    'Торги 2 этап, ₽',
-    'Результат принудительной реализации, ₽',
-    'Сумма возврата имущества плательщику, ₽',
-    'Обращение взыскания на дебиторскую задолженность',
-    'Обращение взыскания на заработную плату',
-    'Детализация индикаторов работы',
-];
 
 const codeIndicators = {
-    1: "status executed-on-time",
+    1: "status not-executed",
     2: "status executed-with-violation",
-    3: "status not-executed",
+    3: "status executed-on-time",
     isLizingFNS: "status pledged-to-tax",
     isUpdated: "status data-updated"
 }
@@ -204,6 +190,7 @@ export const Main = () => {
 
     const [selectedInn, setSelectedInn] = useState([]);
 
+    // const selectedRegion = useSelector((state) => state.global.selectedRegion);
     const filters = useSelector((state) => state.global.filters);
     const tableData = useSelector((state) => state.tableData.tableData);
 
@@ -213,9 +200,9 @@ export const Main = () => {
         } else if (location.pathname === "/coordination") {
             return { pageKey: "Index", headings: headingsCoordination };
         } else if (location.pathname === "/derivative-archive") {
-            return { pageKey: "DerivativeDebtArchive", headings: headingsDerivative };
+            return { pageKey: "DerivativeDebtArchive", headings: headingsCoordination };
         } else if (location.pathname === "/derivative") {
-            return { pageKey: "DerivativeDebt", headings: headingsDerivative };
+            return { pageKey: "DerivativeDebt", headings: headingsCoordination };
         } else {
             return { pageKey: "default", headings: [] };
         }
@@ -287,50 +274,31 @@ export const Main = () => {
         }
     };
 
-    const renderTableCells = (row, rowIndex, pageKey) => {
-        if (pageKey === "Index" || pageKey === "IndexArchive") {
-            return (
-                <>
-                    <td>{rowIndex + 1}</td>
-                    <td>{row.inn}</td>
-                    <td className={(row.indicators.isUpdated) ?? codeIndicators.isUpdated}>{row.name}</td>
-                    <td>{formatNumber(row.post_sum)}</td>
-                    <td>{formatNumber(row.cur_debt)}</td>
-                    <td>{row.category}</td>
-                    <td className={(row.indicators.isLizingFNS) && codeIndicators.isLizingFNS}>{formatNumber(row.total_sum)}</td>
-                    <td>{row.status_ip}</td>
-                    <td className={codeIndicators[row.indicators.arrest]}>{formatNumber(row.arrest)}</td>
-                    <td className={codeIndicators[row.indicators.evaluation]}>{formatNumber(row.evaluation)}</td>
-                    <td className={codeIndicators[row.indicators.submitRealizationFirstStage]}>{formatNumber(row.realization_property)}</td>
-                    <td className={codeIndicators[row.indicators.submitRealizationSecondStage]}>{formatNumber(row.price_reduction)}</td>
-                    <td className={codeIndicators[row.indicators.realizationSecondStage]}>{formatNumber(row.realization_sum_2)}</td>
-                    <td>{formatNumber(row.return_sum)}</td>
-                    <td className={codeIndicators[row.indicators.collectionAccountsReceivable]}>{formatNumber(row.debitor)}</td>
-                </>
-            );
-        } else if (pageKey === "DerivativeDebt" || pageKey === 'DerivativeDebtArchive') {
-            return (
-                <>
-                    <td>{rowIndex + 1}</td>
-                    <td>{row.inn}</td>
-                    <td className={(row.indicators.isUpdated) ?? codeIndicators.isUpdated}>{row.name}</td>
-                    <td>{formatNumber(row.cur_debt)}</td>
-                    <td>{formatNumber(row.post_sum)}</td>
-                    <td>{row.category}</td>
-                    <td className={(row.indicators.isLizingFNS) && codeIndicators.isLizingFNS}>{formatNumber(row.total_sum)}</td>
-                    <td>{row.status_ip}</td>
-                    <td className={codeIndicators[row.indicators.arrest]}>{formatNumber(row.arrest)}</td>
-                    <td className={codeIndicators[row.indicators.evaluation]}>{formatNumber(row.evaluation)}</td>
-                    <td className={codeIndicators[row.indicators.submitRealizationFirstStage]}>{formatNumber(row.realization_property)}</td>
-                    <td className={codeIndicators[row.indicators.submitRealizationSecondStage]}>{formatNumber(row.price_reduction)}</td>
-                    <td className={codeIndicators[row.indicators.realizationSecondStage]}>{formatNumber(row.realization_sum_2)}</td>
-                    <td>{formatNumber(row.return_sum)}</td>
-                    <td className={codeIndicators[row.indicators.collectionAccountsReceivable]}>{formatNumber(row.debitor)}</td>
-                </>
-            );
-        } else {
-            return null;
-        }
+    const renderTableCells = (row, rowIndex) => {
+        return (
+            <>
+                <td>{rowIndex + 1}</td>
+                <td>{row.inn}</td>
+                <td className={(row.indicators.isUpdated) ?? codeIndicators.isUpdated}>{row.name}</td>
+                <td>{formatNumber(row.post_sum)}</td>
+                <td>{formatNumber(row.cur_debt)}</td>
+                <td>{row.category}</td>
+                <td className={(row.indicators.isLizingFNS) && codeIndicators.isLizingFNS}>{formatNumber(row.total_sum)}</td>
+                <td>{row.status_ip}</td>
+                <td>{row.sosp_code}</td>
+                <td>{row.kno}</td>
+                <td>{row.interaction_gmu}</td>
+                <td>{row.interaction_tno}</td>
+                <td className={codeIndicators[row.indicators.arrest]}>{formatNumber(row.arrest)}</td>
+                <td>{row.securingArrest}</td>
+                <td className={codeIndicators[row.indicators.evaluation]}>{formatNumber(row.evaluation)}</td>
+                <td className={codeIndicators[row.indicators.submitRealizationFirstStage]}>{formatNumber(row.realization_property)}</td>
+                <td className={codeIndicators[row.indicators.submitRealizationSecondStage]}>{formatNumber(row.price_reduction)}</td>
+                <td className={codeIndicators[row.indicators.realizationSecondStage]}>{formatNumber(row.realization_sum_2)}</td>
+                <td>{formatNumber(row.return_sum)}</td>
+                <td className={codeIndicators[row.indicators.collectionAccountsReceivable]}>{formatNumber(row.debitor)}</td>
+            </>
+        );
     };
 
 
@@ -378,7 +346,7 @@ export const Main = () => {
                                         <span></span>
                                     </CustomCheckbox>
                                 </td>
-                                {renderTableCells(row, rowIndex, pageKey)}
+                                {renderTableCells(row, rowIndex)}
                             </Tr>
                         ))}
                         </tbody>
