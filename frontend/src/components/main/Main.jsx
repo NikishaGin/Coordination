@@ -366,20 +366,16 @@ export const Main = () => {
                         </thead>
                         <tbody>
                         {filteredData.map((row, rowIndex) => (
-                            <Tr key={rowIndex} isSelected={selectedInn.includes(row.inn)} cursor={true}
-                                onClick={event => handleLink(event, row.inn)}>
-                                <td onClick={event => event.stopPropagation()}>
-                                    <CustomCheckbox>
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedInn.includes(row.inn)}
-                                            onChange={event => handleInnSelect(event, row.inn)}
-                                        />
-                                        <span></span>
-                                    </CustomCheckbox>
-                                </td>
-                                {renderTableCells(row, rowIndex, pageKey)}
-                            </Tr>
+                            <MemoizedRow
+                                key={row.inn}
+                                row={row}
+                                rowIndex={rowIndex}
+                                selectedInn={selectedInn}
+                                handleInnSelect={handleInnSelect}
+                                handleLink={handleLink}
+                                renderTableCells={renderTableCells}
+                                pageKey={pageKey}
+                            />
                         ))}
                         </tbody>
                     </table>
@@ -404,3 +400,22 @@ export const Main = () => {
         </Container>
     );
 };
+
+const MemoizedRow = React.memo(({ row, rowIndex, selectedInn, handleInnSelect, handleLink, renderTableCells, pageKey }) => {
+    return (
+        <Tr key={rowIndex} isSelected={selectedInn.includes(row.inn)} cursor={true}
+            onClick={event => handleLink(event, row.inn)}>
+            <td onClick={event => event.stopPropagation()}>
+                <CustomCheckbox>
+                    <input
+                        type="checkbox"
+                        checked={selectedInn.includes(row.inn)}
+                        onChange={event => handleInnSelect(event, row.inn)}
+                    />
+                    <span></span>
+                </CustomCheckbox>
+            </td>
+            {renderTableCells(row, rowIndex, pageKey)}
+        </Tr>
+    );
+});
