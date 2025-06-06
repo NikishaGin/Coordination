@@ -1,8 +1,13 @@
 import {Card, CardHeader, CardBody, CardRow, RowLabel, RowValue, FileLink, EditButton, NoDataText} from './styles.js';
+import { useSelector } from "react-redux";
+import { ROLES } from "../../../../types.js";
 
 
 
 const InteractionCard = ({ data, onEdit }) => {
+    const role = useSelector((state) => state.user.role)
+    const isUser = role === ROLES.User
+
     const formatDate = (dateString) => {
         if (!dateString) return null;
 
@@ -22,7 +27,7 @@ const InteractionCard = ({ data, onEdit }) => {
     return (
         <Card>
             <CardHeader>
-                <EditButton onClick={onEdit}>Редактировать</EditButton>
+                {!isUser && <EditButton onClick={onEdit}>Редактировать</EditButton>}
             </CardHeader>
 
             <CardBody>

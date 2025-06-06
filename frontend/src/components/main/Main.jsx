@@ -12,134 +12,134 @@ import { fetchTableData } from "../../store/tableDataSlice.js";
 import { DownloadCloud } from 'lucide-react';
 
 const Container = styled.div`
-  background-color: ${props => props.theme.colors.background};
-  padding-right: 24px;
-  padding-left: 24px;
-  height: 100%;
+    background-color: ${props => props.theme.colors.background};
+    padding-right: 24px;
+    padding-left: 24px;
+    height: 100%;
 `;
 
 const CustomCheckbox = styled.label`
-  display: inline-block;
-  position: relative;
-  width: 18px;
-  height: 18px;
-  /*cursor: pointer;*/
-
-  input[type="checkbox"] {
-    opacity: 0;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-  }
-
-  span:hover {
-    border-color: rgb(2, 122, 242);
-  }
-
-  input[type="checkbox"]:checked + span {
-    background-color: rgb(2, 122, 242);
-    border-color: rgb(2, 122, 242);
-  }
-
-  input[type="checkbox"]:checked + span::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 6px;
-    height: 10px;
-    border: solid white;
-    border-width: 0 2px 2px 0;
-    transform: translate(-50%, -60%) rotate(45deg);
-  }
-    
-  span {
     display: inline-block;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: transparent;
-    border: 1px solid rgba(51, 60, 77, 0.6);
-    border-radius: 2px;
-    transition: all 0.3s ease;
-  }
+    position: relative;
+    width: 18px;
+    height: 18px;
+    /*cursor: pointer;*/
+
+    input[type="checkbox"] {
+        opacity: 0;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    span:hover {
+        border-color: rgb(2, 122, 242);
+    }
+
+    input[type="checkbox"]:checked + span {
+        background-color: rgb(2, 122, 242);
+        border-color: rgb(2, 122, 242);
+    }
+
+    input[type="checkbox"]:checked + span::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 6px;
+        height: 10px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: translate(-50%, -60%) rotate(45deg);
+    }
+
+    span {
+        display: inline-block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: transparent;
+        border: 1px solid rgba(51, 60, 77, 0.6);
+        border-radius: 2px;
+        transition: all 0.3s ease;
+    }
 `;
 
 const StatsButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background-color: #3a3a6a;
-  color: #ffffff;
-  border: none;
-  border-radius: 4px;
-  padding: 10px 16px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: #4a4a7a;
-  }
-
-  svg {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #3a3a6a;
     color: #ffffff;
-  }
+    border: none;
+    border-radius: 4px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+        background-color: #4a4a7a;
+    }
+
+    svg {
+        color: #ffffff;
+    }
 `;
 
 export const StatusIndicators = styled.div`
-  font-family: 'Inter', sans-serif;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 11.5px;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 11.5px;
 
-  .status {
-    font-size: 14px;
-    padding: 4px 12px;
-    border-radius: 4px;
-    white-space: nowrap;
-  }
+    .status {
+        font-size: 14px;
+        padding: 4px 12px;
+        border-radius: 4px;
+        white-space: nowrap;
+    }
 
-  .not-executed {
-    background-color: #602020;
-    color: #fff;
-  }
+    .not-executed {
+        background-color: #602020;
+        color: #fff;
+    }
 
-  .executed-with-violation {
-    background-color: #946000;
-    color: #fff;
-  }
+    .executed-with-violation {
+        background-color: #946000;
+        color: #fff;
+    }
 
-  .executed-on-time {
-    background-color: #1a5336;
-    color: #fff;
-  }
+    .executed-on-time {
+        background-color: #1a5336;
+        color: #fff;
+    }
 
-  .in-search {
-    background-color: #7e4e00;
-    color: #fff;
-  }
+    .in-search {
+        background-color: #7e4e00;
+        color: #fff;
+    }
 
-  .pledged-to-tax {
-    background-color: #4a2d79;
-    color: #fff;
-  }
+    .pledged-to-tax {
+        background-color: #4a2d79;
+        color: #fff;
+    }
 
-  .data-updated {
-    background-color: #1a3b5c;
-    color: #fff;
-  }
+    .data-updated {
+        background-color: #1a3b5c;
+        color: #fff;
+    }
 `;
 const MainContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 11.5px; /* Расстояние между индикаторами и таблицей */
+    display: flex;
+    flex-direction: column;
+    gap: 11.5px; /* Расстояние между индикаторами и таблицей */
 
 `;
 
@@ -167,9 +167,32 @@ const headingsCoordination = [
     "Результат принудительной реализации, ₽",
     "Сумма возврата имущества плательщику, ₽",
     "Обращение взыскания на дебиторскую задолженность",
-
 ];
 
+const headingsDerivative = [
+    "",
+    "№",
+    "ИНН",
+    "Наименование",
+    "Сумма исполнительного листа, ₽",
+    "Остаток исполнительного листа, ₽",
+    "Категория должника",
+    "Сумма активов и дебиторской задолженности, ₽",
+    "Статус ИП",
+    "Код СОСП",
+    "Код НО",
+    "Направление ходатайства в ГМУ",
+    "Взаимодействие с ТНО",
+    "Арест имущества, ₽",
+    "Обеспечение арестом",
+    "Оценка имущества, ₽",
+    "Принудительная реализация, ₽",
+    "Торги 2 этап, ₽",
+    "Результат принудительной реализации, ₽",
+    "Сумма возврата имущества плательщику, ₽",
+    "Обращение взыскания на дебиторскую задолженность",
+    "Обращение взыскания на заработную плату"
+];
 
 const codeIndicators = {
     1: "status not-executed",
@@ -190,7 +213,6 @@ export const Main = () => {
 
     const [selectedInn, setSelectedInn] = useState([]);
 
-    // const selectedRegion = useSelector((state) => state.global.selectedRegion);
     const filters = useSelector((state) => state.global.filters);
     const tableData = useSelector((state) => state.tableData.tableData);
 
@@ -200,9 +222,9 @@ export const Main = () => {
         } else if (location.pathname === "/coordination") {
             return { pageKey: "Index", headings: headingsCoordination };
         } else if (location.pathname === "/derivative-archive") {
-            return { pageKey: "DerivativeDebtArchive", headings: headingsCoordination };
+            return { pageKey: "DerivativeDebtArchive", headings: headingsDerivative };
         } else if (location.pathname === "/derivative") {
-            return { pageKey: "DerivativeDebt", headings: headingsCoordination };
+            return { pageKey: "DerivativeDebt", headings: headingsDerivative };
         } else {
             return { pageKey: "default", headings: [] };
         }
@@ -274,31 +296,61 @@ export const Main = () => {
         }
     };
 
-    const renderTableCells = (row, rowIndex) => {
-        return (
-            <>
-                <td>{rowIndex + 1}</td>
-                <td>{row.inn}</td>
-                <td className={(row.indicators.isUpdated) ?? codeIndicators.isUpdated}>{row.name}</td>
-                <td>{formatNumber(row.post_sum)}</td>
-                <td>{formatNumber(row.cur_debt)}</td>
-                <td>{row.category}</td>
-                <td className={(row.indicators.isLizingFNS) && codeIndicators.isLizingFNS}>{formatNumber(row.total_sum)}</td>
-                <td>{row.status_ip}</td>
-                <td>{row.sosp_code}</td>
-                <td>{row.kno}</td>
-                <td>{row.interaction_gmu}</td>
-                <td>{row.interaction_tno}</td>
-                <td className={codeIndicators[row.indicators.arrest]}>{formatNumber(row.arrest)}</td>
-                <td>{row.securingArrest}</td>
-                <td className={codeIndicators[row.indicators.evaluation]}>{formatNumber(row.evaluation)}</td>
-                <td className={codeIndicators[row.indicators.submitRealizationFirstStage]}>{formatNumber(row.realization_property)}</td>
-                <td className={codeIndicators[row.indicators.submitRealizationSecondStage]}>{formatNumber(row.price_reduction)}</td>
-                <td className={codeIndicators[row.indicators.realizationSecondStage]}>{formatNumber(row.realization_sum_2)}</td>
-                <td>{formatNumber(row.return_sum)}</td>
-                <td className={codeIndicators[row.indicators.collectionAccountsReceivable]}>{formatNumber(row.debitor)}</td>
-            </>
-        );
+    const renderTableCells = (row, rowIndex, pageKey) => {
+        if (pageKey === "Index" || pageKey === "IndexArchive") {
+            return (
+                <>
+                    <td>{rowIndex + 1}</td>
+                    <td>{row.inn}</td>
+                    <td className={(row.indicators.isUpdated) ?? codeIndicators.isUpdated}>{row.name}</td>
+                    <td>{formatNumber(row.post_sum)}</td>
+                    <td>{formatNumber(row.cur_debt)}</td>
+                    <td>{row.category}</td>
+                    <td className={(row.indicators.isLizingFNS) && codeIndicators.isLizingFNS}>{formatNumber(row.total_sum)}</td>
+                    <td>{row.status_ip}</td>
+                    <td>{row.sosp_code}</td>
+                    <td>{row.kno}</td>
+                    <td>{row.interaction_gmu}</td>
+                    <td>{row.interaction_tno}</td>
+                    <td className={codeIndicators[row.indicators.arrest]}>{formatNumber(row.arrest)}</td>
+                    <td>{row.securingArrest}</td>
+                    <td className={codeIndicators[row.indicators.evaluation]}>{formatNumber(row.evaluation)}</td>
+                    <td className={codeIndicators[row.indicators.submitRealizationFirstStage]}>{formatNumber(row.realization_property)}</td>
+                    <td className={codeIndicators[row.indicators.submitRealizationSecondStage]}>{formatNumber(row.price_reduction)}</td>
+                    <td className={codeIndicators[row.indicators.realizationSecondStage]}>{formatNumber(row.realization_sum_2)}</td>
+                    <td>{formatNumber(row.return_sum)}</td>
+                    <td className={codeIndicators[row.indicators.collectionAccountsReceivable]}>{formatNumber(row.debitor)}</td>
+                </>
+            );
+        } else if (pageKey === "DerivativeDebt" || pageKey === 'DerivativeDebtArchive') {
+            return (
+                <>
+                    <td>{rowIndex + 1}</td>
+                    <td>{row.inn}</td>
+                    <td className={(row.indicators.isUpdated) ?? codeIndicators.isUpdated}>{row.name}</td>
+                    <td>{formatNumber(row.cur_debt)}</td>
+                    <td>{formatNumber(row.post_sum)}</td>
+                    <td>{row.category}</td>
+                    <td className={(row.indicators.isLizingFNS) && codeIndicators.isLizingFNS}>{formatNumber(row.total_sum)}</td>
+                    <td>{row.status_ip}</td>
+                    <td>{row.sosp_code}</td>
+                    <td>{row.kno}</td>
+                    <td>{row.interaction_gmu}</td>
+                    <td>{row.interaction_tno}</td>
+                    <td className={codeIndicators[row.indicators.arrest]}>{formatNumber(row.arrest)}</td>
+                    <td>{row.securingArrest}</td>
+                    <td className={codeIndicators[row.indicators.evaluation]}>{formatNumber(row.evaluation)}</td>
+                    <td className={codeIndicators[row.indicators.submitRealizationFirstStage]}>{formatNumber(row.realization_property)}</td>
+                    <td className={codeIndicators[row.indicators.submitRealizationSecondStage]}>{formatNumber(row.price_reduction)}</td>
+                    <td className={codeIndicators[row.indicators.realizationSecondStage]}>{formatNumber(row.realization_sum_2)}</td>
+                    <td>{formatNumber(row.return_sum)}</td>
+                    <td className={codeIndicators[row.indicators.collectionAccountsReceivable]}>{formatNumber(row.debitor)}</td>
+                    <td></td>
+                </>
+            );
+        } else {
+            return null;
+        }
     };
 
 
@@ -334,20 +386,16 @@ export const Main = () => {
                         </thead>
                         <tbody>
                         {filteredData.map((row, rowIndex) => (
-                            <Tr key={rowIndex} isSelected={selectedInn.includes(row.inn)} cursor={true}
-                                onClick={event => handleLink(event, row.inn)}>
-                                <td onClick={event => event.stopPropagation()}>
-                                    <CustomCheckbox>
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedInn.includes(row.inn)}
-                                            onChange={event => handleInnSelect(event, row.inn)}
-                                        />
-                                        <span></span>
-                                    </CustomCheckbox>
-                                </td>
-                                {renderTableCells(row, rowIndex)}
-                            </Tr>
+                            <MemoizedRow
+                                key={row.inn}
+                                row={row}
+                                rowIndex={rowIndex}
+                                selectedInn={selectedInn}
+                                handleInnSelect={handleInnSelect}
+                                handleLink={handleLink}
+                                renderTableCells={renderTableCells}
+                                pageKey={pageKey}
+                            />
                         ))}
                         </tbody>
                     </table>
@@ -372,3 +420,22 @@ export const Main = () => {
         </Container>
     );
 };
+
+const MemoizedRow = React.memo(({ row, rowIndex, selectedInn, handleInnSelect, handleLink, renderTableCells, pageKey }) => {
+    return (
+        <Tr key={rowIndex} isSelected={selectedInn.includes(row.inn)} cursor={true}
+            onClick={event => handleLink(event, row.inn)}>
+            <td onClick={event => event.stopPropagation()}>
+                <CustomCheckbox>
+                    <input
+                        type="checkbox"
+                        checked={selectedInn.includes(row.inn)}
+                        onChange={event => handleInnSelect(event, row.inn)}
+                    />
+                    <span></span>
+                </CustomCheckbox>
+            </td>
+            {renderTableCells(row, rowIndex, pageKey)}
+        </Tr>
+    );
+});

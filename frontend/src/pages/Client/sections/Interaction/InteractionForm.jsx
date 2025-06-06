@@ -14,10 +14,16 @@ import {
     CancelButton,
     RemoveFileButton
 } from './styles.js';
+import { useSelector } from "react-redux";
+import { ROLES } from "../../../../types.js";
 
 
 
 const InteractionForm = ({ onSubmit, onCancel, initialData }) => {
+    const role = useSelector((state) => state.user.role)
+    const isMIUDOL = role === ROLES.Admin
+    const isGMU = role === ROLES.GMUArkhangelsk
+
     const [formData, setFormData] = useState({
         submissionDate: '',
         reviewDate: '',
@@ -87,6 +93,7 @@ const InteractionForm = ({ onSubmit, onCancel, initialData }) => {
                     name="submissionDate"
                     value={formData.submissionDate}
                     onChange={handleInputChange}
+                    disabled={!isMIUDOL}
                 />
             </FormGroup>
 
@@ -97,6 +104,7 @@ const InteractionForm = ({ onSubmit, onCancel, initialData }) => {
                     name="reviewDate"
                     value={formData.reviewDate}
                     onChange={handleInputChange}
+                    disabled={!isGMU}
                 />
             </FormGroup>
 
@@ -106,6 +114,7 @@ const InteractionForm = ({ onSubmit, onCancel, initialData }) => {
                     name="result"
                     value={formData.result}
                     onChange={handleInputChange}
+                    disabled={!isGMU}
                 >
                     <option value={undefined}>Выберите результат</option>
                     <option>Удовлетворено</option>
@@ -123,23 +132,36 @@ const InteractionForm = ({ onSubmit, onCancel, initialData }) => {
                             <RemoveFileButton
                                 type="button"
                                 onClick={() => removeFile('submissionFiles')}
+                                disabled={!isMIUDOL}
                             >
                                 ✕
                             </RemoveFileButton>
                         </SelectedFile>
                     ) : (
-                        <FileUploadLabel>
+                        <FileUploadLabel aa={!isMIUDOL}>
                             <FileInput
                                 type="file"
                                 name="submissionFiles"
                                 accept="application/pdf"
                                 onChange={handleFileChange}
+                                disabled={!isMIUDOL}
                             />
                             Выберите PDF-файл
                         </FileUploadLabel>
                     )}
                 </FileUploadContainer>
             </FormGroup>
+
+
+
+
+
+
+
+
+
+
+
 
             <FormGroup>
                 <Label>Файлы результатов рассмотрения</Label>
@@ -150,6 +172,7 @@ const InteractionForm = ({ onSubmit, onCancel, initialData }) => {
                             <RemoveFileButton
                                 type="button"
                                 onClick={() => removeFile('resultFiles')}
+                                disabled={!isGMU}
                             >
                                 ✕
                             </RemoveFileButton>
@@ -161,6 +184,7 @@ const InteractionForm = ({ onSubmit, onCancel, initialData }) => {
                                 name="resultFiles"
                                 accept="application/pdf"
                                 onChange={handleFileChange}
+                                disabled={!isGMU}
                             />
                             Выберите PDF-файл
                         </FileUploadLabel>

@@ -5,6 +5,7 @@ import {useDispatch, useSelector} from "react-redux";
 import resetStore from "../../store/store"
 import {fetchToggleServiceMode} from "../../store/globalSlice.js";
 import {ButtonContainer, Button} from "../buttons/Button.jsx";
+import { ROLES } from "../../types.js";
 
 
 // Стиль для футера
@@ -286,7 +287,7 @@ export const Footer = () => {
             <Arrow />
             <ul>
               {
-                (role === "admin") &&
+                (role === ROLES.Admin) &&
                 <li>
                 <MenuButton onClick={toggleServiceMode}>
                   <svg

@@ -6,6 +6,7 @@ import TnoInteractionCard from "./TnoInteractionCard.jsx";
 import { fetchGetInteractions, fetchSaveInteraction } from "../../../../store/interactionsSlice.js";
 import { useParams } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
+import { ROLES } from "../../../../types.js";
 
 const TnoInteractionResultForm = () => {
     const {inn} = useParams()
@@ -13,6 +14,8 @@ const TnoInteractionResultForm = () => {
     const interactions = useSelector((state) => state.interactions.interactions);
     const [isFormOpen, setIsFormOpen] = useState(false); // флаг открыта ли форма
     const [editingId, setEditingId] = useState(null); // Если null значит добавляется новая запись
+    const role = useSelector((state) => state.user.role)
+    const isUser = role === ROLES.User
 
     useEffect(() => {
         dispatch(fetchGetInteractions({source: "tno", inn}))
@@ -41,8 +44,7 @@ const TnoInteractionResultForm = () => {
 
     return (
         <Container>
-
-            {!isFormOpen && (
+            {(!isFormOpen && !isUser) && (
                 <AddButton onClick={handleAddClick}>
                     Добавить результат взаимодействия с ТНО
                 </AddButton>

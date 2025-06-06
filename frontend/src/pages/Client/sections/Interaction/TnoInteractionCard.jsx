@@ -9,9 +9,14 @@ import {
     EditButton,
     NoDataText
 } from './styles.js';
+import { useSelector } from "react-redux";
+import { ROLES } from "../../../../types.js";
 
 
 const TnoInteractionCard = ({ data, onEdit }) => {
+    const role = useSelector((state) => state.user.role)
+    const isUser = role === ROLES.User
+
     const formatDate = (dateString) => {
         if (!dateString) return null;
 
@@ -27,39 +32,10 @@ const TnoInteractionCard = ({ data, onEdit }) => {
         }
     };
 
-    const getResultText = (result) => {
-        switch(result) {
-            case 'approved': return 'Удовлетворено';
-            case 'rejected': return 'Отказано';
-            case 'partial': return 'Частично удовлетворено';
-            default: return null;
-        }
-    };
-
-    const getFileName = (file) => {
-        if (!file) return null;
-        return file.name || 'Файл';
-    };
-
-    const handleFileDownload = (file) => {
-        if (!file) return;
-        const fileUrl = URL.createObjectURL(file);
-
-        const link = document.createElement('a');
-        link.href = fileUrl;
-        link.download = file.name;
-
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        URL.revokeObjectURL(fileUrl);
-    };
-
     return (
         <Card>
             <CardHeader>
-                <EditButton onClick={onEdit}>Редактировать</EditButton>
+                {!isUser && <EditButton onClick={onEdit}>Редактировать</EditButton>}
             </CardHeader>
 
             <CardBody>
@@ -91,7 +67,7 @@ const TnoInteractionCard = ({ data, onEdit }) => {
                 <CardRow>
                     <RowLabel>Результат рассмотрения:</RowLabel>
                     <RowValue>
-                        {getResultText(data.result) || (
+                        {data.result || (
                             <NoDataText>Информация не заполнена</NoDataText>
                         )}
                     </RowValue>

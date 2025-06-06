@@ -3,6 +3,7 @@ import {useDispatch, useSelector} from "react-redux";
 import resetStore from "../store/store.js"
 import {useEffect} from "react";
 import {fetchGetServiceMode} from "../store/globalSlice.js";
+import { ROLES } from "../types.js";
 
 
 
@@ -38,7 +39,7 @@ export const useLogoutUser = (isAuth) => {
 
         dispatch(fetchGetServiceMode())
 
-        if (serviceMode && (role !== "admin")) {
+        if (serviceMode && (role !== ROLES.Admin)) {
             resetStore()
             window.location.reload()
             return

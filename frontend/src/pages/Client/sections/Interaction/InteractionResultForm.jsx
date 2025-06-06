@@ -5,6 +5,7 @@ import {Container, AddButton, InteractionsList, EmptyState} from './styles.js';
 import { useDispatch, useSelector } from "react-redux";
 import { fetchGetInteractions, fetchSaveInteraction } from "../../../../store/interactionsSlice.js";
 import { useParams } from "react-router";
+import { ROLES } from "../../../../types.js";
 
 
 
@@ -14,6 +15,8 @@ const InteractionResultForm = () => {
     const interactions = useSelector((state) => state.interactions.interactions);
     const [isFormOpen, setIsFormOpen] = useState(false); // флаг открыта ли форма
     const [editingId, setEditingId] = useState(null); // Если null значит добавляется новая запись
+    const role = useSelector((state) => state.user.role)
+    const isUser = role === ROLES.User
 
     useEffect(() => {
         dispatch(fetchGetInteractions({ source: "gmu", inn }))
@@ -42,8 +45,7 @@ const InteractionResultForm = () => {
 
     return (
         <Container>
-
-            {!isFormOpen && (
+            {(!isFormOpen && !isUser) && (
                 <AddButton onClick={handleAddClick}>
                     Добавить результат взаимодействия с ГМУ ФССП
                 </AddButton>

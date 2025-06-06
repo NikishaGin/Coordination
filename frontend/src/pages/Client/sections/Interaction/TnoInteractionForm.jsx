@@ -16,8 +16,11 @@ import {
     NumericInput,
     NotesTextarea
 } from './styles.js';
+import { useSelector } from "react-redux";
 
 const TnoInteractionForm = ({ onSubmit, onCancel, initialData }) => {
+    const role = useSelector((state) => state.user.role)
+
     const [formData, setFormData] = useState({
         submissionDate: '',
         reviewDate: '',

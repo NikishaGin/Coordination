@@ -103,6 +103,11 @@ export const DateInput = styled.input`
     outline: none;
     border-color: rgba(255, 255, 255, 0.5);
   }
+    
+  &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+  }  
 
   &::-webkit-calendar-picker-indicator {
     filter: invert(1);
@@ -168,7 +173,12 @@ export const Select = styled.select`
     border-color: rgba(255, 255, 255, 0.5);
   }
 
-  option {
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+    option {
     background-color: ${secondaryColor};
     color: ${textColor};
   }
@@ -193,6 +203,11 @@ export const FileUploadLabel = styled.label`
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 `;
 
@@ -223,6 +238,11 @@ export const RemoveFileButton = styled.button`
 
   &:hover {
     color: ${errorColor};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 `;
 
