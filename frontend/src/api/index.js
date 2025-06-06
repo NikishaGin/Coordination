@@ -35,10 +35,7 @@ export const serviceAPI = {
 
 // API для получения информации, связанной с активыми
 export const activesAPI = {
-    getTables: (page, regionCode, signal) =>
-        instance.get(`/actives/get-table/${page}/${regionCode}`, {
-            signal, // <-- вот это важно
-        }),
+    getTables: (page, regionCode, signal) => instance.get(`/actives/get-table/${page}/${regionCode}`, { signal }),
     getInfo: inn => instance.get(`/actives/get-info/${inn}`),
     getResolutions: inn => instance.get(`/actives/get-info/${inn}/resolutions`),
     getActivesStatistics: inn => instance.get(`/actives/get-info/${inn}/actives-statistics`),

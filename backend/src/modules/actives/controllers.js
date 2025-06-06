@@ -85,7 +85,6 @@ export function getActives(request, response) {
 
 
 export function createNewActives(request, response) {
-    const token = request.headers.authorization
     const userInfo = request.userInfo
     const nameActive = request.params.nameActive
     const inn = request.params.inn

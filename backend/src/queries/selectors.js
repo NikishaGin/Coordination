@@ -78,12 +78,10 @@ export const actives = {
     getTables(regionCode, is_derivative_debt, is_archive) {
         return db('meta')
             .select(db.ref("meta.inn").as("inn"))
-  q          .select(db.ref("meta.name").as("name"))
+            .select(db.ref("meta.name").as("name"))
             .select(db.ref("debt_type.debt_type").as("category"))
             .select(db.ref("meta.sosp_code").as("sosp_code"))
             .select(db.ref("meta.kno").as("kno"))
-
-
             .select(db.ref("resolutions_data.post_sum").as("post_sum"))
             .select(db.ref("resolutions_data.cur_debt").as("cur_debt"))
             .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "total_sum"))
