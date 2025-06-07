@@ -9,8 +9,6 @@ import {
 } from "./tablesConfig/headers.js"
 
 
-
-
 export const getStatistics = async(req, res) => {
     const { isDerived, isArchive, innList } = req.query
 
@@ -59,7 +57,7 @@ export const getStatisticsIP = (req, res) => {
 
 
 export const getDebtorActivesStat = async (request, response) =>  {
-    const { inn, isDerived, isArchive }  = request.query
+    const { inn, isDerived = false, isArchive = false }  = request.query
 
     const lizingKeyPostfix = 'NotFnsLizing';
     const lizingKeyTextPostfix = ' (залогод. не ФНС)';

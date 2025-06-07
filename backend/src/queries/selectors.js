@@ -112,8 +112,8 @@ export const actives = {
             })
             .modify(query => {
                 is_archive
-                    ? query.havingRaw(`COUNT(*) = SUM(CASE WHEN resolutions_data.is_archive = true THEN 1 ELSE 0 END)`)
-                    : query.havingRaw(`SUM(CASE WHEN resolutions_data.is_archive = false THEN 1 ELSE 0 END) > 0`);
+                    ? query.havingRaw(`COUNT(*) = SUM(CASE WHEN resolutions_data.is_archive = 1 THEN 1 ELSE 0 END)`)
+                    : query.havingRaw(`SUM(CASE WHEN resolutions_data.is_archive = 0 THEN 1 ELSE 0 END) > 0`);
             })
             .groupBy('inn')
     },
@@ -269,22 +269,20 @@ const buildCommonFieldsQuery = async (
 
 
 const getActivesDownloadingData = async ({
-                                             inn,
-                                             nameActive,
-                                             isDerivate = null,
-                                             isArchive = null,
-                                             isNotFnsLizing = null
-                                         }) => {
+    inn,
+    nameActive,
+    isDerivate = null,
+    isArchive = null,
+    isNotFnsLizing = null
+}) => {
     const table  = nameActive === 'ground' ? 'property' : nameActive;
     const active = db(table + " as t")
         .select('t.*')
         .whereNotNull('t.status')
         .modify(query => {
             if (inn) query.where({ inn });
-            if (table !== 'debit') {
-                isNotFnsLizing
-                    ? query.where('t.is_fns_lizing', 2)
-                    : query.where('t.is_fns_lizing', '<>', 2);
+            if (table !== 'debit' && isNotFnsLizing) {
+                query.where('t.is_fns_lizing', 2)
             }
         })
         .mapStatusToTextField("t", "status", {
@@ -296,16 +294,20 @@ const getActivesDownloadingData = async ({
         .select("at.name as category")
 
 
-    const subResolutions = db('resolutions')
+    const subResolutions = db('resolutions as res')
         .select('inn')
-        .max('exec_date as max_exec_date')
-        .sum('post_sum as post_sum')
-        .sum('cur_debt as cur_debt')
-        .where('is_derivative_debt', isDerivate)
-        .where('is_archive', isArchive)
+        .max('res.exec_date as max_exec_date')
+        .sum('res.post_sum as post_sum')
+        .sum('res.cur_debt as cur_debt')
+        .where({
+            'res.is_derivative_debt': isDerivate,
+        })
+        .modify(query => {
+            isArchive
+                ? query.havingRaw(`COUNT(*) = SUM(CASE WHEN res.is_archive = 1 THEN 1 ELSE 0 END)`)
+                : query.havingRaw(`SUM(CASE WHEN res.is_archive = 0 THEN 1 ELSE 0 END) > 0`);
+        })
         .groupBy('inn');
-
-    console.log(table)
 
 
     const result = await db('meta')
@@ -314,15 +316,14 @@ const getActivesDownloadingData = async ({
             'meta.kno',
             'meta.name as metaName',
             'meta.inn',
-            'res.post_sum',
-            'res.cur_debt',
+            'res.post_sum as post_sum',
+            'res.cur_debt as cur_debt',
             'res.max_exec_date',
             'a.*',
         ])
         .innerJoin(active.as('a'), 'meta.inn', 'a.inn')
         .leftJoin("debt_type as dt", "meta.debt_type", "dt.id")
         .select("dt.debt_type as debtor_category")
-
         .leftJoin(subResolutions.as('res'), 'meta.inn', 'res.inn')
 
 
@@ -357,13 +358,14 @@ export const download = {
 
             if (withLizing) {
                 stats[nameActive + lizingKeyPostfix] = await getActivesDownloadingData({
-                    ...props, isNotFnsLizing: false
+                    ...props, isNotFnsLizing: true
                 });
             }
         }
 
         return stats;
     },
+
     getStatisticsIP(innList) {
         return db("meta")
             .select(db.ref("meta.kno").as("kno"))

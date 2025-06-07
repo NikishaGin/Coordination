@@ -9,7 +9,7 @@ export async function loginUser(request, response) {
         response.status(400).json({details: "Отсутствуют обязательные поля: логин и пароль"})
         return
     }
-    const {passwordHash = "", ...userInfo} = await models.getUser(login)
+    const { passwordHash = "", ...userInfo } = await models.getUser(login) || {}
     if (!passwordHash) {
         response.status(404).json({code: 1, details: "Пользователя с таким логином не существует"})
         return
