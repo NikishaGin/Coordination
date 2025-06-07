@@ -96,7 +96,6 @@ const InteractionForm = ({ onSubmit, onCancel, initialData }) => {
                     disabled={!isMIUDOL}
                 />
             </FormGroup>
-
             <FormGroup>
                 <Label>Дата рассмотрения ходатайства ГМУ</Label>
                 <DateInput
@@ -107,7 +106,6 @@ const InteractionForm = ({ onSubmit, onCancel, initialData }) => {
                     disabled={!isGMU}
                 />
             </FormGroup>
-
             <FormGroup>
                 <Label>Результат рассмотрения</Label>
                 <Select
@@ -138,7 +136,7 @@ const InteractionForm = ({ onSubmit, onCancel, initialData }) => {
                             </RemoveFileButton>
                         </SelectedFile>
                     ) : (
-                        <FileUploadLabel aa={!isMIUDOL}>
+                        <FileUploadLabel>
                             <FileInput
                                 type="file"
                                 name="submissionFiles"
@@ -151,18 +149,6 @@ const InteractionForm = ({ onSubmit, onCancel, initialData }) => {
                     )}
                 </FileUploadContainer>
             </FormGroup>
-
-
-
-
-
-
-
-
-
-
-
-
             <FormGroup>
                 <Label>Файлы результатов рассмотрения</Label>
                 <FileUploadContainer>
@@ -191,7 +177,6 @@ const InteractionForm = ({ onSubmit, onCancel, initialData }) => {
                     )}
                 </FileUploadContainer>
             </FormGroup>
-
             <FormActions>
                 <SaveButton type="submit">Сохранить</SaveButton>
                 <CancelButton type="button" onClick={onCancel}>

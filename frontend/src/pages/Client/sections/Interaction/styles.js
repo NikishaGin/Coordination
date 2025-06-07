@@ -105,7 +105,7 @@ export const DateInput = styled.input`
   }
     
   &:disabled {
-      opacity: 0.5;
+      opacity: 0.3;
       cursor: not-allowed;
   }  
 
@@ -174,7 +174,7 @@ export const Select = styled.select`
   }
 
   &:disabled {
-    opacity: 0.5;
+    opacity: 0.3;
     cursor: not-allowed;
   }
 
@@ -201,12 +201,12 @@ export const FileUploadLabel = styled.label`
   font-size: 14px;
   transition: background-color 0.3s;
 
-  &:hover {
+  &:has(input:enabled):hover {
     background-color: rgba(255, 255, 255, 0.2);
   }
 
-  &:disabled {
-    opacity: 0.5;
+  &:has(input:disabled) {
+    opacity: 0.3;
     cursor: not-allowed;
   }
 `;
@@ -224,6 +224,10 @@ export const SelectedFile = styled.div`
   border-radius: 4px;
   word-break: break-all;
   font-size: 14px;
+
+  &:has(button:disabled) {
+    opacity: 0.3;
+  }
 `;
 
 export const RemoveFileButton = styled.button`
@@ -241,7 +245,7 @@ export const RemoveFileButton = styled.button`
   }
 
   &:disabled {
-    opacity: 0.5;
+    opacity: 0.3;
     cursor: not-allowed;
   }
 `;

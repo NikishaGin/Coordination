@@ -24,9 +24,11 @@ CREATE TABLE `interactions` (
 );
 
 
+
 ALTER TABLE users
     MODIFY COLUMN role ENUM('admin', 'user', 'limited_admin', 'gmu_limited_admin', 'gmu_arkhangelsk_admin') DEFAULT 'user' NOT NULL;
 
+DELETE FROM `users` WHERE username = "gmu";
 
 INSERT INTO `users` (username, region, surname, password, role)
 VALUES ("gmu", "0000", "Архангельск - ГМУ", "$2b$10$XDXDW4Zxqk6WCd52Xt359ectAx0e.bmQgxQ3ADmkt.cJeUlJRxLGS", "gmu_arkhangelsk_admin")
