@@ -1,11 +1,12 @@
-import { actives, selectFieldsOccupancy, tableActives } from "../../queries/selectors.js"
+// import { actives } from "../../queries/selectors.js"
+import * as models from "./models.js"
 import { indicatorsGetters, findAggregatedIndicators } from "./LogicIndicators.js";
 
 
 
 // Индикаторы для каждого конкретного имущества
 export async function insertIndicatorsToActives(activesTables, inn) {
-    const execMinDate = new Date(await actives.getExecMinDate(inn))
+    const execMinDate = new Date(await models.getExecMinDate(inn))
     for (const nameActive in activesTables) {
         for (const row of activesTables[nameActive]) {
             row.indicators = {}
@@ -20,9 +21,9 @@ export async function insertIndicatorsToActives(activesTables, inn) {
 // Агрегированные индикаторы
 export async function aggregateIndicators(inn, activesTables) {
     const IS_UPDATED_DELTA =  7 * 24 * 60 * 60 * 1000
-    const maxLoadDate =  await actives.getMaxLoadDate(inn)
+    const maxLoadDate =  await models.getMaxLoadDate(inn)
     const isUpdated = (Date.now() - new Date(maxLoadDate)) <= IS_UPDATED_DELTA;
-    const isLizingFNS = await actives.isLizingFNS(inn)
+    const isLizingFNS = await models.isLizingFNS(inn)
     await insertIndicatorsToActives(activesTables, inn)
     const allActivesValues = Object.values(activesTables).flat()
     if (allActivesValues.length > 0) {

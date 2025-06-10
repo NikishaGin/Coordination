@@ -1,5 +1,6 @@
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 import {serviceAPI, userAPI} from "../api/index.js";
+import { useState } from 'react';
 
 
 
@@ -64,6 +65,7 @@ export const fetchToggleServiceMode = createAsyncThunk(
 // Начальное состояние
 const initialState = {
     serviceMode: false,
+    pageKey: "default",
     regions: [],
     debitTypes: [],
     selectedRegionByPage: {}, // добавили
@@ -74,8 +76,7 @@ const initialState = {
         category: "",
         name_filtered_field: "",
         sum: ""
-    },
-    urlHistory: ["", ""]
+    }
 };
 
 // Создаем slice
@@ -83,8 +84,8 @@ const globalSlice = createSlice({
     name: "global",
     initialState,
     reducers: {
-        updateUrlHistory(state, action) {
-            state.urlHistory = [state.urlHistory[1], action.payload];
+        setPageKey(state, action) {
+            state.pageKey = action.payload;
         },
         setSelectedRegionForPage(state, action) {
             const { pageKey, regionCode } = action.payload;
@@ -126,7 +127,7 @@ const globalSlice = createSlice({
 
 // Экспортируем действия и редьюсер
 export const {
-    updateUrlHistory,
+    setPageKey,
     setSelectedRegionForPage,
     setInputValueInn,
     setFilterStatusIp,

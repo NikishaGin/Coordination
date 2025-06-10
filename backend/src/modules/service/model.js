@@ -13,8 +13,8 @@ export function getRegions(is_derivative_debt, is_archive) {
         .where({ 'resolutions.is_derivative_debt': is_derivative_debt, })
         .modify(query => {
             is_archive
-                ? query.havingRaw(`COUNT(*) = SUM(CASE WHEN resolutions.is_archive = true THEN 1 ELSE 0 END)`)
-                : query.havingRaw(`SUM(CASE WHEN resolutions.is_archive = false THEN 1 ELSE 0 END) > 0`);
+                ? query.havingRaw(`COUNT(*) = SUM(CASE WHEN resolutions.is_archive = 1 THEN 1 ELSE 0 END)`)
+                : query.havingRaw(`SUM(CASE WHEN resolutions.is_archive = 0 THEN 1 ELSE 0 END) > 0`);
         })
         .groupBy('meta.inn', 'regions.regionCode', 'regions.regionName')
 }

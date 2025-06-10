@@ -3,6 +3,7 @@ import * as updates from "../../queries/updates.js"
 import { aggregateIndicators, securingArrest } from "../indicators/service.js";
 
 
+
 export async function getTables(request, response) {
     const page = request.params.page
     const regionCode = request.params.regionCode
@@ -15,17 +16,29 @@ export async function getTables(request, response) {
                 row[fieldName] = row[fieldName].toString()
             }
         }
+
+
         const activesTables = await tableActives(row.inn, (query, nameActive) => {
             query.select({ cost: ((nameActive === "debit") ? "total_sum" : "cost") }).modify(selectFieldsOccupancy)
         })
         row.indicators = await aggregateIndicators(row.inn, activesTables)
-        if (page === "Index")
-            row.securingArrest = await securingArrest(row, activesTables)
+        row.securingArrest = await securingArrest(row, activesTables)
+
+
+
+
     }
-
-
     response.json(data)
 }
+
+
+
+
+
+
+
+
+
 
 
 export function getInfo(request, response) {

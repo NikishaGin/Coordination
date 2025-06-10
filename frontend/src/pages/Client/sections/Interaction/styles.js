@@ -178,7 +178,7 @@ export const Select = styled.select`
     cursor: not-allowed;
   }
 
-    option {
+  option {
     background-color: ${secondaryColor};
     color: ${textColor};
   }

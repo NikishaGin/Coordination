@@ -1,16 +1,15 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {fetchGetRegions, setSelectedRegionForPage} from "../../store/globalSlice.js";
-import {CustomIcon, FilterGroup, Select, SelectWrapper} from "../select/Select.jsx";
+import { setPageKey, fetchGetRegions, setSelectedRegionForPage } from "../../store/globalSlice.js";
+import { CustomIcon, FilterGroup, Select, SelectWrapper } from "../select/Select.jsx";
 import { useLocation } from "react-router";
 
 export const SelectRegion = () => {
     const location = useLocation();
     const dispatch = useDispatch();
     const regions = useSelector((state) => state.global.regions);
+    const pageKey = useSelector((state) => state.global.pageKey);
     const selectedRegionByPage = useSelector((state) => state.global.selectedRegionByPage);
-
-    const [pageKey, setPageKey] = useState("default");
 
     useEffect(() => {
         let key = "default";
@@ -25,8 +24,7 @@ export const SelectRegion = () => {
             key = "DerivativeDebt";
         }
 
-        setPageKey(key);
-
+        dispatch(setPageKey(key));
         dispatch(fetchGetRegions(key));
         // не сбрасываем выбранный регион — он сохраняется в state по pageKey
     }, [dispatch, location.pathname]);
@@ -34,7 +32,6 @@ export const SelectRegion = () => {
     const handleChange = (event) => {
         const selectedValue = event.target.value;
         dispatch(setSelectedRegionForPage({ pageKey, regionCode: selectedValue }));
-
     };
 
     const selectedRegion = selectedRegionByPage?.[pageKey] || "";

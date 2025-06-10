@@ -54,27 +54,6 @@ export const selectFieldsOccupancy = query => {
 
 
 export const actives = {
-    async getExecMinDate(inn) {
-        const [{ execMinDate }] = await db("resolutions").min("exec_date as execMinDate").where({ inn })
-        return execMinDate
-    },
-    async getMaxLoadDate(inn) {
-        const datesArr = await tableActives(inn, query => query.max("load_date as maxLoadDate"))
-
-        const entries = Object.entries(datesArr)
-        const listDates = entries.map(([_, data]) => new Date(data[0].maxLoadDate ?? 0))
-
-        return Math.max(...listDates)
-    },
-    async isLizingFNS(inn) {
-        const modify = (query, name) => {
-            return name !== "debit"
-                ? query.where({ is_fns_lizing: 1}).first("id as exists")
-                : query.whereRaw("false")
-        }
-        return await tableActives(inn, modify).then(Boolean)
-    },
-
     getTables(regionCode, is_derivative_debt, is_archive) {
         return db('meta')
             .select(db.ref("meta.inn").as("inn"))
@@ -101,20 +80,23 @@ export const actives = {
             .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "realization_sum_2"))
             .select(sumPrices(["transport_data", "nedvizh_data", "debit_data"], "return_sum"))
             .select(db.ref(db.raw("IFNULL(debit_data.foreclose, 0.00)")).as("debitor"))
+            
+
             .leftJoin("debt_type", "debt_type.id", "meta.debt_type")
             .leftJoin(db.raw('(??) as resolutions_data', [subqueries.getResolutions]), 'meta.inn', 'resolutions_data.inn')
             .leftJoin(db.raw('(??) as transport_data', [subqueries.getActives("transport")]), 'meta.inn', 'transport_data.inn')
             .leftJoin(db.raw('(??) as nedvizh_data', [subqueries.getActives("property")]), 'meta.inn', 'nedvizh_data.inn')
             .leftJoin(db.raw('(??) as debit_data', [subqueries.getActives("debit")]), 'meta.inn', 'debit_data.inn')
             .leftJoin(db.raw('(??) as another_data', [subqueries.getActives("another")]), 'meta.inn', 'another_data.inn')
+            .leftJoin('interactions', 'meta.inn', 'interactions.inn')
             .where({
                 'meta.region': regionCode,
                 'resolutions_data.is_derivative_debt': is_derivative_debt,
             })
             .modify(query => {
                 is_archive
-                    ? query.havingRaw(`COUNT(*) = SUM(CASE WHEN resolutions_data.is_archive = true THEN 1 ELSE 0 END)`)
-                    : query.havingRaw(`SUM(CASE WHEN resolutions_data.is_archive = false THEN 1 ELSE 0 END) > 0`);
+                    ? query.havingRaw(`COUNT(*) = SUM(CASE WHEN resolutions_data.is_archive = 1 THEN 1 ELSE 0 END)`)
+                    : query.havingRaw(`SUM(CASE WHEN resolutions_data.is_archive = 0 THEN 1 ELSE 0 END) > 0`);
             })
             .groupBy('inn')
     },
@@ -269,23 +251,22 @@ const buildCommonFieldsQuery = async (
 };
 
 
+
 const getActivesDownloadingData = async ({
-                                             inn,
-                                             nameActive,
-                                             isDerivate = null,
-                                             isArchive = null,
-                                             isNotFnsLizing = null
-                                         }) => {
+ inn,
+ nameActive,
+ isDerivate = null,
+ isArchive = null,
+ isNotFnsLizing = null
+}) => {
     const table  = nameActive === 'ground' ? 'property' : nameActive;
     const active = db(table + " as t")
         .select('t.*')
         .whereNotNull('t.status')
         .modify(query => {
             if (inn) query.where({ inn });
-            if (table !== 'debit') {
-                isNotFnsLizing
-                    ? query.where('t.is_fns_lizing', 2)
-                    : query.where('t.is_fns_lizing', '<>', 2);
+            if (table !== 'debit' && isNotFnsLizing) {
+                query.where('t.is_fns_lizing', 2)
             }
         })
         .mapStatusToTextField("t", "status", {
@@ -297,16 +278,20 @@ const getActivesDownloadingData = async ({
         .select("at.name as category")
 
 
-    const subResolutions = db('resolutions')
+    const subResolutions = db('resolutions as res')
         .select('inn')
-        .max('exec_date as max_exec_date')
-        .sum('post_sum as post_sum')
-        .sum('cur_debt as cur_debt')
-        .where('is_derivative_debt', isDerivate)
-        .where('is_archive', isArchive)
+        .max('res.exec_date as max_exec_date')
+        .sum('res.post_sum as post_sum')
+        .sum('res.cur_debt as cur_debt')
+        .where({
+            'res.is_derivative_debt': isDerivate,
+        })
+        .modify(query => {
+            isArchive
+                ? query.havingRaw(`COUNT(*) = SUM(CASE WHEN res.is_archive = 1 THEN 1 ELSE 0 END)`)
+                : query.havingRaw(`SUM(CASE WHEN res.is_archive = 0 THEN 1 ELSE 0 END) > 0`);
+        })
         .groupBy('inn');
-
-    console.log(table)
 
 
     const result = await db('meta')
@@ -315,15 +300,14 @@ const getActivesDownloadingData = async ({
             'meta.kno',
             'meta.name as metaName',
             'meta.inn',
-            'res.post_sum',
-            'res.cur_debt',
+            'res.post_sum as post_sum',
+            'res.cur_debt as cur_debt',
             'res.max_exec_date',
             'a.*',
         ])
         .innerJoin(active.as('a'), 'meta.inn', 'a.inn')
         .leftJoin("debt_type as dt", "meta.debt_type", "dt.id")
         .select("dt.debt_type as debtor_category")
-
         .leftJoin(subResolutions.as('res'), 'meta.inn', 'res.inn')
 
 
@@ -358,13 +342,14 @@ export const download = {
 
             if (withLizing) {
                 stats[nameActive + lizingKeyPostfix] = await getActivesDownloadingData({
-                    ...props, isNotFnsLizing: false
+                    ...props, isNotFnsLizing: true
                 });
             }
         }
 
         return stats;
     },
+
     getStatisticsIP(innList) {
         return db("meta")
             .select(db.ref("meta.kno").as("kno"))

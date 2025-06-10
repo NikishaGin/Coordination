@@ -205,7 +205,6 @@ const codeIndicators = {
 
 
 export const Main = () => {
-
     const location = useLocation();
 
     const navigate = useNavigate()
@@ -216,17 +215,14 @@ export const Main = () => {
     const filters = useSelector((state) => state.global.filters);
     const tableData = useSelector((state) => state.tableData.tableData);
 
-    const { pageKey, headings } = useMemo(() => {
-        if (location.pathname === "/coordination-archive") {
-            return { pageKey: "IndexArchive", headings: headingsCoordination };
-        } else if (location.pathname === "/coordination") {
-            return { pageKey: "Index", headings: headingsCoordination };
-        } else if (location.pathname === "/derivative-archive") {
-            return { pageKey: "DerivativeDebtArchive", headings: headingsDerivative };
-        } else if (location.pathname === "/derivative") {
-            return { pageKey: "DerivativeDebt", headings: headingsDerivative };
+    const pageKey = useSelector((state) => state.global.pageKey);
+    const headings = useMemo(() => {
+        if (["/coordination-archive", "/coordination"].includes(location.pathname)) {
+            return headingsCoordination;
+        } else if (["/derivative-archive", "/derivative"].includes(location.pathname)) {
+            return headingsDerivative;
         } else {
-            return { pageKey: "default", headings: [] };
+            return { headings: [] };
         }
     }, [location.pathname]);
 

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import {AlertCircle, DownloadCloud} from "lucide-react";
+import { AlertCircle, DownloadCloud } from "lucide-react";
 import { useParams } from "react-router";
 import { activesAPI, downloadAPI } from "../../../../api/index.js";
 import { Button} from "../../../../components/buttons/Button.jsx";
 import { downloadExcel } from '../../../../utils/downloadExcel.js';
 import { enqueueSnackbar, SnackbarProvider } from 'notistack';
+import { useSelector } from 'react-redux';
+
 
 const ChartContainer = styled.div`
     display: grid;
@@ -231,9 +233,12 @@ const ASSET_NAMES = {
 const parseCost = (asset) => parseFloat(asset?.cost) || 0;
 
 export default function PieChartAssets() {
+    const pageKey = useSelector((state) => state.global.pageKey);
+    const isderived = ["/derivative-archive", "/derivative"].includes(pageKey);
+
     const [assets, setAssets] = useState(null); // Состояние для хранения данных об активах
     const [loading, setLoading] = useState(true); // Состояние загрузки
-    const { inn } = useParams(); // Получаем ИНН из параметров URL
+    const { inn }  = useParams(); // Получаем ИНН из параметров URL
 
     // Получение статистики активов при изменении ИНН
     useEffect(() => {
@@ -323,7 +328,7 @@ export default function PieChartAssets() {
         try{
             enqueueSnackbar("Начало загрузки...", { variant: "info" });
 
-            const response = await downloadAPI.getDebtorActivesStat(inn);
+            const response = await downloadAPI.getDebtorActivesStat(inn, isderived);
             downloadExcel(response);
 
             enqueueSnackbar("Загружено",  { variant: "info" });
