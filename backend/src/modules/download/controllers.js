@@ -1,5 +1,5 @@
 import { download as downloadSelectors, download } from "../../queries/selectors.js"
-import { createSheet, sendXLSXFile, getDateNow } from "./tablesConfig/create.js"
+import { createSheet, sendXLSXFile } from "./tablesConfig/create.js"
 import {
     activeSheetConfigs,
     activesSheets,
@@ -7,7 +7,7 @@ import {
     headersStatistics,
     headerStatisticsIP
 } from "./tablesConfig/headers.js"
-
+import { getDownloadDate, getDownloadTypeName } from './name_utils.js';
 
 
 export const getStatistics = async(req, res) => {
@@ -23,13 +23,20 @@ export const getStatistics = async(req, res) => {
     }
 
     const namedSheets = Object.entries(sheetNames).map(
-        ([ type, name ]) => [
-            name,
-            createSheet(stats[type], headers[type])
-        ]
+        ([ type, name ]) => {
+            console.log(stats[type], "Тип", type);
+            return [
+                name,
+                createSheet(stats[type], headers[type])
+            ];
+        }
     );
 
-    const name = `${innList ? 'Выгрузка_' : 'Статистика_регионов'}${getDateNow()}.xlsx`;
+    const name = (
+        (innList ? `Выгрузка ` : 'Статистика регионов ')
+        + getDownloadTypeName(isDerived, isArchive) + " "
+        + getDownloadDate() + '.xlsx'
+    );
 
     sendXLSXFile(
         res,
@@ -50,7 +57,7 @@ export const getStatisticsIP = (req, res) => {
             sendXLSXFile(
                 res,
                 { "Статистика": sheet },
-                `Выгрузка_по_ИП_${getDateNow()}.xlsx`
+                `Выгрузка по ИП ${getDownloadDate()}.xlsx`
             )
         })
         .catch(console.log)
@@ -58,7 +65,7 @@ export const getStatisticsIP = (req, res) => {
 
 
 export const getDebtorActivesStat = async (request, response) =>  {
-    const { inn, isDerived = false, isArchive = false }  = request.query
+    const { inn, isDerived, isArchive }  = request.query
 
     const lizingKeyPostfix = 'NotFnsLizing';
     const lizingKeyTextPostfix = ' (залогод. не ФНС)';
@@ -72,11 +79,14 @@ export const getDebtorActivesStat = async (request, response) =>  {
         activeSheetConfigs, lizingKeyPostfix
     );
 
-    const name = `${inn ? `Выгрузка_активов_НП_${inn}_` : 'Активы_НП_регионов_'}${getDateNow()}.xlsx`;
+    const name = (
+        (inn ? `Выгрузка активов НП ${inn} ` : 'Активы НП регионов ')
+        + getDownloadTypeName(isDerived, isArchive)
+        + getDownloadDate() + '.xlsx'
+    );
 
     const namedSheets = Object.entries(sheets).map(
         ([ type, name ]) => {
-            console.log(type, name)
             return [
                 name,
                 createSheet(stats[type], headers[type])
@@ -89,6 +99,4 @@ export const getDebtorActivesStat = async (request, response) =>  {
         Object.fromEntries(namedSheets),
         name
     )
-
-
 };

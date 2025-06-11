@@ -14,21 +14,26 @@ const ID_HEADERS = {
 
 
 const GET_SUMS_HEADERRS =  sourceName => ({
-    post_sum: `Сумма всего/сумма ${sourceName} по статье 47 НК РФ`,
-    cur_debt: `Сумма всего/текущий остаток ${sourceName} по статье 47 НК РФ`,
+    post_sum: `Сумма по постановлениям по статье 47 НК РФ`,
+    cur_debt: `Остаток по постановлениям по статье 47 НК РФ`,
 })
 
 
 const ACTIVES_COMMON_HEADERS = {
-    arrest_sum:           `Арест имущества, ₽`,
-    measures_sum:         `Оценка имущества, ₽`,
-    realisation_sum_1:    `Результат принудительной реализация 1 этап, ₽`,
-    price_reduction_sum:  `Сумма снижения цены, ₽`,
-    realisation_sum_2:    `Результат принудительной реализация 2 этап, ₽`,
-    return_to_debtor_sum: `Сумма возврата имущества должнику, ₽`,
-    debitor_request_sum:  `Сумма по обращениям на взыскания дебиторской задолженности`,
-    enforcement_status:   `Статус ИП`,
+    arrest_sum:               `Арест имущества, ₽`,
+    active_supply_status:     `Обеспеченность остатка долга арестом`,
+    evaluation_sum:           `Оценка имущества, ₽`,
+    realization_property_sum: `Результат принудительной реализация 1 этап, ₽`,
+    // price_reduction_sum:      `Сумма снижения цены, ₽`,
+    realization_sum_2:        `Результат принудительной реализация 2 этап, ₽`,
+    realization_sum_total:     `Результат принудительной реализация (всего), ₽`,
+    property_to_debtor_sum:   `Сумма возврата имущества должнику, ₽`,
+
 }
+
+const DEBIT_SUB = {
+    dz_sum: `Сумма по обращениям на взыскания дебиторской задолженности, ₽`,
+};
 
 
 export const headersStatistics = isDerived => {
@@ -38,9 +43,11 @@ export const headersStatistics = isDerived => {
         general: { // По всем активом вместе с дебиторской задолженностью
             ...ID_HEADERS,
             ...GET_SUMS_HEADERRS(sourceName),
-            debt_type:   `Категория должника`,
-            actives_sum: `Сумма активов и дебиторской задолженности, ₽`,
+            debtor_category:   `Категория должника`,
+            actives_sum:       `Сумма активов и дебиторской задолженности, ₽`,
             ...ACTIVES_COMMON_HEADERS,
+            ...DEBIT_SUB,
+            ip_status:                `Статус ИП`,
 
         },
         actives: { // По всем активом без дебиторской задолженности
@@ -51,7 +58,10 @@ export const headersStatistics = isDerived => {
         debit: { // По дебиторской задолженности только
             ...ID_HEADERS,
             actives_sum: `Сумма дебиторской задолженности`,
-            ...ACTIVES_COMMON_HEADERS
+            ...ACTIVES_COMMON_HEADERS,
+            ...DEBIT_SUB,
+            dz_close_sum: `Отмена обращения на дебиторскую задоженность`
+
         },
     };
 }
@@ -80,7 +90,7 @@ const commonHeaders = {
     status:          "Код статуса верификации выгрузки",
     statusName:      "Статус верификации выгрузки",
     load_date:       "Дата добавления/обновления данных",
-    debtor_category:        "Категория должника",
+    debtor_category: "Категория должника",
     post_sum:        "Сумма всего по постановлениям по статье 47 НК РФ",
     cur_debt:        "Текущий остаток по постановлениям по статье 47 НК РФ",
 };
@@ -123,7 +133,7 @@ const enforcementHeaders = {
 
 const transportHeaders = {
     ...commonHeaders,
-    category:           "Вид объекта собственности",      // type_id вместо property_type
+    category:       "Вид объекта собственности",      // type_id вместо property_type
     name:           "Марка",                          // brand — название в таблице 'name' - поправь на name ниже
     vin:             "VIN-номер",
     state_number:    "Государственный номер",

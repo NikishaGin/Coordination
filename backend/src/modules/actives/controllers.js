@@ -17,28 +17,15 @@ export async function getTables(request, response) {
             }
         }
 
-
         const activesTables = await tableActives(row.inn, (query, nameActive) => {
             query.select({ cost: ((nameActive === "debit") ? "total_sum" : "cost") }).modify(selectFieldsOccupancy)
         })
+
         row.indicators = await aggregateIndicators(row.inn, activesTables)
         row.securingArrest = await securingArrest(row, activesTables)
-
-
-
-
     }
     response.json(data)
 }
-
-
-
-
-
-
-
-
-
 
 
 export function getInfo(request, response) {

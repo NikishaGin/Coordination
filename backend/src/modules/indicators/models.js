@@ -22,7 +22,7 @@ export async function getMaxLoadDate(inn) {
 export async function isLizingFNS(inn) {
     const modify = (query, name) => {
         return name !== "debit"
-            ? query.where({ is_fns_lizing: 1}).first("id as exists")
+            ? query.where({is_fns_lizing: 1}).first("id as exists")
             : query.whereRaw("false")
     }
     return await tableActives(inn, modify).then(Boolean)

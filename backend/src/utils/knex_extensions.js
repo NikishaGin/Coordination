@@ -48,7 +48,7 @@ function selectFromTable(
  */
 function sumSafe(field, alias = field) {
     return this.sum({
-        [ alias ]: this.client.raw('IFNULL(??, 0.00)', [ field ])
+        [alias]: this.client.raw('COALESCE(??, 0)', [field])
     });
 }
 
@@ -65,10 +65,21 @@ function nullToEmptyStr(fields) {
             : field;
 
         const rawExpr = this.client.raw(
-            fref => `IFNULL(${ref}, '')`
+            ref => `IFNULL(${ref}, '')`
         );
 
         return rawExpr.as(name);
+    });
+
+    return this.select(...selects);
+}
+
+function selectNullProtected(...fields) {
+    const selects = fields.map(field => {
+        const name = field.includes('.')
+            ? field.split('.').pop() : field;
+
+        return this.client.raw(`IFNULL(??, 0) as ??`, [field, name]);
     });
 
     return this.select(...selects);
@@ -237,6 +248,61 @@ function sumFieldsOfFewTables(tables, field, alias = field) {
 }
 
 
+function sumTwoFields(field1, field2, alias = `${field1}_${field1}_sum`) {
+    return this.select(
+        this.client.raw(
+            'IFNULL(??, 0.00) + IFNULL(??, 0.00) AS ??',
+            [field1, field2, alias]
+        )
+    );
+}
+
+
+function nullToFlag(field1, field2, alias = `${field1}_${field2}_flag`, reverse = false) {
+    const condition = reverse
+        ? 'IF(?? IS NULL AND ?? IS NULL, true, false)'
+        : 'IF(?? IS NOT NULL OR ?? IS NOT NULL, true, false)';
+
+    return this.select(
+        this.client.raw(condition + ' AS ??', [field1, field2, alias])
+    );
+}
+
+
+const JOIN_TYPES = {
+    left:  'leftJoin',
+    right: 'rightJoin',
+    inner: 'innerJoin',
+};
+
+/**
+ * Функция для join с подзапросом и выборкой всех полей из него.
+ * @param {object} query - knex query builder
+ * @param {function|object} subQuery - подзапрос (функция, возвращающая query, или готовый query)
+ * @param {string} alias - псевдоним для подзапроса
+ * @param {string} joinType - тип join: left, right, inner (по умолчанию left)
+ * @param {string} leftField - поле слева для join (например, 'meta.inn')
+ * @param {string} rightField - поле справа для join (например, 'a.inn')
+ */
+function joinSubQuery(
+    subQuery,
+    alias,
+    onClause,
+    joinType = JOIN_TYPES.left,
+) {
+    const subQueryBuilder = typeof subQuery === 'function'
+        ? subQuery(this.client)
+        : subQuery;
+
+    this.client[joinType](
+        subQueryBuilder.as(alias),
+        onClause,
+    );
+
+    return this.client.select(`${alias}.*`);
+}
+
+
 /**
  * Позволяет использовать методы через точку:
  * ```
@@ -255,6 +321,10 @@ export const mountKnexExtensions = knexClass => {
         reduceFlagsToStatusField,
         mapStatusToTextField,
         sumFieldsOfFewTables,
+        sumTwoFields,
+        nullToFlag,
+        selectNullProtected,
+        joinSubQuery,
     };
 
     Object.entries(extensions).forEach(

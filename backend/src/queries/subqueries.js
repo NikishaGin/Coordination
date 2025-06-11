@@ -83,8 +83,6 @@ export function getActivesDetails(tableName) {
     return query
 }
 
-
-
 export function buildQuery(table, key) {
     let knex = db(key);
     const spec = table[key];
@@ -101,21 +99,3 @@ export function buildQuery(table, key) {
     });
     return spec.call(knex)
 }
-
-
-
-const semanticTable = {
-    transport: {},
-    property: {},
-    ground: {},
-    debit: {},
-    another: {}
-
-
-    // groud: {select: commonFields,  where: {inn,}, andWhere: [
-    //     ["status", "<>", 2]
-    // ], 
-    // call: knex => {
-    //     return k
-    // }},
-};
