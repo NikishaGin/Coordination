@@ -1,6 +1,7 @@
 import db from "../connection.js"
 import * as subqueries from "./subqueries.js"
 import { ROLES } from '../types.js';
+import { securingArrest } from "../modules/indicators/service.js";
 
 const sumPrices = (tableNames, field) => {
     return db.ref(
@@ -81,9 +82,9 @@ export const actives = {
                     ELSE "На исполнении"
                 END
             `)).as("status_ip"))
-            .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "arrest"))
-            .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "evaluation"))
-            .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "realization_property"))
+            .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "arrest_sum"))
+            .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "evaluation_sum"))
+            .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "realization_property_sum"))
             .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "price_reduction"))
             .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "realization_sum_2"))
             .select(sumPrices(["transport_data", "nedvizh_data", "debit_data"], "return_sum"))
@@ -345,77 +346,74 @@ const buildCommonFieldsQuery = async (
             .leftJoin("debt_type", "meta.debt_type", "debt_type.id")
     };
 
-    // const addActiveSupplyStatus = query => {
-    //     const queryName = "activesSupplySubquery";
-    //     const getLocalAlias = table => table + "ActiveSupplyStatusSubQuery";
-    //
-    //     const addCountingSums = query => {
-    //         const joinedTables = ["transport", "property", "debit", "another"];
-    //
-    //         joinedTables.forEach(
-    //             table => query.leftJoin(
-    //                     table, queryName + ".inn", getLocalAlias(table) + ".inn"
-    //                 ).as(getLocalAlias(table))
-    //         );
-    //
-    //         query
-    //             .select(sumPrices(
-    //                 joinedTables.map(table => getLocalAlias(table)),
-    //                 "arrest"
-    //             ))
-    //             .sumSafe("cur_debt");
-    //     };
-    //
-    //     const hasNonArrestedName = "has_some_non_arrested_with_cost";
-    //     const hasAllArrestedName = "has_all_arrest_props";
-    //     const resultName = "securingArrest";
-    //
-    //     const addHasConditions = query => {
-    //         query
-    //             .select(db.raw(`
-    //                 MIN(CASE
-    //                     WHEN (arrest_propperty = 1 AND arrest_sum IS NOT NULL) THEN 1
-    //                     ELSE 0
-    //                 END) AS ${hasAllArrestedName}`
-    //             )).as(hasAllArrestedName)
-    //
-    //             .select(db.raw(`
-    //                 MAX(CASE
-    //                     WHEN (
-    //                         cost IS NOT NULL
-    //                         AND NOT (arrest_propperty = 1 AND arrest_sum IS NOT NULL)
-    //                     ) THEN 1
-    //                     ELSE 0
-    //                 END) AS ${hasNonArrestedName}`
-    //             )).as(hasNonArrestedName)
-    //     };
-    //
-    //     const countStatus = query => {
-    //         query.select(db.raw(`
-    //             CASE
-    //                 WHEN total_arrest >= cur_debt THEN 1
-    //                 WHEN total_arrest < cur_debt AND ${hasAllArrestedName} = 1 THEN 2
-    //                 WHEN total_arrest < cur_debt AND ${hasNonArrestedName} = 1 THEN 3
-    //                 ELSE 4
-    //             END as ${resultName}`
-    //         )).as(resultName);
-    //     };
-    //
-    //     const subquery =  db("debit as " + queryName)
-    //         .select("inn")
-    //         .modify(getModifiersApply([
-    //             addCountingSums,
-    //             addHasConditions,
-    //             countStatus
-    //         ]))
-    //         .groupBy("inn")
-    //
-    //     query
-    //         .leftJoin(subquery, "meta.inn", queryName + ".inn")
-    //         .select(resultName);
-    // };
+    /*
+    const addActiveSupplyStatus = query => {
+        const queryName = "activesSupplySubquery";
 
-    return db("meta")
+        const resultName = "securingArrest"
+        const joinedTables = ["transport", "property", "debit", "another"];
+
+        const addCountingSums = query => {
+            joinedTables.forEach(
+                table => query.leftJoin(table, queryName + ".inn", table + ".inn")
+            );
+
+            query
+                .select(sumPrices(joinedTables, "arrest_sum").as("aggregated_arrest_sum"))
+                .sumSafe("cur_debt");
+        };
+
+        const hasNonArrestedName = "has_some_non_arrested_with_cost";
+        const hasAllArrestedName = "has_all_arrest_props";
+
+        const addHasConditions = query => {
+            const arrestedCondition = table =>
+                `${table}.arrest_propperty IS NOT NULL AND ${table}.arrest_sum IS NOT NULL`;
+
+            const nonArrestedWithCostCondition = table =>
+                `${table}.${table === "debit" ? "total_sum" : "cost"} IS NOT NULL AND NOT (${arrestedCondition(table)})`;
+
+            const allArrestedConditions = joinedTables.map(arrestedCondition).join(' OR ');
+            const allNonArrestedConditions = joinedTables.map(nonArrestedWithCostCondition).join(' OR ');
+
+            query
+                .select(db.raw(`
+                    MIN(CASE WHEN (${allArrestedConditions}) THEN 1 ELSE 0 END) 
+                    AS ${hasAllArrestedName}
+                `))
+                .select(db.raw(`
+                    MAX(CASE WHEN (${allNonArrestedConditions}) THEN 1 ELSE 0 END) 
+                    AS ${hasNonArrestedName}
+                `));
+        };
+
+        const countStatus = query => {
+            query.select(db.raw(`
+                CASE
+                    WHEN aggregated_arrest_sum >= cur_debt THEN 1
+                    WHEN aggregated_arrest_sum < cur_debt AND ${hasAllArrestedName} = 1 THEN 2
+                    WHEN aggregated_arrest_sum < cur_debt AND ${hasNonArrestedName} = 1 THEN 3
+                    ELSE 4
+                END as ${resultName}`
+            )).as(resultName);
+        };
+
+        const subquery =  db("resolutions as " + queryName)
+            .select(queryName + ".inn")
+            .modify(getModifiersApply([
+                addCountingSums,
+                addHasConditions,
+                countStatus
+            ]))
+            .groupBy("inn")
+
+        query
+            .leftJoin(subquery, "meta.inn", queryName + ".inn")
+            .select(resultName);
+    };
+    */
+
+    const result = await db("meta")
         .select([
             "meta.kno as kno",
             "meta.inn as inn",
@@ -429,9 +427,14 @@ const buildCommonFieldsQuery = async (
             addIpProcessSums,
             addDebitSums,
             applyFilters,
-            // addActiveSupplyStatus
         ]))
         .groupBy("meta.inn");
+
+    for (const row of result) {
+        row.securing_arrest = await securingArrest(row)
+    }
+
+    return result;
 };
 
 

@@ -21,7 +21,7 @@ const GET_SUMS_HEADERRS =  sourceName => ({
 
 const ACTIVES_COMMON_HEADERS = {
     arrest_sum:               `Арест имущества, ₽`,
-    active_supply_status:     `Обеспеченность остатка долга арестом`,
+    securing_arrest:          `Обеспеченность арестом`,
     evaluation_sum:           `Оценка имущества, ₽`,
     realization_property_sum: `Результат принудительной реализация 1 этап, ₽`,
     // price_reduction_sum:      `Сумма снижения цены, ₽`,

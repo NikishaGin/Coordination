@@ -17,13 +17,8 @@ export async function getTables(request, response) {
                 row[fieldName] = row[fieldName].toString()
             }
         }
-
-        const activesTables = await tableActives(row.inn, (query, nameActive) => {
-            query.select({ cost: ((nameActive === "debit") ? "total_sum" : "cost") }).modify(selectFieldsOccupancy)
-        })
-
-        row.indicators = await aggregateIndicators(row.inn, activesTables)
-        row.securingArrest = await securingArrest(row, activesTables)
+        row.indicators = await aggregateIndicators(row.inn)
+        row.securingArrest = await securingArrest(row)
     }
     response.json(data)
 }

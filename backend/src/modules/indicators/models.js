@@ -4,6 +4,7 @@ import {tableActives} from "../../queries/selectors.js";
 
 
 export async function getExecMinDate(inn) {
+    console.log(inn)
     const [{ execMinDate }] = await db("resolutions").min("exec_date as execMinDate").where({ inn })
     return execMinDate
 }

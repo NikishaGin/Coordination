@@ -36,6 +36,7 @@ const InteractionForm = ({ onSubmit, onCancel, initialData }) => {
 
     useEffect(() => {
         if (initialData) {
+            console.log("initialData", initialData);
             setFormData({
                 submissionDate: initialData.submissionDate,
                 reviewDate: initialData.reviewDate,
