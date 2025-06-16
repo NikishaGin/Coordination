@@ -22,8 +22,8 @@ const yesNoOptions = [
 ];
 
 const installedOptions = [
-    {value: 1, text: "Установлено"},
-    {value: 0, text: "Не установлено"},
+    {value: 1, text: "В связи с розыском имущества должника"},
+    {value: 0, text: "в связи с выполнением всех мероприятий по розыску"},
 ];
 
 const isFnsLizingOptions = [
@@ -95,6 +95,60 @@ export const TableOtherAssets = memo(({ row, onValueChange }) => {
                 <MoneyInput
                     value={String(row.arrest_sum ?? "")}
                     onChange={handleInputChange('arrest_sum')}
+                />
+            </InputCell>
+            {/*"Дата снятия ареста"*/}
+            <DateCell>
+                <DatePickerCell
+                    value={row.arrest_end_date}
+                    onChange={handleDateChange('arrest_end_date')}
+                />
+            </DateCell>
+            {/*"Основания снятия ареста с имущества"*/}
+            <InputCell>
+                <CustomInput
+                    value={row.arrest_end_cause || ''}
+                    valuePlaceholder={'Укажите основание'}
+                    onChange={handleInputChange('arrest_end_cause')}
+                />
+            </InputCell>
+            {/*"Лицо, подавшее жалобу"*/}
+            <InputCell>
+                <CustomInput
+                    value={row.person_filed_complaint || ''}
+                    valuePlaceholder={'Введите лицо'}
+                    onChange={handleInputChange('person_filed_complaint')}
+                />
+            </InputCell>
+            {/*"Дата жалобы"*/}
+            <DateCell>
+                <DatePickerCell
+                    value={row.complaint_date}
+                    onChange={handleDateChange('complaint_date')}
+                />
+            </DateCell>
+            {/*"Предмет жалобы"*/}
+            <InputCell>
+                <CustomInput
+                    value={row.complaint_subject || ''}
+                    valuePlaceholder={'Введите предмет жалобы'}
+                    onChange={handleInputChange('complaint_subject')}
+                />
+            </InputCell>
+            {/*"Орган, рассматривающий жалобу"*/}
+            <InputCell>
+                <CustomInput
+                    value={row.complaint_source || ''}
+                    valuePlaceholder={'Введите орган'}
+                    onChange={handleInputChange('complaint_source')}
+                />
+            </InputCell>
+            {/*"Результат рассмотрения жалобы"*/}
+            <InputCell>
+                <CustomInput
+                    value={row.complaint_result || ''}
+                    valuePlaceholder={'Введите результат'}
+                    onChange={handleInputChange('complaint_result')}
                 />
             </InputCell>
             {/*Заведение розыскного дела*/}

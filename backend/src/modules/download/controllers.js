@@ -23,13 +23,10 @@ export const getStatistics = async(req, res) => {
     }
 
     const namedSheets = Object.entries(sheetNames).map(
-        ([ type, name ]) => {
-            console.log(stats[type], "Тип", type);
-            return [
+        ([ type, name ]) => [
                 name,
                 createSheet(stats[type], headers[type])
-            ];
-        }
+            ]
     );
 
     const name = (

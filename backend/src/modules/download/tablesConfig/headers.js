@@ -21,14 +21,13 @@ const GET_SUMS_HEADERRS =  sourceName => ({
 
 const ACTIVES_COMMON_HEADERS = {
     arrest_sum:               `Арест имущества, ₽`,
-    active_supply_status:     `Обеспеченность остатка долга арестом`,
+    securing_arrest:          `Обеспеченность остатка долга арестом`,
     evaluation_sum:           `Оценка имущества, ₽`,
-    realization_property_sum: `Результат принудительной реализация 1 этап, ₽`,
+    realization_sum_1:        `Результат принудительной реализация 1 этап, ₽`,
     // price_reduction_sum:      `Сумма снижения цены, ₽`,
     realization_sum_2:        `Результат принудительной реализация 2 этап, ₽`,
-    realization_sum_total:     `Результат принудительной реализация (всего), ₽`,
+    realization_sum_total:    `Результат принудительной реализация (всего), ₽`,
     property_to_debtor_sum:   `Сумма возврата имущества должнику, ₽`,
-
 }
 
 const DEBIT_SUB = {
@@ -47,7 +46,7 @@ export const headersStatistics = isDerived => {
             actives_sum:       `Сумма активов и дебиторской задолженности, ₽`,
             ...ACTIVES_COMMON_HEADERS,
             ...DEBIT_SUB,
-            ip_status:                `Статус ИП`,
+            ip_status:         `Статус ИП`,
 
         },
         actives: { // По всем активом без дебиторской задолженности
@@ -85,13 +84,13 @@ export const headerStatisticsIP = isDerived => {
 const commonHeaders = {
     region:          "Регион",
     kno:             "Код НО",                     // kno без изменений
-    inn:             "ИНН должника",              // inn — в таблицах совпадает
     metaName:        "Наименование должника",
+    inn:             "ИНН должника",              // inn — в таблицах совпадает
     status:          "Код статуса верификации выгрузки",
     statusName:      "Статус верификации выгрузки",
     load_date:       "Дата добавления/обновления данных",
     debtor_category: "Категория должника",
-    post_sum:        "Сумма всего по постановлениям по статье 47 НК РФ",
+    dz_sum:          "Сумма всего по постановлениям по статье 47 НК РФ",
     cur_debt:        "Текущий остаток по постановлениям по статье 47 НК РФ",
 };
 
@@ -99,36 +98,51 @@ const enforcementHeaders = {
     is_verified:                    "Верифицированы активы ФССП",
     arrest_propperty:               "Арест имущества",
     arrest_sum:                    "Сумма ареста (руб.)",
-    arrest_status:                 "Статус ареста",
+    arrestStatus:                  "Статус ареста",
+    wanted_open:                    "Заведено розыскное дело",
+    wanted_close:                   "Прекращено розыскное дело",
+    wanted_result:                 "Результат розыска",
+    wantedStatus:                  "Статус Разыскного дела",
     evaluation_submit:             "Передано на оценку",
     evaluation_accept:             "Принятие результатов оценки имущества",
     evaluation_sum:                "Сумма оценки (руб.)",
-    appraisal_status:              "Статус оценки",
+    evaluationStatus:              "Статус оценки",
     realization_submit:            "Передано на реализацию",
     realization_property_sum:      "Сумма переданного имущества на реализацию",
-    sale_transfer_status:          "Статус передачи на реализацию",
+    submitRealizationFirstStageStatus:  "Статус передачи на реализацию",
     realization_date_1:            "Дата первых торгов",
     realization_result_1:          "Отчет о реализации (1 этап)",
     realization_sum_1:             "Сумма реализованного имущества (руб.) (1 этап)",
-    realization_status_1:          "Статус реализации 1 этап",
     not_realization_notification:  "Уведомление о не реализации",
+    auction1_failure_reason:       "Причина признания  1 торгов не состоявшимися",
+    auction1_status:               "Текущий статус 1 торгов",
+    realizationFirstStageStatus:   "Статус реализации 1 этап",
     price_reduction_resolution:    "Постановление о снижении цены",
     price_reduction_sum:           "Сумма снижения цены (руб.)",
-    realization_status_2:          "Статус передачи на реализацию 2 этап",
+    submitRealizationSecondStageStatus: "Статус передачи на реализацию 2 этап",
     realization_date_2:            "Дата вторых торгов",
     realization_result_2:          "Отчет о реализации (2 этап)",
     realization_sum_2:             "Сумма реализованного имущества (руб.) (2 этап)",
     not_realization_notification_2:"Уведомление о нереализации (2 этап)",
-    realization_status_2_final:    "Статус реализации 2 этап",
+    auction2_failure_reason:       "Причина признания  2 торгов не состоявшимися",
+    auction2_status:               "Текущий статус 2 торгов",
+    realizationSecondStageStatus:  "Статус реализации 2 этап",
     property_to_debtor_act:        "Акт передачи имущества должнику",
-    return_sum:                    "Сумма возврата имущества должнику",
-    property_to_debtor_sum:        "Взыскано всего в ходе исполнительного производства (руб.)",
-    proceeding_end_date:           "Дата окончания (прекращения) исполнительного производства",
-    proceeding_end_reason:         "Основание окончания (прекращения) исполнительного производства",
-    proceeding_stop_date:          "Дата приостановления исполнительного производства",
-    proceeding_pending_date:       "Дата отложения исполнительного производства",
-    proceeding_terminate_date:     "Дата прекращения исполнительного производства",
-    comment:                       "Примечание"
+    property_to_debtor_sum:        "Сумма возврата имущества должнику",
+    arrest_end_date: "Дата снятия ареста",
+    arrest_end_cause: "Основания снятия ареста с имущества",
+    person_field_complaint: "Лицо подавшее жалобу",
+    complaint_date: "Дата жалобы",
+    complaint_subject: "Предмет жалобы",
+    complaint_source: "Орган рассматривающий жалобу",
+    complaint_result: "Результат рассмотрения жалобы",
+    // realisationSumTotal:           "Взыскано всего в ходе исполнительного производства (руб.)",
+    // proceeding_end_date:           "Дата окончания (прекращения) исполнительного производства",
+    // proceeding_end_reason:         "Основание окончания (прекращения) исполнительного производства",
+    // proceeding_stop_date:          "Дата приостановления исполнительного производства",
+    // proceeding_pending_date:       "Дата отложения исполнительного производства",
+    // proceeding_terminate_date:     "Дата прекращения исполнительного производства",
+    comment: "Примечание"
 };
 
 const transportHeaders = {
@@ -139,6 +153,9 @@ const transportHeaders = {
     state_number:    "Государственный номер",
     year:            "Год выпуска",
     cost:            "Стоимость",
+    obj_status:       "Статус объекта",
+    registration_start_date: "Дата регистрации владения",
+    registration_end_date: "Дата прекращения владения",
     encumbrance_type: "Вид обременения",
     encumbrance_date: "Дата обременения",
     lizing_name:      "Наименование залогодержателя/лизингодателя", // lizing_name вместо holder_name

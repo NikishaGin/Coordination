@@ -3,13 +3,13 @@ import * as updates from "../../queries/updates.js"
 import { aggregateIndicators, securingArrest } from "../indicators/service.js";
 
 
-
 export async function getTables(request, response) {
+    const role = request.userInfo.role
     const page = request.params.page
     const regionCode = request.params.regionCode
     const is_derivative_debt = +["DerivativeDebt", "DerivativeDebtArchive"].includes(page)
     const is_archive = +["IndexArchive", "DerivativeDebtArchive"].includes(page)
-    const data = await actives.getTables(regionCode, is_derivative_debt, is_archive)
+    const data = await actives.getTables(regionCode, is_derivative_debt, is_archive, role)
     for (const row of data) {
         for (const fieldName in row) {
             if (typeof row[fieldName] === "number") {
@@ -17,12 +17,8 @@ export async function getTables(request, response) {
             }
         }
 
-        const activesTables = await tableActives(row.inn, (query, nameActive) => {
-            query.select({ cost: ((nameActive === "debit") ? "total_sum" : "cost") }).modify(selectFieldsOccupancy)
-        })
-
-        row.indicators = await aggregateIndicators(row.inn, activesTables)
-        row.securingArrest = await securingArrest(row, activesTables)
+        row.indicators = await aggregateIndicators(row.inn)
+        row.securingArrest = await securingArrest(row)
     }
     response.json(data)
 }

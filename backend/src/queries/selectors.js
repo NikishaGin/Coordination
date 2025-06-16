@@ -1,7 +1,9 @@
 import db from "../connection.js"
 import * as subqueries from "./subqueries.js"
-import { aggregateIndicators, securingArrest } from '../modules/indicators/service.js';
-
+import { ROLES } from '../types.js';
+import { securingArrest } from "../modules/indicators/service.js";
+import * as models from '../modules/indicators/models.js';
+import { indicatorsGetters } from '../modules/indicators/LogicIndicators.js';
 
 const sumPrices = (tableNames, field) => {
     return db.ref(
@@ -63,7 +65,7 @@ export const selectFieldsOccupancy = query => {
 
 
 export const actives = {
-    getTables(regionCode, is_derivative_debt, is_archive) {
+    getTables(regionCode, is_derivative_debt, is_archive, role) {
         return db('meta')
             .select(db.ref("meta.inn").as("inn"))
             .select(db.ref("meta.name").as("name"))
@@ -82,20 +84,38 @@ export const actives = {
                     ELSE "На исполнении"
                 END
             `)).as("status_ip"))
-            .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "arrest"))
-            .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "evaluation"))
-            .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "realization_property"))
-            .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "price_reduction"))
+            .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "arrest_sum"))
+            .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "evaluation_sum"))
+            .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "realization_property_sum"))
+            .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "price_reduction_sum"))
             .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "realization_sum_2"))
             .select(sumPrices(["transport_data", "nedvizh_data", "debit_data"], "return_sum"))
             .select(db.ref(db.raw("IFNULL(debit_data.foreclose, 0.00)")).as("debitor"))
+            .modify(query => {
+                if ([ROLES.User, ROLES.Admin, ROLES.LimitedAdmin].includes(role))
+                    query.select(db.ref(db.raw(`
+                        CASE
+                            WHEN review THEN "Получен ответ от ГМУ"
+                            WHEN submission THEN "Отправлено"
+                            ELSE ""
+                        END
+                    `)).as("interaction_gmu"))
+                else if ([ROLES.GMULimitedAdmin, ROLES.GMUArkhangelsk].includes(role))
+                    query.select(db.ref(db.raw(`
+                        CASE
+                            WHEN submission THEN "Получено сообщение от МИУДОЛ"
+                            WHEN review THEN "Отправлено"
+                            ELSE ""
+                        END
+                    `)).as("interaction_gmu"))
+            })
             .leftJoin("debt_type", "debt_type.id", "meta.debt_type")
             .leftJoin(db.raw('(??) as resolutions_data', [subqueries.getResolutions]), 'meta.inn', 'resolutions_data.inn')
             .leftJoin(db.raw('(??) as transport_data', [subqueries.getActives("transport")]), 'meta.inn', 'transport_data.inn')
             .leftJoin(db.raw('(??) as nedvizh_data', [subqueries.getActives("property")]), 'meta.inn', 'nedvizh_data.inn')
             .leftJoin(db.raw('(??) as debit_data', [subqueries.getActives("debit")]), 'meta.inn', 'debit_data.inn')
             .leftJoin(db.raw('(??) as another_data', [subqueries.getActives("another")]), 'meta.inn', 'another_data.inn')
-            .leftJoin('interactions', 'meta.inn', 'interactions.inn')
+            .leftJoin(db.raw('(??) as interactions_data', [subqueries.getInteractionsGMU]), 'meta.inn', 'interactions_data.inn')
             .where({
                 'meta.region': regionCode,
                 'resolutions_data.is_derivative_debt': is_derivative_debt,
@@ -237,7 +257,7 @@ const buildCommonFieldsQuery = async (
         const activesFieldsToSum = [
             "arrest_sum",
             "evaluation_sum",
-            "realization_property_sum",
+            "realization_sum_1",
             "price_reduction_sum",
             "realization_sum_2",
             "property_to_debtor_sum"
@@ -249,7 +269,7 @@ const buildCommonFieldsQuery = async (
             );
 
             const totalRealisationSum = db.raw(`
-                COALESCE(SUM(${table}.realization_property_sum), 0) +
+                COALESCE(SUM(${table}.realization_sum_1), 0) +
                 COALESCE(SUM(${table}.realization_sum_2), 0) AS ${totalSumName}
             `);
 
@@ -328,77 +348,7 @@ const buildCommonFieldsQuery = async (
             .leftJoin("debt_type", "meta.debt_type", "debt_type.id")
     };
 
-    // const addActiveSupplyStatus = query => {
-    //     const queryName = "activesSupplySubquery";
-    //     const getLocalAlias = table => table + "ActiveSupplyStatusSubQuery";
-    //
-    //     const addCountingSums = query => {
-    //         const joinedTables = ["transport", "property", "debit", "another"];
-    //
-    //         joinedTables.forEach(
-    //             table => query.leftJoin(
-    //                     table, queryName + ".inn", getLocalAlias(table) + ".inn"
-    //                 ).as(getLocalAlias(table))
-    //         );
-    //
-    //         query
-    //             .select(sumPrices(
-    //                 joinedTables.map(table => getLocalAlias(table)),
-    //                 "arrest"
-    //             ))
-    //             .sumSafe("cur_debt");
-    //     };
-    //
-    //     const hasNonArrestedName = "has_some_non_arrested_with_cost";
-    //     const hasAllArrestedName = "has_all_arrest_props";
-    //     const resultName = "securingArrest";
-    //
-    //     const addHasConditions = query => {
-    //         query
-    //             .select(db.raw(`
-    //                 MIN(CASE
-    //                     WHEN (arrest_propperty = 1 AND arrest_sum IS NOT NULL) THEN 1
-    //                     ELSE 0
-    //                 END) AS ${hasAllArrestedName}`
-    //             )).as(hasAllArrestedName)
-    //
-    //             .select(db.raw(`
-    //                 MAX(CASE
-    //                     WHEN (
-    //                         cost IS NOT NULL
-    //                         AND NOT (arrest_propperty = 1 AND arrest_sum IS NOT NULL)
-    //                     ) THEN 1
-    //                     ELSE 0
-    //                 END) AS ${hasNonArrestedName}`
-    //             )).as(hasNonArrestedName)
-    //     };
-    //
-    //     const countStatus = query => {
-    //         query.select(db.raw(`
-    //             CASE
-    //                 WHEN total_arrest >= cur_debt THEN 1
-    //                 WHEN total_arrest < cur_debt AND ${hasAllArrestedName} = 1 THEN 2
-    //                 WHEN total_arrest < cur_debt AND ${hasNonArrestedName} = 1 THEN 3
-    //                 ELSE 4
-    //             END as ${resultName}`
-    //         )).as(resultName);
-    //     };
-    //
-    //     const subquery =  db("debit as " + queryName)
-    //         .select("inn")
-    //         .modify(getModifiersApply([
-    //             addCountingSums,
-    //             addHasConditions,
-    //             countStatus
-    //         ]))
-    //         .groupBy("inn")
-    //
-    //     query
-    //         .leftJoin(subquery, "meta.inn", queryName + ".inn")
-    //         .select(resultName);
-    // };
-
-    return db("meta")
+    const result = await db("meta")
         .select([
             "meta.kno as kno",
             "meta.inn as inn",
@@ -412,9 +362,14 @@ const buildCommonFieldsQuery = async (
             addIpProcessSums,
             addDebitSums,
             applyFilters,
-            // addActiveSupplyStatus
         ]))
         .groupBy("meta.inn");
+
+    for (const row of result) {
+        row.securing_arrest = await securingArrest(row)
+    }
+
+    return result;
 };
 
 
@@ -429,6 +384,14 @@ const getActivesDownloadingData = async ({
         const table  = nameActive === 'ground' ? 'property' : nameActive;
         const applyNotFnsLizingPage = isNotFnsLizing && table !== 'debit';
 
+        const buildRealisationSumTotal = table => {
+            return query =>
+                query.select(db.raw(`
+                    COALESCE(${table}.realization_sum_1, 0) +
+                    COALESCE(${table}.realization_sum_2, 0) AS realisationSumTotal
+                `));
+        };
+
         const applyTextStatuses = query => {
             const queryName = "";
             query
@@ -436,7 +399,7 @@ const getActivesDownloadingData = async ({
                     0: "Данные из АИС",
                     2: "Данные из ГМУ",
                     3: "Пара АИС-ГМУ",
-                }, { newField: "category"})
+                }, { newField: "statusName" });
         };
 
         const applyFilters = query => {
@@ -448,11 +411,19 @@ const getActivesDownloadingData = async ({
                 .whereNotNull('status');
         };
 
+        const addActiveType = query => {
+            query
+                .select("types.name as category")
+                .leftJoin("types", "type_id", "types.id");
+        };
+
         const activesSubQuery = db(table)
-            .select("*")
+            .select(table + ".*")
             .modify(getModifiersApply([
                 applyTextStatuses,
+                addActiveType,
                 applyFilters,
+                buildRealisationSumTotal(table)
             ]));
 
         const queryName = "activesSubQuery";
@@ -499,6 +470,18 @@ const getActivesDownloadingData = async ({
             .leftJoin("debt_type", "meta.debt_type", "debt_type.id")
     };
 
+    const addIndicators = async rows => {
+        for (const row of rows) {
+            const execMinDate = new Date(await models.getExecMinDate(row.inn))
+            Object.entries(indicatorsGetters).forEach(
+                ([ nameIndicator, getterIndicator ]) => {
+                    row[nameIndicator + "Status"] = String(getterIndicator(execMinDate, row));
+                }
+            )
+        }
+        return rows;
+    };
+
     return db('meta')
         .select([
             'meta.region',
@@ -509,9 +492,11 @@ const getActivesDownloadingData = async ({
         .modify(getModifiersApply([
             addActivesData,
             addResolutionsData,
-            addDebtType
+            addDebtType,
         ]))
+        .then(async result => await addIndicators(result));
 };
+
 
 
 export const download = {

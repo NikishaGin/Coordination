@@ -19,13 +19,11 @@ export const getResolutions = db('resolutions')
 export function getActives(tableName) {
     let query = db(tableName)
         .select('inn')
-        // .sum({ total_sum: ((tableName === "debit") ? db.raw('IFNULL(total_sum, 0.00)') : db.raw('IFNULL(cost, 0.00)')) })
-        .sum({ total_sum: ((tableName === "debit") ? 'total_sum' : 'cost') })
-
-        .sum({ arrest: db.raw('IFNULL(arrest_sum, 0.00)') })
-        .sum({ evaluation: db.raw('IFNULL(evaluation_sum, 0.00)') })
-        .sum({ realization_property: db.raw('IFNULL(realization_sum_1, 0.00)') })
-        .sum({ price_reduction: db.raw('IFNULL(price_reduction_sum, 0.00)') })
+        .sum({ total_sum: db.raw(`IFNULL(${tableName === "debit" ? 'total_sum' : 'cost'}, 0.00)`) })
+        .sum({ arrest_sum: db.raw('IFNULL(arrest_sum, 0.00)') })
+        .sum({ evaluation_sum: db.raw('IFNULL(evaluation_sum, 0.00)') })
+        .sum({ realization_property_sum: db.raw('IFNULL(realization_property_sum, 0.00)') })
+        .sum({ price_reduction_sum: db.raw('IFNULL(price_reduction_sum, 0.00)') })
         .sum({ realization_sum_2: db.raw('IFNULL(realization_sum_2, 0.00)') })
     if (tableName != "another")
         query = query.sum({ return_sum: db.raw('IF(property_to_debtor_act IS NOT NULL, IFNULL(property_to_debtor_sum, 0.00), 0.00)') })
@@ -38,6 +36,14 @@ export function getActives(tableName) {
 }
 
 
+export const getInteractionsGMU = db("interactions")
+    .select('inn')
+    .select(db.ref(db.raw("SUM(IF(((submissionDate IS NULL) OR (originalFilename_1 IS NULL)), 0, 1)) > 0")).as("submission"))
+    .select(db.ref(db.raw("SUM(IF(((reviewDate IS NULL) OR (result IS NULL) OR (originalFilename_2 IS NULL)), 0, 1)) > 0")).as("review"))
+    .where({source: "gmu"})
+    .groupBy('inn')
+
+
 export function getActivesDetails(tableName) {
     let query = db(tableName)
         .select("id")
@@ -46,6 +52,13 @@ export function getActivesDetails(tableName) {
         .select("obj_status_manual")
         .select("arrest_propperty")
         .select("arrest_sum")
+        .select("arrest_end_date")
+        .select("arrest_end_cause")
+        .select("person_filed_complaint")
+        .select("complaint_date")
+        .select("complaint_subject")
+        .select("complaint_source")
+        .select("complaint_result")
         .select("wanted_open")
         .select("wanted_close")
         .select("wanted_result")

@@ -308,11 +308,11 @@ export const Main = () => {
                     <td>{row.kno}</td>
                     <td>{row.interaction_gmu}</td>
                     <td>{row.interaction_tno}</td>
-                    <td className={codeIndicators[row.indicators.arrest]}>{formatNumber(row.arrest)}</td>
+                    <td className={codeIndicators[row.indicators.arrest]}>{formatNumber(row.arrest_sum)}</td>
                     <td>{row.securingArrest}</td>
-                    <td className={codeIndicators[row.indicators.evaluation]}>{formatNumber(row.evaluation)}</td>
-                    <td className={codeIndicators[row.indicators.submitRealizationFirstStage]}>{formatNumber(row.realization_property)}</td>
-                    <td className={codeIndicators[row.indicators.submitRealizationSecondStage]}>{formatNumber(row.price_reduction)}</td>
+                    <td className={codeIndicators[row.indicators.evaluation]}>{formatNumber(row.evaluation_sum)}</td>
+                    <td className={codeIndicators[row.indicators.submitRealizationFirstStage]}>{formatNumber(row.realization_property_sum)}</td>
+                    <td className={codeIndicators[row.indicators.submitRealizationSecondStage]}>{formatNumber(row.price_reduction_sum)}</td>
                     <td className={codeIndicators[row.indicators.realizationSecondStage]}>{formatNumber(row.realization_sum_2)}</td>
                     <td>{formatNumber(row.return_sum)}</td>
                     <td className={codeIndicators[row.indicators.collectionAccountsReceivable]}>{formatNumber(row.debitor)}</td>
@@ -333,11 +333,11 @@ export const Main = () => {
                     <td>{row.kno}</td>
                     <td>{row.interaction_gmu}</td>
                     <td>{row.interaction_tno}</td>
-                    <td className={codeIndicators[row.indicators.arrest]}>{formatNumber(row.arrest)}</td>
+                    <td className={codeIndicators[row.indicators.arrest]}>{formatNumber(row.arrest_sum)}</td>
                     <td>{row.securingArrest}</td>
-                    <td className={codeIndicators[row.indicators.evaluation]}>{formatNumber(row.evaluation)}</td>
-                    <td className={codeIndicators[row.indicators.submitRealizationFirstStage]}>{formatNumber(row.realization_property)}</td>
-                    <td className={codeIndicators[row.indicators.submitRealizationSecondStage]}>{formatNumber(row.price_reduction)}</td>
+                    <td className={codeIndicators[row.indicators.evaluation]}>{formatNumber(row.evaluation_sum)}</td>
+                    <td className={codeIndicators[row.indicators.submitRealizationFirstStage]}>{formatNumber(row.realization_property_sum)}</td>
+                    <td className={codeIndicators[row.indicators.submitRealizationSecondStage]}>{formatNumber(row.price_reduction_sum)}</td>
                     <td className={codeIndicators[row.indicators.realizationSecondStage]}>{formatNumber(row.realization_sum_2)}</td>
                     <td>{formatNumber(row.return_sum)}</td>
                     <td className={codeIndicators[row.indicators.collectionAccountsReceivable]}>{formatNumber(row.debitor)}</td>

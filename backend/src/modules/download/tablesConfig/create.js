@@ -5,7 +5,24 @@ const mergeHeaderWithData = (data, header) => {
     const headerTitles = Object.values(header);
     const headerKeyNames = Object.keys(header);
 
-    const reorderRow = row => headerKeyNames.map(keyName => row[keyName] ?? "");
+    const reorderRow = row => headerKeyNames.map(keyName => {
+        const value = row[keyName];
+
+        if (value === null || value === undefined) {
+            return "";
+        }
+
+        if (value instanceof Date) {
+            return value.toISOString().split('T')[0];
+        }
+
+        if (typeof value === 'number') {
+            return value.toString();
+        }
+
+        return String(value);
+    });
+
     const aoa = [ headerTitles, ...data.map(reorderRow) ];
 
     return XLSX.utils.aoa_to_sheet(aoa);
@@ -104,7 +121,6 @@ const bodyStyle = {
 
 
 export const createSheet = (data, header) => {
-    console.log(data[0]);
     addColumnsNumbers(data, header);
     const worksheet = mergeHeaderWithData(data, header);
 

@@ -38,10 +38,10 @@ export const SumFilter = (props) => {
                         </option>
                         <option value="post_sum">Сумма по постановлениям</option>
                         <option value="cur_debt">Остаток по постановлениям</option>
-                        <option value="arrest">Арест имущества</option>
-                        <option value="evaluation">Оценка имущества</option>
-                        <option value="realization_property">Принудительная реализация</option>
-                        <option value="price_reduction">Торги 2 этап</option>
+                        <option value="arrest_sum">Арест имущества</option>
+                        <option value="evaluation_sum">Оценка имущества</option>
+                        <option value="realization_property_sum">Принудительная реализация</option>
+                        <option value="price_reduction_sum">Торги 2 этап</option>
                         <option value="realization_sum_2">Результат принудительной реализации</option>
                         <option value="return_sum">Сумма возврата имущества плательщику</option>
                         <option value="debitor">Обращение взыскания на дебиторскую задолженность</option>
