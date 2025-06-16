@@ -30,6 +30,11 @@ export const Select = styled.select`
   option {
     background-color: #232339;
   }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
 `;
 
 export const CustomIcon = styled(ChevronDown)`

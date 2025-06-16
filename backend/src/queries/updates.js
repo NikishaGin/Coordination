@@ -1,10 +1,10 @@
 import db from "../connection.js"
+import {ROLES} from "../types.js";
 
 
 
 async function setHistory(tableName, data, rowId, userInfo, action) {
-    // userInfo.role
-
+    if (![ROLES.GMULimitedAdmin, ROLES.GMUArkhangelsk].includes(userInfo.role)) return
     try {
         const [id] = await db("history").insert({
             user_id: userInfo.id,
