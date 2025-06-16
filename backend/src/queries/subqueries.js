@@ -21,7 +21,6 @@ export function getActives(tableName) {
         .select('inn')
         // .sum({ total_sum: ((tableName === "debit") ? db.raw('IFNULL(total_sum, 0.00)') : db.raw('IFNULL(cost, 0.00)')) })
         .sum({ total_sum: ((tableName === "debit") ? 'total_sum' : 'cost') })
-
         .sum({ arrest: db.raw('IFNULL(arrest_sum, 0.00)') })
         .sum({ evaluation: db.raw('IFNULL(evaluation_sum, 0.00)') })
         .sum({ realization_property: db.raw('IFNULL(realization_sum_1, 0.00)') })
@@ -38,6 +37,14 @@ export function getActives(tableName) {
 }
 
 
+export const getInteractionsGMU = db("interactions")
+    .select('inn')
+    .select(db.ref(db.raw("SUM(IF(((submissionDate IS NULL) OR (originalFilename_1 IS NULL)), 0, 1)) > 0")).as("submission"))
+    .select(db.ref(db.raw("SUM(IF(((reviewDate IS NULL) OR (result IS NULL) OR (originalFilename_2 IS NULL)), 0, 1)) > 0")).as("review"))
+    .where({source: "gmu"})
+    .groupBy('inn')
+
+
 export function getActivesDetails(tableName) {
     let query = db(tableName)
         .select("id")
@@ -46,6 +53,13 @@ export function getActivesDetails(tableName) {
         .select("obj_status_manual")
         .select("arrest_propperty")
         .select("arrest_sum")
+        .select("arrest_end_date")
+        .select("arrest_end_cause")
+        .select("person_filed_complaint")
+        .select("complaint_date")
+        .select("complaint_subject")
+        .select("complaint_source")
+        .select("complaint_result")
         .select("wanted_open")
         .select("wanted_close")
         .select("wanted_result")

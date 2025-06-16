@@ -6,16 +6,16 @@ import {isPasswordValid, generateToken} from "./service.js"
 export async function loginUser(request, response) {
     const {login, password=""} = request.body
     if (!(login && password)) {
-        response.status(400).json({details: "Отсутствуют обязательные поля: логин и пароль"})
+        response.json({details: "Отсутствуют обязательные поля: логин и пароль"})
         return
     }
     const {passwordHash = "", ...userInfo} = await models.getUser(login) || {}
     if (!passwordHash) {
-        response.status(404).json({code: 1, details: "Пользователя с таким логином не существует"})
+        response.json({code: 1, details: "Пользователя с таким логином не существует"})
         return
     }
     if (!isPasswordValid(password, passwordHash)) {
-        response.status(403).json({code: 2, details: "Некорректный пароль"})
+        response.json({code: 2, details: "Некорректный пароль"})
         return
     }
     const token = generateToken(userInfo)
