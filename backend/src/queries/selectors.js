@@ -82,7 +82,7 @@ export const actives = {
             .select(sumPrices(["transport_data", "nedvizh_data", "debit_data"], "return_sum"))
             .select(db.ref(db.raw("IFNULL(debit_data.foreclose, 0.00)")).as("debitor"))
             .modify(query => {
-                if ([ROLES.Admin, ROLES.LimitedAdmin].includes(role))
+                if ([ROLES.User, ROLES.Admin, ROLES.LimitedAdmin].includes(role))
                     query.select(db.ref(db.raw(`
                         CASE
                             WHEN review THEN "Получен ответ от ГМУ"
