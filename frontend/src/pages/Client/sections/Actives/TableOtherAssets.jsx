@@ -23,7 +23,7 @@ const yesNoOptions = [
 
 const installedOptions = [
     {value: 1, text: "В связи с розыском имущества должника"},
-    {value: 0, text: "в связи с выполнением всех мероприятий по розыску"},
+    {value: 0, text: "В связи с выполнением всех мероприятий по розыску"},
 ];
 
 const isFnsLizingOptions = [

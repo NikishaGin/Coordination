@@ -190,8 +190,7 @@ const headingsDerivative = [
     "Торги 2 этап, ₽",
     "Результат принудительной реализации, ₽",
     "Сумма возврата имущества плательщику, ₽",
-    "Обращение взыскания на дебиторскую задолженность",
-    "Обращение взыскания на заработную плату"
+    "Обращение взыскания на дебиторскую задолженность"
 ];
 
 const codeIndicators = {
@@ -341,7 +340,6 @@ export const Main = () => {
                     <td className={codeIndicators[row.indicators.realizationSecondStage]}>{formatNumber(row.realization_sum_2)}</td>
                     <td>{formatNumber(row.return_sum)}</td>
                     <td className={codeIndicators[row.indicators.collectionAccountsReceivable]}>{formatNumber(row.debitor)}</td>
-                    <td></td>
                 </>
             );
         } else {

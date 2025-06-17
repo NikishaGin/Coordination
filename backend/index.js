@@ -12,7 +12,7 @@ app.use(
     express.json(),
 )
 
-app.use('/FileStore', (req, res, next) => {
+app.use('/FileStore/Interactions', (req, res, next) => {
   if (req.method === 'GET') {
     const fileName = decodeURIComponent(req.query.filename)
     res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
