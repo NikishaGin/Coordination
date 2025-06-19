@@ -76,6 +76,37 @@ export const TableRowDebit = memo(({ row, onValueChange }) => {
             </DateCell>
             {/*Стоимость, ₽*/}
             <NumberCell>{formatNumber(row.cost)}</NumberCell>
+            {/*Дата обременения*/}
+            <DateCell>
+                <DatePickerCell
+                    value={row.encumbrance_date}
+                    onChange={handleDateChange('encumbrance_date')}
+                />
+            </DateCell>
+            {/*Вид обременения*/}
+            <InputCell>
+                <CustomInput
+                    value={row.encumbrance_type || ''}
+                    valuePlaceholder={'Введите обременение'}
+                    onChange={handleInputChange('encumbrance_type')}
+                />
+            </InputCell>
+            {/*Является ли ФНС залогодержателем*/}
+            <SelectCell>
+                <UniversalSelect
+                    value={row.is_fns_lizing}
+                    onChange={handleSelectChange('is_fns_lizing')}
+                    options={isFnsLizingOptions}
+                />
+            </SelectCell>
+            {/*Наименование залогодержателя (лизингодателя)*/}
+            <InputCell>
+                <CustomInput
+                    value={row.lizing_name || ''}
+                    valuePlaceholder={'Введите наименование'}
+                    onChange={handleInputChange('lizing_name')}
+                />
+            </InputCell>
             {/*Верифицирован объект*/}
             <SelectCell>
                 <UniversalSelect
@@ -112,60 +143,6 @@ export const TableRowDebit = memo(({ row, onValueChange }) => {
                 <MoneyInput
                     value={String(row.arrest_sum ?? "")}
                     onChange={handleInputChange('arrest_sum')}
-                />
-            </InputCell>
-            {/*"Дата снятия ареста"*/}
-            <DateCell>
-                <DatePickerCell
-                    value={row.arrest_end_date}
-                    onChange={handleDateChange('arrest_end_date')}
-                />
-            </DateCell>
-            {/*"Основания снятия ареста с имущества"*/}
-            <InputCell>
-                <CustomInput
-                    value={row.arrest_end_cause || ''}
-                    valuePlaceholder={'Укажите основание'}
-                    onChange={handleInputChange('arrest_end_cause')}
-                />
-            </InputCell>
-            {/*"Лицо, подавшее жалобу"*/}
-            <InputCell>
-                <CustomInput
-                    value={row.person_filed_complaint || ''}
-                    valuePlaceholder={'Введите лицо'}
-                    onChange={handleInputChange('person_filed_complaint')}
-                />
-            </InputCell>
-            {/*"Дата жалобы"*/}
-            <DateCell>
-                <DatePickerCell
-                    value={row.complaint_date}
-                    onChange={handleDateChange('complaint_date')}
-                />
-            </DateCell>
-            {/*"Предмет жалобы"*/}
-            <InputCell>
-                <CustomInput
-                    value={row.complaint_subject || ''}
-                    valuePlaceholder={'Введите предмет жалобы'}
-                    onChange={handleInputChange('complaint_subject')}
-                />
-            </InputCell>
-            {/*"Орган, рассматривающий жалобу"*/}
-            <InputCell>
-                <CustomInput
-                    value={row.complaint_source || ''}
-                    valuePlaceholder={'Введите орган'}
-                    onChange={handleInputChange('complaint_source')}
-                />
-            </InputCell>
-            {/*"Результат рассмотрения жалобы"*/}
-            <InputCell>
-                <CustomInput
-                    value={row.complaint_result || ''}
-                    valuePlaceholder={'Введите результат'}
-                    onChange={handleInputChange('complaint_result')}
                 />
             </InputCell>
             {/*Заведение розыскного дела*/}
@@ -346,35 +323,58 @@ export const TableRowDebit = memo(({ row, onValueChange }) => {
                     onChange={handleInputChange('debitor_address')}
                 />
             </InputCell>
-            {/*Является ли ФНС залогодержателем*/}
-            <SelectCell>
-                <UniversalSelect
-                    value={row.is_fns_lizing}
-                    onChange={handleSelectChange('is_fns_lizing')}
-                    options={isFnsLizingOptions}
-                />
-            </SelectCell>
-            {/*Наименование залогодержателя (лизингодателя)*/}
-            <InputCell>
-                <CustomInput
-                    value={row.lizing_name || ''}
-                    valuePlaceholder={'Введите наименование'}
-                    onChange={handleInputChange('lizing_name')}
-                />
-            </InputCell>
-            {/*Дата обременения*/}
+            {/*"Дата снятия ареста"*/}
             <DateCell>
                 <DatePickerCell
-                    value={row.encumbrance_date}
-                    onChange={handleDateChange('encumbrance_date')}
+                    value={row.arrest_end_date}
+                    onChange={handleDateChange('arrest_end_date')}
                 />
             </DateCell>
-            {/*Вид обременения*/}
+            {/*"Основания снятия ареста с имущества"*/}
             <InputCell>
                 <CustomInput
-                    value={row.encumbrance_type || ''}
-                    valuePlaceholder={'Введите обременение'}
-                    onChange={handleInputChange('encumbrance_type')}
+                    value={row.arrest_end_cause || ''}
+                    valuePlaceholder={'Укажите основание'}
+                    onChange={handleInputChange('arrest_end_cause')}
+                />
+            </InputCell>
+            {/*"Лицо, подавшее жалобу"*/}
+            <InputCell>
+                <CustomInput
+                    value={row.person_filed_complaint || ''}
+                    valuePlaceholder={'Введите лицо'}
+                    onChange={handleInputChange('person_filed_complaint')}
+                />
+            </InputCell>
+            {/*"Дата жалобы"*/}
+            <DateCell>
+                <DatePickerCell
+                    value={row.complaint_date}
+                    onChange={handleDateChange('complaint_date')}
+                />
+            </DateCell>
+            {/*"Предмет жалобы"*/}
+            <InputCell>
+                <CustomInput
+                    value={row.complaint_subject || ''}
+                    valuePlaceholder={'Введите предмет жалобы'}
+                    onChange={handleInputChange('complaint_subject')}
+                />
+            </InputCell>
+            {/*"Орган, рассматривающий жалобу"*/}
+            <InputCell>
+                <CustomInput
+                    value={row.complaint_source || ''}
+                    valuePlaceholder={'Введите орган'}
+                    onChange={handleInputChange('complaint_source')}
+                />
+            </InputCell>
+            {/*"Результат рассмотрения жалобы"*/}
+            <InputCell>
+                <CustomInput
+                    value={row.complaint_result || ''}
+                    valuePlaceholder={'Введите результат'}
+                    onChange={handleInputChange('complaint_result')}
                 />
             </InputCell>
             {/*Комментарий*/}
