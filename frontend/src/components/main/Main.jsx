@@ -148,15 +148,13 @@ const MainContent = styled.div`
 const headingsCoordination = [
     "",
     "№",
+    "Код НО",
     "ИНН",
     "Наименование",
     "Сумма по постановлениям, ₽",
     "Остаток по постановлениям, ₽",
     "Категория должника",
     "Сумма активов и дебиторской задолженности, ₽",
-    "Статус ИП",
-    "Код СОСП",
-    "Код НО",
     "Направление ходатайства в ГМУ",
     "Взаимодействие с ТНО",
     "Арест имущества, ₽",
@@ -166,21 +164,21 @@ const headingsCoordination = [
     "Торги 2 этап, ₽",
     "Результат принудительной реализации, ₽",
     "Сумма возврата имущества плательщику, ₽",
-    "Обращение взыскания на дебиторскую задолженность",
+    "Сумма по обращениям на взыскания дебиторской задолженности, ₽",
+    "Статус ИП",
+    "Код СОСП",
 ];
 
 const headingsDerivative = [
     "",
     "№",
+    "Код НО",
     "ИНН",
     "Наименование",
     "Сумма исполнительного листа, ₽",
     "Остаток исполнительного листа, ₽",
     "Категория должника",
     "Сумма активов и дебиторской задолженности, ₽",
-    "Статус ИП",
-    "Код СОСП",
-    "Код НО",
     "Направление ходатайства в ГМУ",
     "Взаимодействие с ТНО",
     "Арест имущества, ₽",
@@ -190,7 +188,9 @@ const headingsDerivative = [
     "Торги 2 этап, ₽",
     "Результат принудительной реализации, ₽",
     "Сумма возврата имущества плательщику, ₽",
-    "Обращение взыскания на дебиторскую задолженность"
+    "Сумма по обращениям на взыскания дебиторской задолженности, ₽",
+    "Статус ИП",
+    "Код СОСП",
 ];
 
 const codeIndicators = {
@@ -296,15 +296,13 @@ export const Main = () => {
             return (
                 <>
                     <td>{rowIndex + 1}</td>
+                    <td>{row.kno}</td>
                     <td>{row.inn}</td>
                     <td className={(row.indicators.isUpdated) ?? codeIndicators.isUpdated}>{row.name}</td>
                     <td>{formatNumber(row.post_sum)}</td>
                     <td>{formatNumber(row.cur_debt)}</td>
                     <td>{row.category}</td>
                     <td className={(row.indicators.isLizingFNS) && codeIndicators.isLizingFNS}>{formatNumber(row.total_sum)}</td>
-                    <td>{row.status_ip}</td>
-                    <td>{row.sosp_code}</td>
-                    <td>{row.kno}</td>
                     <td>{row.interaction_gmu}</td>
                     <td>{row.interaction_tno}</td>
                     <td className={codeIndicators[row.indicators.arrest]}>{formatNumber(row.arrest_sum)}</td>
@@ -315,21 +313,21 @@ export const Main = () => {
                     <td className={codeIndicators[row.indicators.realizationSecondStage]}>{formatNumber(row.realization_sum_2)}</td>
                     <td>{formatNumber(row.return_sum)}</td>
                     <td className={codeIndicators[row.indicators.collectionAccountsReceivable]}>{formatNumber(row.debitor)}</td>
+                    <td>{row.status_ip}</td>
+                    <td>{row.sosp_code}</td>
                 </>
             );
         } else if (pageKey === "DerivativeDebt" || pageKey === 'DerivativeDebtArchive') {
             return (
                 <>
                     <td>{rowIndex + 1}</td>
+                    <td>{row.kno}</td>
                     <td>{row.inn}</td>
                     <td className={(row.indicators.isUpdated) ?? codeIndicators.isUpdated}>{row.name}</td>
                     <td>{formatNumber(row.cur_debt)}</td>
                     <td>{formatNumber(row.post_sum)}</td>
                     <td>{row.category}</td>
                     <td className={(row.indicators.isLizingFNS) && codeIndicators.isLizingFNS}>{formatNumber(row.total_sum)}</td>
-                    <td>{row.status_ip}</td>
-                    <td>{row.sosp_code}</td>
-                    <td>{row.kno}</td>
                     <td>{row.interaction_gmu}</td>
                     <td>{row.interaction_tno}</td>
                     <td className={codeIndicators[row.indicators.arrest]}>{formatNumber(row.arrest_sum)}</td>
@@ -340,6 +338,8 @@ export const Main = () => {
                     <td className={codeIndicators[row.indicators.realizationSecondStage]}>{formatNumber(row.realization_sum_2)}</td>
                     <td>{formatNumber(row.return_sum)}</td>
                     <td className={codeIndicators[row.indicators.collectionAccountsReceivable]}>{formatNumber(row.debitor)}</td>
+                    <td>{row.status_ip}</td>
+                    <td>{row.sosp_code}</td>
                 </>
             );
         } else {

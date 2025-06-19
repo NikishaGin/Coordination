@@ -23,10 +23,9 @@ const ACTIVES_COMMON_HEADERS = {
     arrest_sum:               `Арест имущества, ₽`,
     securing_arrest:          `Обеспеченность остатка долга арестом`,
     evaluation_sum:           `Оценка имущества, ₽`,
-    realization_sum_1:        `Результат принудительной реализация 1 этап, ₽`,
-    // price_reduction_sum:      `Сумма снижения цены, ₽`,
-    realization_sum_2:        `Результат принудительной реализация 2 этап, ₽`,
-    realization_sum_total:    `Результат принудительной реализация (всего), ₽`,
+    realization_property_sum: "Принудительная реализация, ₽",
+    price_reduction_sum:      "Торги 2 этап, ₽",
+    realization_sum_2:        "Результат принудительной реализации, ₽",
     property_to_debtor_sum:   `Сумма возврата имущества должнику, ₽`,
 }
 

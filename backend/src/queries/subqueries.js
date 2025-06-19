@@ -25,10 +25,9 @@ export function getActives(tableName) {
         .sum({ realization_property_sum: db.raw('IFNULL(realization_property_sum, 0.00)') })
         .sum({ price_reduction_sum: db.raw('IFNULL(price_reduction_sum, 0.00)') })
         .sum({ realization_sum_2: db.raw('IFNULL(realization_sum_2, 0.00)') })
-    if (tableName != "another")
-        query = query.sum({ return_sum: db.raw('IF(property_to_debtor_act IS NOT NULL, IFNULL(property_to_debtor_sum, 0.00), 0.00)') })
+        .sum({ return_sum: db.raw('IFNULL(property_to_debtor_sum, 0.00)') })
     if (tableName == "debit")
-        query = query.sum({ foreclose: db.raw('IF(dz_foreclose_date IS NOT NULL, IFNULL(dz_foreclose_sum, 0.00), 0.00)') })
+        query = query.sum({ foreclose: db.raw('IFNULL(dz_foreclose_sum, 0.00)') })
     if (["transport", "property"].includes(tableName))
         query = query.where("status", "<>", 2)
     query = query.groupBy('inn')
@@ -94,21 +93,4 @@ export function getActivesDetails(tableName) {
             .select({ cost: "total_sum" })
             .select("date")
     return query
-}
-
-export function buildQuery(table, key) {
-    let knex = db(key);
-    const spec = table[key];
-    const modifiers = Object.entries(spec);
-    modifiers.forEach(([name, modifier]) => {
-        if (typeof modifier !== 'object' && modifier === null) {
-            throw Error('')
-        }
-        if (!Array.isArray()) {
-            modifier.forEach(source => { knex = knex[name](source) });
-            return
-        }
-        knex = knex[name](modifier);
-    });
-    return spec.call(knex)
 }

@@ -5,12 +5,14 @@ import { securingArrest } from "../modules/indicators/service.js";
 import * as models from '../modules/indicators/models.js';
 import { indicatorsGetters } from '../modules/indicators/LogicIndicators.js';
 
+
+
+
 const sumPrices = (tableNames, field) => {
     return db.ref(
         db.raw(tableNames.map(table => `IFNULL(${table}.${field}, 0.00)`).join(" + "))
     ).as(field);
 }
-
 
 const getModifiersApply = modifiers => {
     return query =>
@@ -89,7 +91,7 @@ export const actives = {
             .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "realization_property_sum"))
             .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "price_reduction_sum"))
             .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "realization_sum_2"))
-            .select(sumPrices(["transport_data", "nedvizh_data", "debit_data"], "return_sum"))
+            .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "return_sum"))
             .select(db.ref(db.raw("IFNULL(debit_data.foreclose, 0.00)")).as("debitor"))
             .modify(query => {
                 if ([ROLES.User, ROLES.Admin, ROLES.LimitedAdmin].includes(role))
@@ -126,6 +128,7 @@ export const actives = {
                     : query.havingRaw(`SUM(CASE WHEN resolutions_data.is_archive = 0 THEN 1 ELSE 0 END) > 0`);
             })
             .groupBy('inn')
+            .orderBy('meta.inn')
     },
     getInfo(inn) {
         return db('meta')
@@ -209,6 +212,13 @@ export const actives = {
     }
 }
 
+const getSourceFilter = table =>  {
+    return query => {
+        if (["transport", "property"].includes(table)) {
+            query.andWhere("status", "<>", 2);
+        }
+    };
+};
 
 const buildCommonFieldsQuery = async (
     withActives,
@@ -234,6 +244,7 @@ const buildCommonFieldsQuery = async (
                 .select("inn")
                 .sumSafe(targetField, "sum_cost")
                 .groupBy("inn")
+                .modify(getSourceFilter(table))
                 .as(alias)
         };
 
@@ -255,11 +266,10 @@ const buildCommonFieldsQuery = async (
     const addIpProcessSums = query => {
         const getAlias = table =>  `${table}_ip_sum`;
 
-        const totalSumName = "realization_sum_total";
         const activesFieldsToSum = [
             "arrest_sum",
             "evaluation_sum",
-            "realization_sum_1",
+            "realization_property_sum",
             "price_reduction_sum",
             "realization_sum_2",
             "property_to_debtor_sum"
@@ -270,15 +280,11 @@ const buildCommonFieldsQuery = async (
                 field => db.raw(`SUM(${table}.${field}) AS ${field}`)
             );
 
-            const totalRealisationSum = db.raw(`
-                COALESCE(SUM(${table}.realization_sum_1), 0) +
-                COALESCE(SUM(${table}.realization_sum_2), 0) AS ${totalSumName}
-            `);
-
             return db(table)
                 .select("inn")
                 .groupBy("inn")
-                .select(...sumIpFields, totalRealisationSum)
+                .select(...sumIpFields)
+                .modify(getSourceFilter(table))
                 .as(getAlias(table))
         };
 
@@ -292,7 +298,7 @@ const buildCommonFieldsQuery = async (
 
         const aliasedTables = analyzedTables.map(table => getAlias(table));
 
-        [...activesFieldsToSum, totalSumName].forEach(field => {
+        [...activesFieldsToSum].forEach(field => {
             query.select(sumPrices(aliasedTables, field));
         });
     };
@@ -334,11 +340,12 @@ const buildCommonFieldsQuery = async (
     };
 
     const applyFilters = query => {
-        if (innList?.length) {
+          if (innList?.length) {
             query.whereIn("meta.inn", innList);
             return;
         }
-        query.where({ "resolutions.is_derivative_debt": isDerived });
+        query
+            .where({ "resolutions.is_derivative_debt": isDerived })
         isArchive
             ? query.havingRaw(`COUNT(*) = SUM(CASE WHEN resolutions.is_archive = 1 THEN 1 ELSE 0 END)`)
             : query.havingRaw(`SUM(CASE WHEN resolutions.is_archive = 0 THEN 1 ELSE 0 END) > 0`);
@@ -395,9 +402,8 @@ const getActivesDownloadingData = async ({
         };
 
         const applyTextStatuses = query => {
-            const queryName = "";
             query
-                .mapStatusToTextField(queryName, "status", {
+                .mapStatusToTextField(table, "status", {
                     0: "Данные из АИС",
                     2: "Данные из ГМУ",
                     3: "Пара АИС-ГМУ",
@@ -405,11 +411,20 @@ const getActivesDownloadingData = async ({
         };
 
         const applyFilters = query => {
+            const grounNedvigSepor = () => {
+                const shulAppy = ['property', 'ground'].includes(nameActive);
+
+                const activeType = nameActive === 'ground' ? 4 : 2;
+                return shulAppy ? { type_id: activeType } : {};
+            }
+
             query
                 .where({
                     ...(inn ? { inn }: {}),
-                    ...(applyNotFnsLizingPage ? { 'is_fns_lizing': 2 } : {}),
+                    ...(applyNotFnsLizingPage ? { is_fns_lizing: 2 } : {}),
+                    ...grounNedvigSepor(),
                 })
+                .modify(getSourceFilter(nameActive))
                 .whereNotNull('status');
         };
 
