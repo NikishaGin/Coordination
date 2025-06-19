@@ -94,6 +94,16 @@ const commonHeaders = {
     cur_debt:        "Текущий остаток по постановлениям по статье 47 НК РФ",
 };
 
+const newFields = {
+    arrest_end_date: "Дата снятия ареста",
+    arrest_end_cause: "Основания снятия ареста с имущества",
+    person_field_complaint: "Лицо подавшее жалобу",
+    complaint_date: "Дата жалобы",
+    complaint_subject: "Предмет жалобы",
+    complaint_source: "Орган рассматривающий жалобу",
+    complaint_result: "Результат рассмотрения жалобы",
+}
+
 const enforcementHeaders = {
     is_verified:                    "Верифицированы активы ФССП",
     arrest_propperty:               "Арест имущества",
@@ -129,20 +139,12 @@ const enforcementHeaders = {
     realizationSecondStageStatus:  "Статус реализации 2 этап",
     property_to_debtor_act:        "Акт передачи имущества должнику",
     property_to_debtor_sum:        "Сумма возврата имущества должнику",
-    arrest_end_date: "Дата снятия ареста",
-    arrest_end_cause: "Основания снятия ареста с имущества",
-    person_field_complaint: "Лицо подавшее жалобу",
-    complaint_date: "Дата жалобы",
-    complaint_subject: "Предмет жалобы",
-    complaint_source: "Орган рассматривающий жалобу",
-    complaint_result: "Результат рассмотрения жалобы",
     // realisationSumTotal:           "Взыскано всего в ходе исполнительного производства (руб.)",
     // proceeding_end_date:           "Дата окончания (прекращения) исполнительного производства",
     // proceeding_end_reason:         "Основание окончания (прекращения) исполнительного производства",
     // proceeding_stop_date:          "Дата приостановления исполнительного производства",
     // proceeding_pending_date:       "Дата отложения исполнительного производства",
     // proceeding_terminate_date:     "Дата прекращения исполнительного производства",
-    comment: "Примечание"
 };
 
 const transportHeaders = {
@@ -159,7 +161,9 @@ const transportHeaders = {
     encumbrance_type: "Вид обременения",
     encumbrance_date: "Дата обременения",
     lizing_name:      "Наименование залогодержателя/лизингодателя", // lizing_name вместо holder_name
-    ...enforcementHeaders
+    ...enforcementHeaders,
+    ...newFields,
+    comment: "Примечание"
 };
 
 const realEstateHeaders = {
@@ -174,7 +178,9 @@ const realEstateHeaders = {
     encumbrance_type:  "Вид обременения",
     encumbrance_date:  "Дата обременения",
     lizing_name:       "Наименование залогодержателя/лизингодателя", // lizing_name вместо holder_name
-    ...enforcementHeaders
+    ...enforcementHeaders,
+    ...newFields,
+    comment: "Примечание"
 };
 
 const debtorHeaders = {
@@ -189,7 +195,8 @@ const debtorHeaders = {
     claim_filing_status:           "Статус обращения взыскания на ДЗ",
     claim_cancel_resolution:       "Постановление об отмене обращения на взыскания ДЗ",
     claim_cancel_reason:           "Основание отмены  обращения на ДЗ",
-    note:                         "Примечание"
+    ...newFields,
+    comment: "Примечание"
 };
 
 const otherAssetsHeaders = {
@@ -200,7 +207,9 @@ const otherAssetsHeaders = {
     encumbrance_type: "Вид обременения",
     encumbrance_date: "Дата обременения",
     lizing_name:      "Наименование залогодержателя/лизингодателя", // lizing_name вместо holder_name
-    ...enforcementHeaders
+    ...enforcementHeaders,
+    ...newFields,
+    comment: "Примечание"
 };
 
 export const activeSheetConfigs = {

@@ -170,6 +170,8 @@ export const actives = {
             return subqueries
                 .getActivesDetails("transport")
                 .select({ number: "state_number" })
+                .select("registration_start_date")
+                .select("registration_end_date")
                 .where("inn", inn)
                 .andWhere("status", "<>", 2)
         else if (nameActive === "property")

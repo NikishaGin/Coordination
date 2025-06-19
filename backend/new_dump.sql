@@ -71,18 +71,18 @@ add column complaint_source varchar(255) comment "Орган, рассматри
 add column complaint_result text comment "Результат рассмотрения жалобы" after complaint_source;
 
 
-ALTER TABLE IF EXISTS another
-    ADD COLUMN IF NOT EXISTS realisation1_failure_reason TEXT,
-    ADD COLUMN IF NOT EXISTS realisation2_failure_reason TEXT,
+ALTER TABLE another
+    ADD COLUMN realisation1_failure_reason TEXT,
+    ADD COLUMN realisation2_failure_reason TEXT;
 
-ALTER TABLE IF EXISTS transport
-    ADD COLUMN IF NOT EXISTS realisation1_failure_reason TEXT,
-    ADD COLUMN IF NOT EXISTS realisation2_failure_reason TEXT,
+ALTER TABLE transport
+    ADD COLUMN realisation1_failure_reason TEXT,
+    ADD COLUMN realisation2_failure_reason TEXT;
 
-ALTER TABLE IF EXISTS property
-    ADD COLUMN IF NOT EXISTS realisation1_failure_reason TEXT,
-    ADD COLUMN IF NOT EXISTS realisation2_failure_reason TEXT,
+ALTER TABLE property
+    ADD COLUMN realisation1_failure_reason TEXT,
+    ADD COLUMN realisation2_failure_reason TEXT;
 
-ALTER TABLE IF EXISTS debit
-    ADD COLUMN IF NOT EXISTS realisation1_failure_reason TEXT,
-    ADD COLUMN IF NOT EXISTS realisation2_failure_reason TEXT,
+ALTER TABLE debit
+    ADD COLUMN realisation1_failure_reason TEXT,
+    ADD COLUMN realisation2_failure_reason TEXT;
