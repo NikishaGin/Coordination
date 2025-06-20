@@ -70,10 +70,12 @@ export function getActivesDetails(tableName) {
         .select("realization_result_1")
         .select("realization_property_sum" )
         .select("not_realization_notification")
+        .select("realisation1_failure_reason")
         .select("price_reduction_resolution")
         .select("price_reduction_sum")
         .select("realization_sum_2")
         .select("not_realization_notification_2")
+        .select("realisation2_failure_reason")
         .select("realization_date_2")
         .select("realization_result_2")
         .select("property_to_debtor_act")
@@ -89,6 +91,7 @@ export function getActivesDetails(tableName) {
             .select("encumbrance_date")
     else
         query = query
+            .select("debitor_inn")
             .select({ name: "debitor_names" })
             .select({ cost: "total_sum" })
             .select("date")

@@ -29,6 +29,11 @@ const StyledInput = styled.input`
   &::placeholder {
     color: #6c6c8a;
   }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
 `;
 const IconsContainer = styled.div`
   position: absolute;
@@ -64,7 +69,7 @@ const IconButton = styled.button`
   }
 `;
 
-export const CustomInput = memo(({ value: initialValue = '', valuePlaceholder, onChange }) => {
+export const CustomInput = memo(({ value: initialValue = '', valuePlaceholder, onChange, disabled }) => {
     const [value, setValue] = useState(initialValue);
     const [originalValue, setOriginalValue] = useState(initialValue);
     const inputRef = useRef(null);
@@ -110,6 +115,7 @@ export const CustomInput = memo(({ value: initialValue = '', valuePlaceholder, o
                 onKeyDown={handleKeyDown}
                 hasIcons={showIcons}
                 placeholder={valuePlaceholder}
+                disabled={disabled}
             />
             <IconsContainer visible={showIcons}>
                 <IconButton variant="save" onClick={handleSave} title="Сохранить">

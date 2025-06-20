@@ -174,6 +174,8 @@ const realEstateHeaders = {
     address:          "Адрес",
     cost:             "Стоимость",
     share:            "Размер доли в праве",
+    registration_start_date: "Дата регистрации владения",
+    registration_end_date: "Дата прекращения владения",
     encumbrance_type:  "Вид обременения",
     encumbrance_date:  "Дата обременения",
     lizing_name:       "Наименование залогодержателя/лизингодателя", // lizing_name вместо holder_name
@@ -184,16 +186,17 @@ const realEstateHeaders = {
 
 const debtorHeaders = {
     ...commonHeaders,
-    request_date:                   "Дата ходатайства",
-    debtor_name:                   "Наименование дебиторов",
-    debtor_inn:                    "ИНН дебиторов",
+    debtor_inn:                    "ИНН дебитора",
+    debtor_name:                   "Наименование дебитора",
+    debtor_address:                "Адрес дебитора",
+    request_date:                  "Дата ходатайства",
     request_sum:                   "Сумма по ходатайству",
     ...enforcementHeaders,
     claim_filing:                  "Обращение на взыскание ДЗ",
     claim_filing_sum:              "Сумма обращения на взыскание ДЗ (руб.)",
     claim_filing_status:           "Статус обращения взыскания на ДЗ",
     claim_cancel_resolution:       "Постановление об отмене обращения на взыскания ДЗ",
-    claim_cancel_reason:           "Основание отмены  обращения на ДЗ",
+    claim_cancel_reason:           "Основание отмены обращения на ДЗ",
     ...newFields,
     comment: "Примечание"
 };

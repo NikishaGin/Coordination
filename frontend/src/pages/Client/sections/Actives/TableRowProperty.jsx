@@ -56,10 +56,38 @@ export const TableRowProperty = memo(({ row, onValueChange }) => {
         <StyledTableRow>
             {/*Наименование*/}
             <TableCell>{row.name}</TableCell>
+            {/*Площадь*/}
+            <TableCell>{row.share_size}</TableCell>
             {/*Кадастровый номер*/}
             <TableCell>{row.number}</TableCell>
+            {/*Адрес*/}
+            <TableCell>{row.address}</TableCell>
             {/*Стоимость, ₽*/}
             <NumberCell>{formatNumber(row.cost)}</NumberCell>
+            {/*Размер доли в праве*/}
+            <InputCell>
+                <MoneyInput
+                    value={String(row.share_size ?? "")}
+                    onChange={handleInputChange('share_size')}
+                />
+            </InputCell>
+            {/*Статус объекта*/}
+            <SelectCell>
+                <UniversalSelect
+                    value={row.obj_status}
+                    onChange={handleStringSelectChange('obj_status')}
+                    options={objStatusOptions}
+                />
+            </SelectCell>
+            {/*Иной статус*/}
+            <InputCell>
+                <CustomInput
+                    value={row.obj_status_manual || ''}
+                    valuePlaceholder={'Введите статус'}
+                    onChange={handleInputChange('obj_status_manual')}
+                    disabled={row.obj_status !== "other"}
+                />
+            </InputCell>
             {/*Дата начала регистрации*/}
             <DateCell>
                 <DatePickerCell
@@ -74,13 +102,6 @@ export const TableRowProperty = memo(({ row, onValueChange }) => {
                     onChange={handleDateChange('registration_end_date')}
                 />
             </DateCell>
-            {/*Дата обременения*/}
-            <DateCell>
-                <DatePickerCell
-                    value={row.encumbrance_date}
-                    onChange={handleDateChange('encumbrance_date')}
-                />
-            </DateCell>
             {/*Вид обременения*/}
             <InputCell>
                 <CustomInput
@@ -89,6 +110,13 @@ export const TableRowProperty = memo(({ row, onValueChange }) => {
                     onChange={handleInputChange('encumbrance_type')}
                 />
             </InputCell>
+            {/*Дата обременения*/}
+            <DateCell>
+                <DatePickerCell
+                    value={row.encumbrance_date}
+                    onChange={handleDateChange('encumbrance_date')}
+                />
+            </DateCell>
             {/*Является ли ФНС залогодержателем*/}
             <SelectCell>
                 <UniversalSelect
@@ -113,29 +141,6 @@ export const TableRowProperty = memo(({ row, onValueChange }) => {
                     options={yesNoOptions}
                 />
             </SelectCell>
-            {/*Статус объекта*/}
-            <SelectCell>
-                <UniversalSelect
-                    value={row.obj_status}
-                    onChange={handleStringSelectChange('obj_status')}
-                    options={objStatusOptions}
-                />
-            </SelectCell>
-            {/*Иной статус*/}
-            <InputCell>
-                <CustomInput
-                    value={row.obj_status_manual || ''}
-                    valuePlaceholder={'Введите статус'}
-                    onChange={handleInputChange('obj_status_manual')}
-                />
-            </InputCell>
-            {/*Размер доли в праве*/}
-            <InputCell>
-                <MoneyInput
-                    value={String(row.share_size ?? "")}
-                    onChange={handleInputChange('share_size')}
-                />
-            </InputCell>
             {/*Арест имущества*/}
             <DateCell>
                 <DatePickerCell
@@ -172,7 +177,7 @@ export const TableRowProperty = memo(({ row, onValueChange }) => {
                     options={installedOptions}
                 />
             </SelectCell>
-            {/*Передана на оценку*/}
+            {/*Передано на оценку*/}
             <DateCell>
                 <DatePickerCell
                     value={row.evaluation_submit}
@@ -193,18 +198,18 @@ export const TableRowProperty = memo(({ row, onValueChange }) => {
                     onChange={handleInputChange('evaluation_sum')}
                 />
             </InputCell>
-            {/*Передана на реализацию*/}
+            {/*Передано на реализацию*/}
             <DateCell>
                 <DatePickerCell
                     value={row.realization_submit}
                     onChange={handleDateChange('realization_submit')}
                 />
             </DateCell>
-            {/*Сумма переданного имущества, ₽*/}
+            {/*Сумма переданного имущества на реализацию, ₽*/}
             <InputCell>
                 <MoneyInput
-                    value={String(row.realization_sum_1 ?? "")}
-                    onChange={handleInputChange('realization_sum_1')}
+                    value={String(row.realization_property_sum ?? "")}
+                    onChange={handleInputChange('realization_property_sum')}
                 />
             </InputCell>
             {/*Дата первых торгов*/}
@@ -214,18 +219,18 @@ export const TableRowProperty = memo(({ row, onValueChange }) => {
                     onChange={handleDateChange('realization_date_1')}
                 />
             </DateCell>
-            {/*Отчет о реализации*/}
+            {/*Отчет о реализации (1 этап)*/}
             <DateCell>
                 <DatePickerCell
                     value={row.realization_result_1}
                     onChange={handleDateChange('realization_result_1')}
                 />
             </DateCell>
-            {/*Сумма реализованного имущества, ₽*/}
+            {/*Сумма реализованного имущества (1 этап), ₽*/}
             <InputCell>
                 <MoneyInput
-                    value={String(row.realization_property_sum ?? "")}
-                    onChange={handleInputChange('realization_property_sum')}
+                    value={String(row.realization_sum_1 ?? "")}
+                    onChange={handleInputChange('realization_sum_1')}
                 />
             </InputCell>
             {/*Уведомление о нереализации (1 этап)*/}
@@ -235,6 +240,14 @@ export const TableRowProperty = memo(({ row, onValueChange }) => {
                     onChange={handleDateChange('not_realization_notification')}
                 />
             </DateCell>
+            {/*Причина признания 1 торгов не состоявшимися*/}
+            <InputCell>
+                <CustomInput
+                    value={row.realisation1_failure_reason || ''}
+                    valuePlaceholder={'Введите причину'}
+                    onChange={handleInputChange('realisation1_failure_reason')}
+                />
+            </InputCell>
             {/*Постановление о снижении цены*/}
             <DateCell>
                 <DatePickerCell
@@ -249,20 +262,6 @@ export const TableRowProperty = memo(({ row, onValueChange }) => {
                     onChange={handleInputChange('price_reduction_sum')}
                 />
             </InputCell>
-            {/*Сумма реализованного имущества, ₽*/}
-            <InputCell>
-                <MoneyInput
-                    value={String(row.realization_sum_2 ?? "")}
-                    onChange={handleInputChange('realization_sum_2')}
-                />
-            </InputCell>
-            {/*Уведомление о нереализации (2 этап)*/}
-            <DateCell>
-                <DatePickerCell
-                    value={row.not_realization_notification_2}
-                    onChange={handleDateChange('not_realization_notification_2')}
-                />
-            </DateCell>
             {/*Дата вторых торгов*/}
             <DateCell>
                 <DatePickerCell
@@ -277,6 +276,28 @@ export const TableRowProperty = memo(({ row, onValueChange }) => {
                     onChange={handleDateChange('realization_result_2')}
                 />
             </DateCell>
+            {/*Сумма реализованного имущества (2 этап), ₽*/}
+            <InputCell>
+                <MoneyInput
+                    value={String(row.realization_sum_2 ?? "")}
+                    onChange={handleInputChange('realization_sum_2')}
+                />
+            </InputCell>
+            {/*Уведомление о нереализации (2 этап)*/}
+            <DateCell>
+                <DatePickerCell
+                    value={row.not_realization_notification_2}
+                    onChange={handleDateChange('not_realization_notification_2')}
+                />
+            </DateCell>
+            {/*Причина признания 2 торгов не состоявшимися*/}
+            <InputCell>
+                <CustomInput
+                    value={row.realisation2_failure_reason || ''}
+                    valuePlaceholder={'Введите причину'}
+                    onChange={handleInputChange('realisation2_failure_reason')}
+                />
+            </InputCell>
             {/*Акт передачи имущества должнику*/}
             <DateCell>
                 <DatePickerCell

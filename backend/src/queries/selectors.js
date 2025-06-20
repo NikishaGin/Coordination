@@ -172,7 +172,9 @@ export const actives = {
         if (nameActive === "transport")
             return subqueries
                 .getActivesDetails("transport")
+                .select("year")
                 .select({ number: "state_number" })
+                .select("vin")
                 .select("registration_start_date")
                 .select("registration_end_date")
                 .where("inn", inn)
@@ -181,6 +183,7 @@ export const actives = {
             return subqueries
                 .getActivesDetails("property")
                 .select("share_size")
+                .select("address")
                 .select("registration_start_date")
                 .select("registration_end_date")
                 .select({ number: "cadastral_number" })
@@ -191,6 +194,7 @@ export const actives = {
             return subqueries
                 .getActivesDetails("property")
                 .select("share_size")
+                .select("address")
                 .select("registration_start_date")
                 .select("registration_end_date")
                 .select({ number: "cadastral_number" })
