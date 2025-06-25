@@ -102,6 +102,19 @@ const DayCell = styled.button`
   }
 `;
 
+const ButtonClear = styled.div`    
+    display: inline-block;
+    margin-top: 10px;
+    padding: 7px;
+    border-radius: 4px;
+        
+    &:hover {
+        cursor: pointer;
+        background-color: #3a3a50;
+    }
+`
+
+
 export const DatePickerCell = memo(({ value, onChange }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -256,6 +269,10 @@ export const DatePickerCell = memo(({ value, onChange }) => {
                         </DayCell>
                     ))}
                 </DaysGrid>
+                <ButtonClear
+                    onClick={() => handleSelectDate(null)}>
+                    Очистить
+                </ButtonClear>
             </DatePickerContainer>
         </DateCellContainer>
     );

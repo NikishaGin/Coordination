@@ -186,17 +186,17 @@ const realEstateHeaders = {
 
 const debtorHeaders = {
     ...commonHeaders,
-    debtor_inn:                    "ИНН дебитора",
-    debtor_name:                   "Наименование дебитора",
-    debtor_address:                "Адрес дебитора",
-    request_date:                  "Дата ходатайства",
-    request_sum:                   "Сумма по ходатайству",
+    debitor_inn:                   "ИНН дебитора",
+    debitor_names:                  "Наименование дебитора",
+    debitor_address:               "Адрес дебитора",
+    date:                          "Дата ходатайства",
+    total_sum:                     "Сумма по ходатайству",
     ...enforcementHeaders,
-    claim_filing:                  "Обращение на взыскание ДЗ",
-    claim_filing_sum:              "Сумма обращения на взыскание ДЗ (руб.)",
-    claim_filing_status:           "Статус обращения взыскания на ДЗ",
-    claim_cancel_resolution:       "Постановление об отмене обращения на взыскания ДЗ",
-    claim_cancel_reason:           "Основание отмены обращения на ДЗ",
+    dz_foreclose_date:              "Обращение на взыскание ДЗ",
+    dz_foreclose_sum:               "Сумма обращения на взыскание ДЗ (руб.)",
+    // claim_filing_status:            "Статус обращения взыскания на ДЗ",
+    dz_cancel_foreclose_date:       "Постановление об отмене обращения на взыскания ДЗ",
+    dz_cancel_foreclose_sum:        "Основание отмены обращения на ДЗ",
     ...newFields,
     comment: "Примечание"
 };

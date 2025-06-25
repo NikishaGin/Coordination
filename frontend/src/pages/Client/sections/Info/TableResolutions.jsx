@@ -3,6 +3,7 @@ import {formatDate, formatNumber} from "../../../../utils/formatData.js";
 import styled from "styled-components";
 import {activesAPI} from "../../../../api/index.js";
 import {useParams} from "react-router";
+import { useSelector } from "react-redux";
 
 const Container = styled.div`
   height: calc(100vh - 350px);
@@ -82,11 +83,12 @@ const DateCell = styled(TableCell)`
 export const TableResolutions = () => {
 
     const {inn} = useParams();
+    const pageKey = useSelector((state) => state.global.pageKey);
 
     const [resolutions, setResolutions] = useState([])
 
     useEffect(() => {
-        activesAPI.getResolutions(inn).then(data => setResolutions(data.data)).catch(console.log)
+        activesAPI.getResolutions(inn, pageKey).then(data => setResolutions(data.data)).catch(console.log)
     }, [])
 
     return (

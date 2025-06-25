@@ -10,11 +10,15 @@ export function getRegions(is_derivative_debt, is_archive) {
         ])
         .leftJoin('resolutions', 'meta.inn', 'resolutions.inn')
         .leftJoin('regions', db.raw('meta.region COLLATE utf8mb4_general_ci = regions.regionCode'))
-        .where({ 'resolutions.is_derivative_debt': is_derivative_debt, })
         .modify(query => {
-            is_archive
-                ? query.havingRaw(`COUNT(*) = SUM(CASE WHEN resolutions.is_archive = 1 THEN 1 ELSE 0 END)`)
-                : query.havingRaw(`SUM(CASE WHEN resolutions.is_archive = 0 THEN 1 ELSE 0 END) > 0`);
+            if (is_derivative_debt)
+                query.havingRaw("MAX(resolutions.is_derivative_debt) = 1")
+            else
+                query.havingRaw("MIN(resolutions.is_derivative_debt) = 0")
+            if (is_archive)
+                query.havingRaw("MIN(resolutions.is_archive) = 1")
+            else
+                query.havingRaw("MIN(resolutions.is_archive) = 0")
         })
         .groupBy('meta.inn', 'regions.regionCode', 'regions.regionName')
 }

@@ -49,7 +49,7 @@ export const TableRowTransport = memo(({ row, onValueChange }) => {
 
 
     const handleDateChange = (fieldName) => (date) => {
-        const formattedDate = date.toLocaleDateString('en-CA');
+        const formattedDate = (date) ? date.toLocaleDateString('en-CA') : date;
         onValueChange(row.id, fieldName, formattedDate);
     };
 

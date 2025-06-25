@@ -7,8 +7,8 @@ export async function getTables(request, response) {
     const role = request.userInfo.role
     const page = request.params.page
     const regionCode = request.params.regionCode
-    const is_derivative_debt = +["DerivativeDebt", "DerivativeDebtArchive"].includes(page)
-    const is_archive = +["IndexArchive", "DerivativeDebtArchive"].includes(page)
+    const is_derivative_debt = ["DerivativeDebt", "DerivativeDebtArchive"].includes(page)
+    const is_archive = ["IndexArchive", "DerivativeDebtArchive"].includes(page)
     const data = await actives.getTables(regionCode, is_derivative_debt, is_archive, role)
     for (const row of data) {
         for (const fieldName in row) {
@@ -35,8 +35,11 @@ export function getInfo(request, response) {
 
 export function getResolutions(request, response) {
     const inn = request.params.inn
+    const page = request.params.page
+    const is_derivative_debt = +["DerivativeDebt", "DerivativeDebtArchive"].includes(page)
+    const is_archive = +["IndexArchive", "DerivativeDebtArchive"].includes(page)
     actives
-        .getResolutions(inn)
+        .getResolutions(inn, is_derivative_debt, is_archive)
         .then(data => response.end(JSON.stringify(data)))
         .catch(console.log)
 }

@@ -59,7 +59,7 @@ export const TableRowDebit = memo(({ row, onValueChange }) => {
 
 
     const handleDateChange = (fieldName) => (date) => {
-        const formattedDate = date.toLocaleDateString('en-CA');
+        const formattedDate = (date) ? date.toLocaleDateString('en-CA') : date;
         onValueChange(row.id, fieldName, formattedDate);
     };
 
@@ -328,10 +328,11 @@ export const TableRowDebit = memo(({ row, onValueChange }) => {
                     onChange={handleDateChange('dz_cancel_foreclose_date')}
                 />
             </DateCell>
-            {/*Основание отмены обращения на ДЗ, ₽*/}
+            {/*Основание отмены обращения на ДЗ*/}
             <InputCell>
-                <MoneyInput
-                    value={String(row.dz_cancel_foreclose_sum ?? "")}
+                <CustomInput
+                    value={row.dz_cancel_foreclose_sum || ''}
+                    valuePlaceholder={'Введите причину'}
                     onChange={handleInputChange('dz_cancel_foreclose_sum')}
                 />
             </InputCell>

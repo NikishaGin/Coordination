@@ -112,21 +112,13 @@ export const actives = {
                     `)).as("interaction_gmu"))
             })
             .leftJoin("debt_type", "debt_type.id", "meta.debt_type")
-            .leftJoin(db.raw('(??) as resolutions_data', [subqueries.getResolutions]), 'meta.inn', 'resolutions_data.inn')
+            .innerJoin(db.raw('(??) as resolutions_data', [subqueries.getResolutions(is_derivative_debt, is_archive)]), 'meta.inn', 'resolutions_data.inn')
             .leftJoin(db.raw('(??) as transport_data', [subqueries.getActives("transport")]), 'meta.inn', 'transport_data.inn')
             .leftJoin(db.raw('(??) as nedvizh_data', [subqueries.getActives("property")]), 'meta.inn', 'nedvizh_data.inn')
             .leftJoin(db.raw('(??) as debit_data', [subqueries.getActives("debit")]), 'meta.inn', 'debit_data.inn')
             .leftJoin(db.raw('(??) as another_data', [subqueries.getActives("another")]), 'meta.inn', 'another_data.inn')
             .leftJoin(db.raw('(??) as interactions_data', [subqueries.getInteractionsGMU]), 'meta.inn', 'interactions_data.inn')
-            .where({
-                'meta.region': regionCode,
-                'resolutions_data.is_derivative_debt': is_derivative_debt,
-            })
-            .modify(query => {
-                is_archive
-                    ? query.havingRaw(`COUNT(*) = SUM(CASE WHEN resolutions_data.is_archive = 1 THEN 1 ELSE 0 END)`)
-                    : query.havingRaw(`SUM(CASE WHEN resolutions_data.is_archive = 0 THEN 1 ELSE 0 END) > 0`);
-            })
+            .where({ 'meta.region': regionCode, })
             .groupBy('inn')
             .orderBy('meta.inn')
     },
@@ -140,7 +132,7 @@ export const actives = {
             .leftJoin("debt_type", "debt_type.id", "meta.debt_type")
             .where("meta.inn", inn)
     },
-    getResolutions(inn) {
+    getResolutions(inn, is_derivative_debt, is_archive) {
         return db("resolutions")
             .select(db.ref("resolutions.post_number").as("resolutions_number"))
             .select(db.ref("resolutions.post_date").as("resolutions_date"))
@@ -148,7 +140,11 @@ export const actives = {
             .select(db.ref("resolutions.cur_debt").as("cur_debt"))
             .select(db.ref("resolutions.exec_number").as("exec_number"))
             .select(db.ref("resolutions.exec_date").as("exec_date"))
-            .where("resolutions.inn", inn)
+            .where({
+                is_derivative_debt,
+                is_archive,
+                inn
+            })
     },
     getActivesStatistics(inn) {
         return tableActives(inn, (query, nameActive) => {
@@ -307,17 +303,6 @@ const buildCommonFieldsQuery = async (
         });
     };
 
-    const addIpStatus = query => {
-        const flagsToStatusMap = {
-            end_date:       "Окончено",
-            stop_date:      "Приостановлено",
-            pending_date:   "На рассмотрении",
-            terminate_date: "Отложено",
-            _:              "На исполнении",
-        };
-        query.reduceFlagsToStatusField("resolutions", "ip_status", flagsToStatusMap)
-    };
-
     const addDebitSums = query => {
         if (!withDebit) return;
 
@@ -336,6 +321,27 @@ const buildCommonFieldsQuery = async (
             );
     };
 
+    const addIpStatus = query => {
+        // const flagsToStatusMap = {
+        //     end_date:       "Окончено",
+        //     stop_date:      "Приостановлено",
+        //     pending_date:   "На рассмотрении",
+        //     terminate_date: "Отложено",
+        //     _:              "На исполнении",
+        // };
+        // query.reduceFlagsToStatusField("resolutions", "ip_status", flagsToStatusMap)
+
+        query.select(db.ref(db.raw(`
+            CASE
+                WHEN SUM(IF(resolutions.end_date IS NULL, 0, 1)) > 0 THEN "Окончено"
+                WHEN SUM(IF(resolutions.stop_date IS NULL, 0, 1)) > 0 THEN "Приостановлено"
+                WHEN SUM(IF(resolutions.pending_date IS NULL, 0, 1)) > 0 THEN "Отложено"
+                WHEN SUM(IF(resolutions.terminate_date IS NULL, 0, 1)) > 0 THEN "Прекращено"
+                ELSE "На исполнении"
+            END
+        `)).as("ip_status"))
+    };
+
     const addResolutionsSums = query => {
         query
             .sumSafe("resolutions.post_sum", "post_sum")
@@ -344,13 +350,16 @@ const buildCommonFieldsQuery = async (
     };
 
     const applyFilters = query => {
-          if (innList?.length) {
-            query.whereIn("meta.inn", innList);
-            return;
-        }
+        if (innList?.length > 0)
+            query.whereIn("meta.inn", innList)
         query
-            .where({ "resolutions.is_derivative_debt": isDerived })
-        isArchive
+            .where({
+                end_date: null,
+                end_reason: null
+            })
+        //query.where("resolutions.is_derivative_debt = ??", [])
+        query.where({ "resolutions.is_derivative_debt": isDerived });
+        isArchive === 'true'
             ? query.havingRaw(`COUNT(*) = SUM(CASE WHEN resolutions.is_archive = 1 THEN 1 ELSE 0 END)`)
             : query.havingRaw(`SUM(CASE WHEN resolutions.is_archive = 0 THEN 1 ELSE 0 END) > 0`);
     };
@@ -387,12 +396,12 @@ const buildCommonFieldsQuery = async (
 
 
 const getActivesDownloadingData = async ({
-    inn,
-    nameActive,
-    isDerivate = null,
-    isArchive = null,
-    isNotFnsLizing = null
-}) => {
+                                             inn,
+                                             nameActive,
+                                             isDerivate = null,
+                                             isArchive = null,
+                                             isNotFnsLizing = null
+                                         }) => {
     const addActivesData = query => {
         const table  = nameActive === 'ground' ? 'property' : nameActive;
         const applyNotFnsLizingPage = isNotFnsLizing && table !== 'debit';
@@ -522,11 +531,11 @@ const getActivesDownloadingData = async ({
 
 export const download = {
     getStatistics: async (innList, isDerived, isArchive) => {
+        console.log(typeof isDerived, typeof isArchive);
         const makeQuery = (withActives, withDebit) => buildCommonFieldsQuery(
             withActives, withDebit,
             innList, isDerived, isArchive
         );
-
         const [general, actives, debit] = await Promise.all([
             makeQuery(true, true),
             makeQuery(true, false),
@@ -551,7 +560,6 @@ export const download = {
                 });
             }
         }
-
         return stats;
     },
     getStatisticsIP(innList) {
@@ -577,6 +585,7 @@ export const download = {
             END
         `)).as("status_ip"))
             .leftJoin("resolutions", 'meta.inn', 'resolutions.inn')
+            .where({ end_date: null, end_reason: null })
             .whereIn("meta.inn", innList)
     },
 }
