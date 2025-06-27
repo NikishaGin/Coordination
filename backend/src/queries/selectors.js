@@ -132,6 +132,12 @@ export const actives = {
             .leftJoin("debt_type", "debt_type.id", "meta.debt_type")
             .where("meta.inn", inn)
     },
+
+
+
+
+
+
     getResolutions(inn, is_derivative_debt, is_archive) {
         return db("resolutions")
             .select(db.ref("resolutions.post_number").as("resolutions_number"))
@@ -146,6 +152,15 @@ export const actives = {
                 inn
             })
     },
+
+
+
+
+
+
+
+
+
     getActivesStatistics(inn) {
         return tableActives(inn, (query, nameActive) => {
             const cost = (nameActive === "debit")

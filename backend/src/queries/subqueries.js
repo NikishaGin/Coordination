@@ -1,29 +1,58 @@
 import db from "../connection.js"
 
 
-export const getResolutions = (is_derivative_debt, is_archive) => {
-    return db('resolutions')
+export const getResolutions = (is_derivative_debt, is_archive, { selectSumData=true }={}) => {
+    const  q = db('resolutions')
         .select('inn')
-        .sum({post_sum: db.raw('IFNULL(post_sum, 0.00)')})
-        .sum({cur_debt: db.raw('IFNULL(cur_debt, 0.00)')})
-        .sum({is_end: db.raw('IF(end_date IS NULL, 0, 1)')})
-        .sum({is_stop: db.raw('IF(stop_date IS NULL, 0, 1)')})
-        .sum({is_pending: db.raw('IF(pending_date IS NULL, 0, 1)')})
-        .sum({is_terminate: db.raw('IF(terminate_date IS NULL, 0, 1)')})
-        .max({max_exec_date: 'exec_date'})
-        // .where({end_date: null, end_reason: null})
         .modify(query => {
-            if (is_derivative_debt)
-                query.havingRaw("MAX(resolutions.is_derivative_debt) = 1")
-            else
-                query.havingRaw("MIN(resolutions.is_derivative_debt) = 0")
-            if (is_archive)
-                query.havingRaw("MIN(resolutions.is_archive) = 1")
-            else
-                query.havingRaw("MIN(resolutions.is_archive) = 0")
+            if (selectSumData)
+                query
+                    .sum({post_sum: db.raw('IFNULL(post_sum, 0.00)')})
+                    .sum({cur_debt: db.raw('IFNULL(cur_debt, 0.00)')})
+                    .sum({is_end: db.raw('IF(end_date IS NULL, 0, 1)')})
+                    .sum({is_stop: db.raw('IF(stop_date IS NULL, 0, 1)')})
+                    .sum({is_pending: db.raw('IF(pending_date IS NULL, 0, 1)')})
+                    .sum({is_terminate: db.raw('IF(terminate_date IS NULL, 0, 1)')})
+                    .max({max_exec_date: 'exec_date'})
+            if(true) {
+                if (is_derivative_debt)
+                    query.select(db.ref(db.raw("MAX(resolutions.is_derivative_debt)")).as("isDerived")) // == 1
+                else
+                    query.select(db.ref(db.raw("MIN(resolutions.is_derivative_debt)")).as("isDerived")) // == 0
+
+                if (is_archive)
+                    query.select(db.ref(db.raw("MIN(resolutions.is_archive OR (resolutions.end_date IS NOT NULL) OR (resolutions.terminate_date IS NOT NULL))")).as("isArchive")) // == 1
+                else
+                    query.select(db.ref(db.raw("MIN(resolutions.is_archive AND (resolutions.end_date IS NULL) AND (resolutions.terminate_date IS NULL))")).as("isArchive")) // == 0
+
+                query.havingRaw("(isDerived = ?) AND (isArchive = ?)", [+is_derivative_debt, +is_archive])
+                // query.havingRaw("(isDerived = ?)", [+is_derivative_debt])
+
+            } else {
+                if (is_derivative_debt)
+                    query.havingRaw("MAX(resolutions.is_derivative_debt) = 1")
+                else
+                    query.havingRaw("MIN(resolutions.is_derivative_debt) = 0")
+                if (is_archive)
+                    query.havingRaw("MIN(resolutions.is_archive) = 1")
+                else
+                    query.havingRaw("MIN(resolutions.is_archive) = 0")
+            }
+
         })
         .groupBy('inn')
+
+    if (selectSumData)
+        q.then(console.log)
+
+    return q
 }
+
+
+
+
+
+
 
 export function getActives(tableName) {
     let query = db(tableName)

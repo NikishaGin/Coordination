@@ -1,4 +1,4 @@
-import { actives, selectFieldsOccupancy, tableActives } from "../../queries/selectors.js"
+import { actives } from "../../queries/selectors.js"
 import * as updates from "../../queries/updates.js"
 import { aggregateIndicators, securingArrest } from "../indicators/service.js";
 
@@ -16,7 +16,6 @@ export async function getTables(request, response) {
                 row[fieldName] = row[fieldName].toString()
             }
         }
-
         row.indicators = await aggregateIndicators(row.inn)
         row.securingArrest = await securingArrest(row)
     }
