@@ -132,12 +132,6 @@ export const actives = {
             .leftJoin("debt_type", "debt_type.id", "meta.debt_type")
             .where("meta.inn", inn)
     },
-
-
-
-
-
-
     getResolutions(inn, is_derivative_debt, is_archive) {
         return db("resolutions")
             .select(db.ref("resolutions.post_number").as("resolutions_number"))
@@ -152,15 +146,6 @@ export const actives = {
                 inn
             })
     },
-
-
-
-
-
-
-
-
-
     getActivesStatistics(inn) {
         return tableActives(inn, (query, nameActive) => {
             const cost = (nameActive === "debit")
@@ -367,16 +352,22 @@ const buildCommonFieldsQuery = async (
     const applyFilters = query => {
         if (innList?.length > 0)
             query.whereIn("meta.inn", innList)
-        query
-            .where({
-                end_date: null,
-                end_reason: null
-            })
-        //query.where("resolutions.is_derivative_debt = ??", [])
-        query.where({ "resolutions.is_derivative_debt": isDerived });
-        isArchive === 'true'
-            ? query.havingRaw(`COUNT(*) = SUM(CASE WHEN resolutions.is_archive = 1 THEN 1 ELSE 0 END)`)
-            : query.havingRaw(`SUM(CASE WHEN resolutions.is_archive = 0 THEN 1 ELSE 0 END) > 0`);
+
+
+        console.log("360", typeof isArchive, typeof isDerived)
+
+        if (isDerived)
+            query.select(db.ref(db.raw("MAX(resolutions.is_derivative_debt)")).as("isDerived"))
+        else
+            query.select(db.ref(db.raw("MIN(resolutions.is_derivative_debt)")).as("isDerived"))
+        query.select(db.ref(db.raw("MIN(resolutions.is_archive OR (resolutions.end_date IS NOT NULL) OR (resolutions.terminate_date IS NOT NULL))")).as("isArchive"))
+        query.havingRaw("(isDerived = ?) AND (isArchive = ?)", [+isDerived, +isArchive])
+
+        // query.where({ "resolutions.is_derivative_debt": isDerived });
+        // isArchive === 'true'
+        //     ? query.havingRaw(`COUNT(*) = SUM(CASE WHEN resolutions.is_archive = 1 THEN 1 ELSE 0 END)`)
+        //     : query.havingRaw(`SUM(CASE WHEN resolutions.is_archive = 0 THEN 1 ELSE 0 END) > 0`);
+
     };
 
     const addDebtType = query => {
@@ -413,8 +404,8 @@ const buildCommonFieldsQuery = async (
 const getActivesDownloadingData = async ({
                                              inn,
                                              nameActive,
-                                             isDerivate = null,
-                                             isArchive = null,
+                                             isDerived = false,
+                                             isArchive = false,
                                              isNotFnsLizing = null
                                          }) => {
     const addActivesData = query => {
@@ -482,10 +473,21 @@ const getActivesDownloadingData = async ({
 
     const addResolutionsData = query => {
         const applyFilters = query => {
-            query.where({ 'is_derivative_debt': isDerivate });
-            isArchive
-                ? query.havingRaw(`COUNT(*) = SUM(CASE WHEN is_archive = 1 THEN 1 ELSE 0 END)`)
-                : query.havingRaw(`SUM(CASE WHEN is_archive = 0 THEN 1 ELSE 0 END) > 0`);
+
+            // query.where({ 'is_derivative_debt': isDerived });
+            // isArchive
+            //     ? query.havingRaw(`COUNT(*) = SUM(CASE WHEN is_archive = 1 THEN 1 ELSE 0 END)`)
+            //     : query.havingRaw(`SUM(CASE WHEN is_archive = 0 THEN 1 ELSE 0 END) > 0`);
+
+
+            console.log("480", typeof isArchive, typeof isDerived)
+
+            if (isDerived)
+                query.select(db.ref(db.raw("MAX(resolutions.is_derivative_debt)")).as("isDerived"))
+            else
+                query.select(db.ref(db.raw("MIN(resolutions.is_derivative_debt)")).as("isDerived"))
+            query.select(db.ref(db.raw("MIN(resolutions.is_archive OR (resolutions.end_date IS NOT NULL) OR (resolutions.terminate_date IS NOT NULL))")).as("isArchive"))
+            query.havingRaw("(isDerived = ?) AND (isArchive = ?)", [+isDerived, +isArchive])
         };
 
         const subResolutions = db('resolutions')
@@ -546,7 +548,6 @@ const getActivesDownloadingData = async ({
 
 export const download = {
     getStatistics: async (innList, isDerived, isArchive) => {
-        console.log(typeof isDerived, typeof isArchive);
         const makeQuery = (withActives, withDebit) => buildCommonFieldsQuery(
             withActives, withDebit,
             innList, isDerived, isArchive
@@ -559,11 +560,15 @@ export const download = {
 
         return { general, actives, debit };
     },
-    getActivesStatistics: async (inn, isDerivate, isArchive, activeSheetConfigs, lizingKeyPostfix) => {
+    getActivesStatistics: async (inn, isDerived, isArchive, activeSheetConfigs, lizingKeyPostfix) => {
         const stats = {};
 
+        console.log("566", typeof isDerived, isDerived);
+        console.log("567", typeof isArchive, isArchive);
+
+
         for (const [ nameActive,  { withLizing } ]  of Object.entries(activeSheetConfigs)) {
-            const props = { inn, nameActive,  isDerivate, isArchive } ;
+            const props = { inn, nameActive,  isDerived, isArchive } ;
 
             stats[nameActive] = await getActivesDownloadingData({
                 ...props, isNotFnsLizing: false

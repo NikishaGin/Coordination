@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import {handlesInputInn} from "../inputs/handleInput.js"
+import {handlesInputInn} from "../../utils/handleInput.js"
 import {setInputValueInn} from "../../store/globalSlice.js";
 import { useDispatch, useSelector } from "react-redux";
 import { Search } from 'lucide-react';

@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import {handlesInputNumber} from "../inputs/handleInput.js"
+import {handlesInputNumber} from "../../utils/handleInput.js"
 import {CustomIcon, FilterGroup, Select, SelectWrapper} from "../select/Select.jsx";
 
 const FilterInput = styled.div`

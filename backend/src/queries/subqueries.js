@@ -1,8 +1,8 @@
 import db from "../connection.js"
 
 
-export const getResolutions = (is_derivative_debt, is_archive, { selectSumData=true }={}) => {
-    const  q = db('resolutions')
+export const getResolutions = (is_derivative_debt, is_archive, {selectSumData = true} = {}) => {
+    return db('resolutions')
         .select('inn')
         .modify(query => {
             if (selectSumData)
@@ -14,58 +14,35 @@ export const getResolutions = (is_derivative_debt, is_archive, { selectSumData=t
                     .sum({is_pending: db.raw('IF(pending_date IS NULL, 0, 1)')})
                     .sum({is_terminate: db.raw('IF(terminate_date IS NULL, 0, 1)')})
                     .max({max_exec_date: 'exec_date'})
-            if(true) {
-                if (is_derivative_debt)
-                    query.select(db.ref(db.raw("MAX(resolutions.is_derivative_debt)")).as("isDerived")) // == 1
-                else
-                    query.select(db.ref(db.raw("MIN(resolutions.is_derivative_debt)")).as("isDerived")) // == 0
 
-                if (is_archive)
-                    query.select(db.ref(db.raw("MIN(resolutions.is_archive OR (resolutions.end_date IS NOT NULL) OR (resolutions.terminate_date IS NOT NULL))")).as("isArchive")) // == 1
-                else
-                    query.select(db.ref(db.raw("MIN(resolutions.is_archive AND (resolutions.end_date IS NULL) AND (resolutions.terminate_date IS NULL))")).as("isArchive")) // == 0
 
-                query.havingRaw("(isDerived = ?) AND (isArchive = ?)", [+is_derivative_debt, +is_archive])
-                // query.havingRaw("(isDerived = ?)", [+is_derivative_debt])
+            if (is_derivative_debt)
+                query.select(db.ref(db.raw("MAX(resolutions.is_derivative_debt)")).as("isDerived"))
+            else
+                query.select(db.ref(db.raw("MIN(resolutions.is_derivative_debt)")).as("isDerived"))
+            query.select(db.ref(db.raw("MIN(resolutions.is_archive OR (resolutions.end_date IS NOT NULL) OR (resolutions.terminate_date IS NOT NULL))")).as("isArchive"))
+            query.havingRaw("(isDerived = ?) AND (isArchive = ?)", [+is_derivative_debt, +is_archive])
 
-            } else {
-                if (is_derivative_debt)
-                    query.havingRaw("MAX(resolutions.is_derivative_debt) = 1")
-                else
-                    query.havingRaw("MIN(resolutions.is_derivative_debt) = 0")
-                if (is_archive)
-                    query.havingRaw("MIN(resolutions.is_archive) = 1")
-                else
-                    query.havingRaw("MIN(resolutions.is_archive) = 0")
-            }
+
+
 
         })
         .groupBy('inn')
-
-    if (selectSumData)
-        q.then(console.log)
-
-    return q
 }
-
-
-
-
-
 
 
 export function getActives(tableName) {
     let query = db(tableName)
         .select('inn')
-        .sum({ total_sum: db.raw(`IFNULL(${tableName === "debit" ? 'total_sum' : 'cost'}, 0.00)`) })
-        .sum({ arrest_sum: db.raw('IFNULL(arrest_sum, 0.00)') })
-        .sum({ evaluation_sum: db.raw('IFNULL(evaluation_sum, 0.00)') })
-        .sum({ realization_property_sum: db.raw('IFNULL(realization_property_sum, 0.00)') })
-        .sum({ price_reduction_sum: db.raw('IFNULL(price_reduction_sum, 0.00)') })
-        .sum({ realization_sum_2: db.raw('IFNULL(realization_sum_2, 0.00)') })
-        .sum({ return_sum: db.raw('IFNULL(property_to_debtor_sum, 0.00)') })
+        .sum({total_sum: db.raw(`IFNULL(${tableName === "debit" ? 'total_sum' : 'cost'}, 0.00)`)})
+        .sum({arrest_sum: db.raw('IFNULL(arrest_sum, 0.00)')})
+        .sum({evaluation_sum: db.raw('IFNULL(evaluation_sum, 0.00)')})
+        .sum({realization_property_sum: db.raw('IFNULL(realization_property_sum, 0.00)')})
+        .sum({price_reduction_sum: db.raw('IFNULL(price_reduction_sum, 0.00)')})
+        .sum({realization_sum_2: db.raw('IFNULL(realization_sum_2, 0.00)')})
+        .sum({return_sum: db.raw('IFNULL(property_to_debtor_sum, 0.00)')})
     if (tableName == "debit")
-        query = query.sum({ foreclose: db.raw('IFNULL(dz_foreclose_sum, 0.00)') })
+        query = query.sum({foreclose: db.raw('IFNULL(dz_foreclose_sum, 0.00)')})
     if (["transport", "property"].includes(tableName))
         query = query.where("status", "<>", 2)
     query = query.groupBy('inn')
@@ -106,7 +83,7 @@ export function getActivesDetails(tableName) {
         .select("realization_sum_1")
         .select("realization_date_1")
         .select("realization_result_1")
-        .select("realization_property_sum" )
+        .select("realization_property_sum")
         .select("not_realization_notification")
         .select("realisation1_failure_reason")
         .select("price_reduction_resolution")
@@ -130,8 +107,8 @@ export function getActivesDetails(tableName) {
     else
         query = query
             .select("debitor_inn")
-            .select({ name: "debitor_names" })
-            .select({ cost: "total_sum" })
+            .select({name: "debitor_names"})
+            .select({cost: "total_sum"})
             .select("date")
     return query
 }

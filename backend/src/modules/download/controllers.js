@@ -11,9 +11,13 @@ import { getDownloadDate, getDownloadTypeName } from './name_utils.js';
 
 
 export const getStatistics = async(req, res) => {
-    const { isDerived, isArchive, innList } = req.query
+    const { isDerived="false", isArchive="false", innList } = req.query
 
-    const stats = await downloadSelectors.getStatistics(innList, isDerived, isArchive)
+    const stats = await downloadSelectors.getStatistics(
+        innList,
+        isDerived === "true",
+        isArchive === "true"
+    )
     const headers = headersStatistics(isDerived)
 
     const sheetNames = {
@@ -62,7 +66,7 @@ export const getStatisticsIP = (req, res) => {
 
 
 export const getDebtorActivesStat = async (request, response) =>  {
-    const { inn, isDerived, isArchive }  = request.query
+    const { inn, isDerived="false", isArchive="false" }  = request.query
 
     const lizingKeyPostfix = 'NotFnsLizing';
     const lizingKeyTextPostfix = ' (залогод. не ФНС)';
@@ -70,11 +74,15 @@ export const getDebtorActivesStat = async (request, response) =>  {
     const headers = headersActivesStatistics(lizingKeyPostfix);
     const sheets = activesSheets(lizingKeyPostfix, lizingKeyTextPostfix);
 
+
     const stats = await downloadSelectors.getActivesStatistics(
         inn,
-        isDerived, isArchive,
+        isDerived === "true",
+        isArchive === "true",
         activeSheetConfigs, lizingKeyPostfix
     );
+
+    console.log(isDerived, isArchive)
 
     const name = (
         (inn ? `Выгрузка активов НП ${inn} ` : 'Активы НП регионов ')

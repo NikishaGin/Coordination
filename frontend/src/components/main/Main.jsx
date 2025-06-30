@@ -282,8 +282,8 @@ export const Main = () => {
         const target = flagButton ? downloadAPI.getStatistics : downloadAPI.getStatisticsIP;
         try {
             enqueueSnackbar("Начало загрузки...", { variant: "info" });
-            const isDerived = +["DerivativeDebt", "DerivativeDebtArchive"].includes(pageKey)
-            const isArchive = +["IndexArchive", "DerivativeDebtArchive"].includes(pageKey)
+            const isDerived = ["DerivativeDebt", "DerivativeDebtArchive"].includes(pageKey)
+            const isArchive = ["IndexArchive", "DerivativeDebtArchive"].includes(pageKey)
             const response = await target(selectedInn, isDerived, isArchive);
             downloadExcel(response);
             enqueueSnackbar("Загружено", { variant: "info" });
