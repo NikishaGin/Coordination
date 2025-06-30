@@ -4,7 +4,10 @@ import {UniversalSelect} from "./UniversalSelect.jsx";
 import {CustomInput} from "./CustomInput.jsx";
 import {MoneyInput} from "./MoneyInput.jsx";
 import {DatePickerCell} from "./DatePickerCell.jsx";
-import {formatNumber} from "../../../../utils/formatData.js";
+import { useSelector } from "react-redux";
+import { ROLES } from "../../../../types.js";
+import { InnInput } from "./InnInput.jsx";
+import { formatNumber } from "../../../../utils/formatData.js";
 
 const objStatusOptions = [
     {text: "Арест", value: "arrest"},
@@ -34,6 +37,8 @@ const isFnsLizingOptions = [
 
 
 export const TableRowDebit = memo(({ row, onValueChange }) => {
+    const role = useSelector((state) => state.user.role)
+    const isAdmin = role === ROLES.Admin
 
     const handleSelectChange = (fieldName) => (val) => {
         onValueChange(row.id, fieldName, Number(val));
@@ -66,20 +71,77 @@ export const TableRowDebit = memo(({ row, onValueChange }) => {
     return (
         <StyledTableRow>
             {/*ИНН дебитора*/}
-            <TableCell>{row.debitor_inn}</TableCell>
+            {
+                isAdmin ?
+                    <InputCell>
+                        <InnInput
+                            value={row.debitor_inn || ''}
+                            onChange={handleInputChange('debitor_inn')}
+                        />
+                    </InputCell> :
+                    <TableCell>{row.debitor_inn}</TableCell>
+            }
+
+
             {/*Наименование дебитора*/}
-            <TableCell>{row.name}</TableCell>
+            {
+                isAdmin ?
+                    <InputCell>
+                        <CustomInput
+                            value={row.name || ''}
+                            valuePlaceholder={'Введите наименование'}
+                            onChange={handleInputChange('name')}
+                        />
+                    </InputCell> :
+                    <TableCell>{row.name}</TableCell>
+            }
             {/*Адрес дебитора*/}
-            <TableCell>{row.debitor_address}</TableCell>
+            {
+                isAdmin ?
+                    <InputCell>
+                        <CustomInput
+                            value={row.debitor_address || ''}
+                            valuePlaceholder={'Введите марку'}
+                            onChange={handleInputChange('debitor_address')}
+                        />
+                    </InputCell> :
+                    <TableCell>{row.debitor_address}</TableCell>
+            }
+
+
+
             {/*Дата ходатайства*/}
-            <DateCell>
-                <DatePickerCell
-                    value={row.date}
-                    onChange={handleDateChange('date')}
-                />
-            </DateCell>
+            {
+                isAdmin ?
+                <DateCell>
+                    <DatePickerCell
+                        value={row.date}
+                        onChange={handleDateChange('date')}
+                    />
+                </DateCell> :
+                <TableCell>{(row.date)}</TableCell>
+            }
             {/*Сумма по ходатайству, ₽*/}
-            <NumberCell>{formatNumber(row.cost)}</NumberCell>
+            {
+                isAdmin ?
+                <InputCell>
+                    <MoneyInput
+                        value={String(row.cost ?? "")}
+                        onChange={handleInputChange('cost')}
+                    />
+                </InputCell> :
+                <NumberCell>{formatNumber(row.cost)}</NumberCell>
+            }
+
+
+
+
+
+
+
+
+
+
             {/*Статус объекта*/}
             <SelectCell>
                 <UniversalSelect

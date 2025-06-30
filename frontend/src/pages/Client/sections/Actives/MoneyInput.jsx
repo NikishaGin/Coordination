@@ -1,6 +1,7 @@
 import React, { useRef, useState, memo } from "react";
 import styled from "styled-components";
 import { Check, X } from "lucide-react";
+import { handlesInputNumber } from "../../../../utils/handleInput.js";
 
 const InputWrapper = styled.div`
   position: relative;
@@ -69,9 +70,9 @@ const formatMoney = (value) => {
     const str = String(value);
     const parts = str.replace(/\s/g, "").split(".");
     const int = parts[0];
-    const frac = parts[1] ?? "";
+    const frac = parts[1] ?? "00";
     const formattedInt = int.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-    return frac ? `${formattedInt},${frac}` : formattedInt;
+    return `${formattedInt},${frac}`;
 };
 
 
@@ -87,16 +88,7 @@ export const MoneyInput = memo(({ value, onChange }) => {
     const inputRef = useRef(null);
 
     const handleInputChange = (e) => {
-        const raw = e.target.value;
-        // Оставляем только цифры и максимум одну запятую
-        const cleaned = raw
-            .replace(/[^\d,]/g, "")
-            .replace(/^([^,]*),?(.*)$/, (_, intPart, rest) => {
-                const restDigits = rest.replace(/,/g, "");
-                return `${intPart}${restDigits ? "," + restDigits : ""}`;
-            });
-
-        setEditValue(cleaned);
+        setEditValue(e.target.value);
         setIsEditing(true);
     };
 
@@ -128,7 +120,13 @@ export const MoneyInput = memo(({ value, onChange }) => {
                 type="text"
                 value={editValue}
                 onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
+                onKeyDown={e => {
+                    handleKeyDown(e)
+                    handlesInputNumber.handleKeyDown(e)
+                }}
+                onKeyPress={handlesInputNumber.handleKeyPress}
+                onInput={handlesInputNumber.handleInput}
+                onPaste={handlesInputNumber.handlePaste}
                 hasText={hasText}
                 placeholder="Введите сумму"
             />

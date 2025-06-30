@@ -5,6 +5,8 @@ import {CustomInput} from "./CustomInput.jsx";
 import {MoneyInput} from "./MoneyInput.jsx";
 import {DatePickerCell} from "./DatePickerCell.jsx";
 import {formatNumber} from "../../../../utils/formatData.js";
+import { useSelector } from "react-redux";
+import { ROLES } from "../../../../types.js";
 
 const objStatusOptions = [
     {text: "Арест", value: "arrest"},
@@ -33,6 +35,8 @@ const isFnsLizingOptions = [
 ];
 
 export const TableRowTransport = memo(({ row, onValueChange }) => {
+    const role = useSelector((state) => state.user.role)
+    const isAdmin = role === ROLES.Admin
 
     const handleSelectChange = (fieldName) => (val) => {
         onValueChange(row.id, fieldName, Number(val));
@@ -56,15 +60,60 @@ export const TableRowTransport = memo(({ row, onValueChange }) => {
     return (
         <StyledTableRow>
             {/*Марка*/}
-            <TableCell>{row.name}</TableCell>
+            {
+                isAdmin ?
+                <InputCell>
+                    <CustomInput
+                        value={row.name || ''}
+                        valuePlaceholder={'Введите марку'}
+                        onChange={handleInputChange('name')}
+                    />
+                </InputCell> :
+                <TableCell>{row.name}</TableCell>
+            }
             {/*VIN-номер*/}
-            <TableCell>{row.vin}</TableCell>
+            {
+                isAdmin ?
+                    <InputCell>
+                        <CustomInput
+                            value={row.vin || ''}
+                            valuePlaceholder={'Введите VIN'}
+                            onChange={handleInputChange('vin')}
+                        />
+                    </InputCell> :
+                    <TableCell>{row.vin}</TableCell>
+            }
             {/*Гос. номер*/}
-            <TableCell>{row.number}</TableCell>
+            {
+                isAdmin ?
+                    <InputCell>
+                        <CustomInput
+                            value={row.number || ''}
+                            valuePlaceholder={'Введите гос. номер'}
+                            onChange={handleInputChange('number')}
+                        />
+                    </InputCell> :
+                    <TableCell>{row.number}</TableCell>
+            }
             {/*Год выпуска*/}
             <TableCell>{row.year}</TableCell>
+
+
+
+
+
+
             {/*Стоимость, ₽*/}
-            <NumberCell>{formatNumber(row.cost)}</NumberCell>
+            {
+                isAdmin ?
+                <InputCell>
+                    <MoneyInput
+                        value={String(row.cost ?? "")}
+                        onChange={handleInputChange('cost')}
+                    />
+                </InputCell> :
+                <NumberCell>{formatNumber(row.cost)}</NumberCell>
+            }
             {/*Статус объекта*/}
             <SelectCell>
                 <UniversalSelect
