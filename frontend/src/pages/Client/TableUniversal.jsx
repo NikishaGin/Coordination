@@ -1,21 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
-import {Container, TableWrapper, Table, TableHeader, Table2} from './TableStyles';
+import {Container, TableWrapper, TableHeader, Table2} from './TableStyles';
 import { clearActives, fetchActives, updateActiveField, updateActiveThunk } from "../../store/activesSlice.js";
-import styled from "styled-components";
-import { AddOtherAssetsButton } from "./sections/Actives/AddOtherAssetsButton.jsx";
 import Snackbar from "./Snacbar.jsx";
 import { VariableSizeList } from 'react-window';
 
-const ButtonBox = styled.div`
-  display: flex;
-  justify-content: flex-start;
-  padding: 16px;
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
-`;
 
 const TableUniversal = ({ type, headers, selectorKey, RowComponent, Button }) => {
     const { inn } = useParams();
@@ -173,11 +163,7 @@ const TableUniversal = ({ type, headers, selectorKey, RowComponent, Button }) =>
                     )}
                 </TableWrapper>
             </Container>
-            {Button && (
-                <ButtonBox>
-                    <AddOtherAssetsButton titleBtn={'Добавить иные активы'}/>
-                </ButtonBox>
-            )}
+            {Button}
             <Snackbar
                 message="Данные успешно сохранены!"
                 visible={snackbarVisible}

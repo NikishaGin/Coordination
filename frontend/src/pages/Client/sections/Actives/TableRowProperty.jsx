@@ -5,6 +5,9 @@ import {CustomInput} from "./CustomInput.jsx";
 import {MoneyInput} from "./MoneyInput.jsx";
 import {DatePickerCell} from "./DatePickerCell.jsx";
 import {formatNumber} from "../../../../utils/formatData.js";
+import { useSelector } from "react-redux";
+import { ROLES } from "../../../../types.js";
+import EditableCell from "./EditableCell.jsx";
 
 const objStatusOptions = [
     {text: "Арест", value: "arrest"},
@@ -34,6 +37,8 @@ const isFnsLizingOptions = [
 
 
 export const TableRowProperty = memo(({ row, onValueChange }) => {
+    const role = useSelector((state) => state.user.role)
+    const isAdmin = role === ROLES.Admin
 
     const handleSelectChange = (fieldName) => (val) => {
         onValueChange(row.id, fieldName, Number(val));
@@ -55,22 +60,53 @@ export const TableRowProperty = memo(({ row, onValueChange }) => {
     return (
         <StyledTableRow>
             {/*Наименование*/}
-            <TableCell>{row.name}</TableCell>
-            {/*Площадь*/}
-            <TableCell>{row.share_size}</TableCell>
-            {/*Кадастровый номер*/}
-            <TableCell>{row.number}</TableCell>
-            {/*Адрес*/}
-            <TableCell>{row.address}</TableCell>
-            {/*Стоимость, ₽*/}
-            <NumberCell>{formatNumber(row.cost)}</NumberCell>
-            {/*Размер доли в праве*/}
             <InputCell>
-                <MoneyInput
-                    value={String(row.share_size ?? "")}
-                    onChange={handleInputChange('share_size')}
+                <EditableCell
+                    value={row.name || ''}
+                    onSave={handleInputChange('name')}
+                    isEditable={isAdmin}
                 />
             </InputCell>
+            {/*Площадь*/}
+            <NumberCell>
+                <EditableCell
+                    value={formatNumber(row.share_size) || ''}
+                    onSave={handleInputChange('share_size')}
+                    isEditable={isAdmin}
+                />
+            </NumberCell>
+            {/*Кадастровый номер*/}
+            <InputCell>
+                <EditableCell
+                    value={row.number || ''}
+                    onSave={handleInputChange('number')}
+                    isEditable={isAdmin}
+                />
+            </InputCell>
+            {/*Адрес*/}
+            <InputCell>
+                <EditableCell
+                    value={row.address || ''}
+                    onSave={handleInputChange('address')}
+                    isEditable={isAdmin}
+                />
+            </InputCell>
+            {/*Стоимость, ₽*/}
+            <NumberCell>
+                <EditableCell
+                    value={formatNumber(row.cost) || ''}
+                    onSave={handleInputChange('cost')}
+                    isEditable={isAdmin}
+                />
+            </NumberCell>
+            {/*Размер доли в праве*/}
+            <NumberCell>
+                <EditableCell
+                    value={formatNumber(row.share_size) || ''}
+                    onSave={handleInputChange('share_size')}
+                    isEditable={isAdmin}
+                />
+            </NumberCell>
             {/*Статус объекта*/}
             <SelectCell>
                 <UniversalSelect

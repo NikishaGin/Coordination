@@ -2,6 +2,7 @@ import React, { useRef, useState, memo } from "react";
 import styled from "styled-components";
 import { Check, X } from "lucide-react";
 import { handlesInputNumber } from "../../../../utils/handleInput.js";
+import { formatNumber } from "../../../../utils/formatData.js";
 
 const InputWrapper = styled.div`
   position: relative;
@@ -67,12 +68,7 @@ const IconButton = styled.button`
 
 const formatMoney = (value) => {
     if (value === null || value === undefined || value === "") return "";
-    const str = String(value);
-    const parts = str.replace(/\s/g, "").split(".");
-    const int = parts[0];
-    const frac = parts[1] ?? "00";
-    const formattedInt = int.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-    return `${formattedInt},${frac}`;
+    return formatNumber(value);
 };
 
 
@@ -111,7 +107,7 @@ export const MoneyInput = memo(({ value, onChange }) => {
         if (e.key === "Escape") handleCancel();
     };
 
-    const hasText = editValue.trim().length > 0;
+    const hasText = (editValue) ? editValue.trim().length > 0 : undefined;
 
     return (
         <InputWrapper>

@@ -18,6 +18,11 @@ import {
     tableHeadersTransport
 } from "./tableHeaders.js";
 import TnoInteractionResultForm from "./sections/Interaction/TnoInteractionResultForm.jsx";
+import { AddOtherAssetsButton } from "./sections/Actives/AddOtherAssetsButton.jsx";
+import { useSelector } from "react-redux";
+import { ROLES } from "../../types.js";
+
+
 
 const GlobalStyle = createGlobalStyle`
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -159,9 +164,21 @@ const ContentArea = styled.div`
   background-color: #171722;
 `;
 
+const ButtonBox = styled.div`
+  display: flex;
+  justify-content: flex-start;
+  padding: 16px;
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+`;
+
 const TableUniversal = lazy(() => import('./TableUniversal.jsx'));
 
 export function Client() {
+    const role = useSelector((state) => state.user.role)
+    const isAdmin = role === ROLES.Admin
+
     const {inn} = useParams();
     const navigate = useNavigate();
 
@@ -236,6 +253,11 @@ export function Client() {
                     headers={tableHeadersDebit}
                     selectorKey="debit"
                     RowComponent={TableRowDebit}
+                    Button={isAdmin && (
+                        <ButtonBox>
+                            <AddOtherAssetsButton titleBtn={'Добавить дебиторскую задолженность'}/>
+                        </ButtonBox>
+                    )}
                 />
             ),
             "Иные активы": (
@@ -244,7 +266,11 @@ export function Client() {
                     headers={tableHeadersAnother}
                     selectorKey="another"
                     RowComponent={TableOtherAssets}
-                    Button={MyButton}
+                    Button={isAdmin && (
+                        <ButtonBox>
+                            <AddOtherAssetsButton titleBtn={'Добавить иные активы'}/>
+                        </ButtonBox>
+                    )}
                 />
             )
         },

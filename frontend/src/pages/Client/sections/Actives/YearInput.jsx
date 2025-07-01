@@ -69,7 +69,7 @@ const IconButton = styled.button`
     }
 `;
 
-export const InnInput = memo(({ value: initialValue = '', onChange }) => {
+export const YearInput = memo(({ value: initialValue = '', onChange }) => {
     const [value, setValue] = useState(initialValue);
     const [originalValue, setOriginalValue] = useState(initialValue);
     const inputRef = useRef(null);
@@ -85,12 +85,12 @@ export const InnInput = memo(({ value: initialValue = '', onChange }) => {
     const handleInputChange = (e) => {
         const value = e.target.value;
         if (!/^\d*$/.test(value)) return
-        if (value.length <= 12)
+        if (value.length <= 4)
             setValue(value);
     };
 
     const handleSave = () => {
-        if (![0, 10, 12].includes(value.length)) {
+        if (![0, 4].includes(value.length)) {
             return
         }
         if (onChange) {
@@ -121,7 +121,7 @@ export const InnInput = memo(({ value: initialValue = '', onChange }) => {
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 hasIcons={showIcons}
-                placeholder="Введите ИНН"
+                placeholder="Введите год"
             />
             <IconsContainer visible={showIcons}>
                 <IconButton variant="save" onClick={handleSave} title="Сохранить">
@@ -135,4 +135,4 @@ export const InnInput = memo(({ value: initialValue = '', onChange }) => {
     );
 });
 
-InnInput.displayName = 'InnInput';
+YearInput.displayName = 'YearInput';

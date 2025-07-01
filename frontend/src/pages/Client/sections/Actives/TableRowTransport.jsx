@@ -4,9 +4,11 @@ import {UniversalSelect} from "./UniversalSelect.jsx";
 import {CustomInput} from "./CustomInput.jsx";
 import {MoneyInput} from "./MoneyInput.jsx";
 import {DatePickerCell} from "./DatePickerCell.jsx";
+import {YearInput} from "./YearInput.jsx";
 import {formatNumber} from "../../../../utils/formatData.js";
 import { useSelector } from "react-redux";
 import { ROLES } from "../../../../types.js";
+import EditableCell from "./EditableCell.jsx";
 
 const objStatusOptions = [
     {text: "Арест", value: "arrest"},
@@ -60,60 +62,45 @@ export const TableRowTransport = memo(({ row, onValueChange }) => {
     return (
         <StyledTableRow>
             {/*Марка*/}
-            {
-                isAdmin ?
-                <InputCell>
-                    <CustomInput
-                        value={row.name || ''}
-                        valuePlaceholder={'Введите марку'}
-                        onChange={handleInputChange('name')}
-                    />
-                </InputCell> :
-                <TableCell>{row.name}</TableCell>
-            }
+            <InputCell>
+                <EditableCell
+                    value={row.name || ''}
+                    onSave={handleInputChange('name')}
+                    isEditable={isAdmin}
+                />
+            </InputCell>
             {/*VIN-номер*/}
-            {
-                isAdmin ?
-                    <InputCell>
-                        <CustomInput
-                            value={row.vin || ''}
-                            valuePlaceholder={'Введите VIN'}
-                            onChange={handleInputChange('vin')}
-                        />
-                    </InputCell> :
-                    <TableCell>{row.vin}</TableCell>
-            }
+            <InputCell>
+                <EditableCell
+                    value={row.vin || ''}
+                    onSave={handleInputChange('vin')}
+                    isEditable={isAdmin}
+                />
+            </InputCell>
             {/*Гос. номер*/}
-            {
-                isAdmin ?
-                    <InputCell>
-                        <CustomInput
-                            value={row.number || ''}
-                            valuePlaceholder={'Введите гос. номер'}
-                            onChange={handleInputChange('number')}
-                        />
-                    </InputCell> :
-                    <TableCell>{row.number}</TableCell>
-            }
+            <InputCell>
+                <EditableCell
+                    value={row.number || ''}
+                    onSave={handleInputChange('number')}
+                    isEditable={isAdmin}
+                />
+            </InputCell>
             {/*Год выпуска*/}
-            <TableCell>{row.year}</TableCell>
-
-
-
-
-
-
+            <InputCell>
+                <EditableCell
+                    value={row.year || ''}
+                    onSave={handleInputChange('year')}
+                    isEditable={isAdmin}
+                />
+            </InputCell>
             {/*Стоимость, ₽*/}
-            {
-                isAdmin ?
-                <InputCell>
-                    <MoneyInput
-                        value={String(row.cost ?? "")}
-                        onChange={handleInputChange('cost')}
-                    />
-                </InputCell> :
-                <NumberCell>{formatNumber(row.cost)}</NumberCell>
-            }
+            <NumberCell>
+                <EditableCell
+                    value={formatNumber(row.cost) || ''}
+                    onSave={handleInputChange('cost')}
+                    isEditable={isAdmin}
+                />
+            </NumberCell>
             {/*Статус объекта*/}
             <SelectCell>
                 <UniversalSelect

@@ -1,13 +1,21 @@
 import React, { memo } from 'react';
-import {TableRow as StyledTableRow, TableCell, NumberCell, SelectCell, InputCell, DateCell} from '../../TableStyles.js';
-import {UniversalSelect} from "./UniversalSelect.jsx";
-import {CustomInput} from "./CustomInput.jsx";
-import {MoneyInput} from "./MoneyInput.jsx";
-import {DatePickerCell} from "./DatePickerCell.jsx";
+import {
+    TableRow as StyledTableRow,
+    TableCell,
+    NumberCell,
+    SelectCell,
+    InputCell,
+    DateCell
+} from '../../TableStyles.js';
+import { UniversalSelect } from "./UniversalSelect.jsx";
+import { CustomInput } from "./CustomInput.jsx";
+import { MoneyInput } from "./MoneyInput.jsx";
+import { DatePickerCell } from "./DatePickerCell.jsx";
 import { useSelector } from "react-redux";
 import { ROLES } from "../../../../types.js";
 import { InnInput } from "./InnInput.jsx";
 import { formatNumber } from "../../../../utils/formatData.js";
+import EditableCell from "./EditableCell.jsx";
 
 const objStatusOptions = [
     {text: "Арест", value: "arrest"},
@@ -36,9 +44,15 @@ const isFnsLizingOptions = [
 ];
 
 
-export const TableRowDebit = memo(({ row, onValueChange }) => {
+export const TableRowDebit = memo(({row, onValueChange}) => {
     const role = useSelector((state) => state.user.role)
     const isAdmin = role === ROLES.Admin
+
+    const formatDate = (value) => {
+        if (!value) return "";
+        const date = new Date(value);
+        return date.toLocaleDateString()
+    }
 
     const handleSelectChange = (fieldName) => (val) => {
         onValueChange(row.id, fieldName, Number(val));
@@ -71,77 +85,46 @@ export const TableRowDebit = memo(({ row, onValueChange }) => {
     return (
         <StyledTableRow>
             {/*ИНН дебитора*/}
-            {
-                isAdmin ?
-                    <InputCell>
-                        <InnInput
-                            value={row.debitor_inn || ''}
-                            onChange={handleInputChange('debitor_inn')}
-                        />
-                    </InputCell> :
-                    <TableCell>{row.debitor_inn}</TableCell>
-            }
-
-
+            <TableCell>
+                <EditableCell
+                    value={row.debitor_inn || ''}
+                    onSave={handleInputChange('debitor_inn')}
+                    isEditable={isAdmin}
+                />
+            </TableCell>
             {/*Наименование дебитора*/}
-            {
-                isAdmin ?
-                    <InputCell>
-                        <CustomInput
-                            value={row.name || ''}
-                            valuePlaceholder={'Введите наименование'}
-                            onChange={handleInputChange('name')}
-                        />
-                    </InputCell> :
-                    <TableCell>{row.name}</TableCell>
-            }
+            <InputCell>
+                <EditableCell
+                    value={row.name || ''}
+                    onSave={handleInputChange('name')}
+                    isEditable={isAdmin}
+                />
+            </InputCell>
             {/*Адрес дебитора*/}
-            {
-                isAdmin ?
-                    <InputCell>
-                        <CustomInput
-                            value={row.debitor_address || ''}
-                            valuePlaceholder={'Введите марку'}
-                            onChange={handleInputChange('debitor_address')}
-                        />
-                    </InputCell> :
-                    <TableCell>{row.debitor_address}</TableCell>
-            }
-
-
-
+            <InputCell>
+                <EditableCell
+                    value={row.debitor_address || ''}
+                    onSave={handleInputChange('debitor_address')}
+                    isEditable={isAdmin}
+                />
+            </InputCell>
             {/*Дата ходатайства*/}
-            {
-                isAdmin ?
-                <DateCell>
-                    <DatePickerCell
-                        value={row.date}
-                        onChange={handleDateChange('date')}
-                    />
-                </DateCell> :
-                <TableCell>{(row.date)}</TableCell>
-            }
+            <DateCell>
+                <EditableCell
+                    value={row.date || ''}
+                    type="date"
+                    onSave={handleInputChange('date')}
+                    isEditable={isAdmin}
+                />
+            </DateCell>
             {/*Сумма по ходатайству, ₽*/}
-            {
-                isAdmin ?
-                <InputCell>
-                    <MoneyInput
-                        value={String(row.cost ?? "")}
-                        onChange={handleInputChange('cost')}
-                    />
-                </InputCell> :
-                <NumberCell>{formatNumber(row.cost)}</NumberCell>
-            }
-
-
-
-
-
-
-
-
-
-
+            <NumberCell>
+                <EditableCell
+                    value={formatNumber(row.cost) || ''}
+                    onSave={handleInputChange('cost')}
+                    isEditable={isAdmin}
+                />
+            </NumberCell>
             {/*Статус объекта*/}
             <SelectCell>
                 <UniversalSelect
