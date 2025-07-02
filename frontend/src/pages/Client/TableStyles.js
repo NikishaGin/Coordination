@@ -116,6 +116,40 @@ export const Container = styled.div`
   border-radius: 4px;
   display: flex;
   flex-direction: column;
+
+  &.transport {
+    & th:nth-child(1), & td:nth-child(1) { width: 320px; }
+    & th:nth-child(2), & td:nth-child(2) { width: 220px; }
+    & th:nth-child(3), & td:nth-child(3) { width: 220px; }
+    & th:nth-child(4), & td:nth-child(4) { width: 170px; }
+    & th:nth-child(5), & td:nth-child(5) { width: 220px; }
+    & th:nth-child(n+6), & td:nth-child(n+6) { width: 250px; }
+  }
+
+  &.property, &.ground {
+    & th:nth-child(1), & td:nth-child(1) { width: 350px; }
+    & th:nth-child(2), & td:nth-child(2) { width: 150px; }
+    & th:nth-child(3), & td:nth-child(3) { width: 200px; }
+    & th:nth-child(4), & td:nth-child(4) { width: 350px; }
+    & th:nth-child(5), & td:nth-child(5) { width: 250px; }
+    & th:nth-child(6), & td:nth-child(6) { width: 150px; }
+    & th:nth-child(n+7), & td:nth-child(n+7) { width: 250px; }
+  }
+
+  &.debit {
+    & th:nth-child(1), & td:nth-child(1) { width: 220px; }
+    & th:nth-child(2), & td:nth-child(2) { width: 350px; }
+    & th:nth-child(3), & td:nth-child(3) { width: 350px; }
+    & th:nth-child(4), & td:nth-child(4) { width: 220px; }
+    & th:nth-child(5), & td:nth-child(5) { width: 220px; }
+    & th:nth-child(n+6), & td:nth-child(n+6) { width: 250px; }
+  }
+
+  &.another {
+    & th:nth-child(1), & td:nth-child(1) { width: 350px; }
+    & th:nth-child(2), & td:nth-child(2) { width: 220px; }
+    & th:nth-child(n+3), & td:nth-child(n+3) { width: 250px; }
+  }
 `;
 
 export const TableWrapper = styled.div`
@@ -143,13 +177,6 @@ export const TableWrapper = styled.div`
     padding: 12px 15px;
     word-wrap: break-word;
     vertical-align: middle;
-
-    &:nth-child(1) { width: 250px; }
-    &:nth-child(2) { width: 150px; }
-    &:nth-child(3) { width: 150px; }
-    &:nth-child(4) { width: 250px; }
-    &:nth-child(5) { width: 250px; }
-    &:nth-child(n+6) { width: 250px; }
   }
 
   .scroll-container::-webkit-scrollbar {
@@ -178,13 +205,6 @@ export const TableHeader = styled.thead`
     color: #ffffff;
     font-weight: 600;
     letter-spacing: 0.5px;
-
-    &:nth-child(1) { width: 250px; }
-    &:nth-child(2) { width: 150px; }
-    &:nth-child(3) { width: 150px; }
-    &:nth-child(4) { width: 250px; }
-    &:nth-child(5) { width: 250px; }
-    &:nth-child(n+6) { width: 250px; }
   }
 `;
 

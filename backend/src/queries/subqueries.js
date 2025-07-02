@@ -107,8 +107,8 @@ export function getActivesDetails(tableName) {
     else
         query = query
             .select("debitor_inn")
-            .select({name: "debitor_names"})
-            .select({cost: "total_sum"})
+            .select("debitor_names")
+            .select("total_sum")
             .select("date")
     return query
 }

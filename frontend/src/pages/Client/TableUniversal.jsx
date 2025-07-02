@@ -127,7 +127,7 @@ const TableUniversal = ({ type, headers, selectorKey, RowComponent, Button }) =>
 
     return (
         <>
-            <Container className="table-container">
+            <Container className={`table-container ${type}`}>
                 <TableWrapper>
                     {status === 'loading' ? (
                         'Загрузка...'
@@ -151,7 +151,6 @@ const TableUniversal = ({ type, headers, selectorKey, RowComponent, Button }) =>
                                         itemSize={getRowHeight}
                                         width="100%"
                                         className="virtual-table-body"
-
                                     >
                                         {RowRenderer}
                                     </VariableSizeList>

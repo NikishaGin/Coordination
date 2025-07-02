@@ -1,14 +1,13 @@
 import React, { memo } from 'react';
-import {TableRow as StyledTableRow, TableCell, NumberCell, SelectCell, InputCell, DateCell} from '../../TableStyles.js';
+import {TableRow as StyledTableRow, NumberCell, SelectCell, InputCell, DateCell} from '../../TableStyles.js';
 import {UniversalSelect} from "./UniversalSelect.jsx";
 import {CustomInput} from "./CustomInput.jsx";
 import {MoneyInput} from "./MoneyInput.jsx";
 import {DatePickerCell} from "./DatePickerCell.jsx";
-import {YearInput} from "./YearInput.jsx";
+import { EditableCell } from "./EditableCell.jsx";
 import {formatNumber} from "../../../../utils/formatData.js";
 import { useSelector } from "react-redux";
 import { ROLES } from "../../../../types.js";
-import EditableCell from "./EditableCell.jsx";
 
 const objStatusOptions = [
     {text: "Арест", value: "arrest"},
@@ -80,8 +79,8 @@ export const TableRowTransport = memo(({ row, onValueChange }) => {
             {/*Гос. номер*/}
             <InputCell>
                 <EditableCell
-                    value={row.number || ''}
-                    onSave={handleInputChange('number')}
+                    value={row.state_number || ''}
+                    onSave={handleInputChange('state_number')}
                     isEditable={isAdmin}
                 />
             </InputCell>
@@ -89,6 +88,7 @@ export const TableRowTransport = memo(({ row, onValueChange }) => {
             <InputCell>
                 <EditableCell
                     value={row.year || ''}
+                    type="year"
                     onSave={handleInputChange('year')}
                     isEditable={isAdmin}
                 />

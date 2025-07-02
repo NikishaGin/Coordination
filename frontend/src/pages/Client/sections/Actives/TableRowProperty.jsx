@@ -1,13 +1,13 @@
 import React, { memo } from 'react';
-import {TableRow as StyledTableRow, TableCell, NumberCell, SelectCell, InputCell, DateCell} from '../../TableStyles.js';
+import {TableRow as StyledTableRow, NumberCell, SelectCell, InputCell, DateCell} from '../../TableStyles.js';
 import {UniversalSelect} from "./UniversalSelect.jsx";
 import {CustomInput} from "./CustomInput.jsx";
 import {MoneyInput} from "./MoneyInput.jsx";
 import {DatePickerCell} from "./DatePickerCell.jsx";
+import { EditableCell } from "./EditableCell.jsx";
 import {formatNumber} from "../../../../utils/formatData.js";
 import { useSelector } from "react-redux";
 import { ROLES } from "../../../../types.js";
-import EditableCell from "./EditableCell.jsx";
 
 const objStatusOptions = [
     {text: "Арест", value: "arrest"},
@@ -78,8 +78,8 @@ export const TableRowProperty = memo(({ row, onValueChange }) => {
             {/*Кадастровый номер*/}
             <InputCell>
                 <EditableCell
-                    value={row.number || ''}
-                    onSave={handleInputChange('number')}
+                    value={row.cadastral_number || ''}
+                    onSave={handleInputChange('cadastral_number')}
                     isEditable={isAdmin}
                 />
             </InputCell>

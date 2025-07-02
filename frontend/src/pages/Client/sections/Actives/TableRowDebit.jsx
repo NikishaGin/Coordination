@@ -1,21 +1,13 @@
 import React, { memo } from 'react';
-import {
-    TableRow as StyledTableRow,
-    TableCell,
-    NumberCell,
-    SelectCell,
-    InputCell,
-    DateCell
-} from '../../TableStyles.js';
+import { TableRow as StyledTableRow, TableCell, NumberCell, SelectCell, InputCell, DateCell } from '../../TableStyles.js';
 import { UniversalSelect } from "./UniversalSelect.jsx";
 import { CustomInput } from "./CustomInput.jsx";
 import { MoneyInput } from "./MoneyInput.jsx";
 import { DatePickerCell } from "./DatePickerCell.jsx";
+import { EditableCell } from "./EditableCell.jsx";
 import { useSelector } from "react-redux";
 import { ROLES } from "../../../../types.js";
-import { InnInput } from "./InnInput.jsx";
 import { formatNumber } from "../../../../utils/formatData.js";
-import EditableCell from "./EditableCell.jsx";
 
 const objStatusOptions = [
     {text: "Арест", value: "arrest"},
@@ -47,12 +39,6 @@ const isFnsLizingOptions = [
 export const TableRowDebit = memo(({row, onValueChange}) => {
     const role = useSelector((state) => state.user.role)
     const isAdmin = role === ROLES.Admin
-
-    const formatDate = (value) => {
-        if (!value) return "";
-        const date = new Date(value);
-        return date.toLocaleDateString()
-    }
 
     const handleSelectChange = (fieldName) => (val) => {
         onValueChange(row.id, fieldName, Number(val));
@@ -88,6 +74,7 @@ export const TableRowDebit = memo(({row, onValueChange}) => {
             <TableCell>
                 <EditableCell
                     value={row.debitor_inn || ''}
+                    type="inn"
                     onSave={handleInputChange('debitor_inn')}
                     isEditable={isAdmin}
                 />
@@ -95,8 +82,8 @@ export const TableRowDebit = memo(({row, onValueChange}) => {
             {/*Наименование дебитора*/}
             <InputCell>
                 <EditableCell
-                    value={row.name || ''}
-                    onSave={handleInputChange('name')}
+                    value={row.debitor_names || ''}
+                    onSave={handleInputChange('debitor_names')}
                     isEditable={isAdmin}
                 />
             </InputCell>
@@ -120,8 +107,9 @@ export const TableRowDebit = memo(({row, onValueChange}) => {
             {/*Сумма по ходатайству, ₽*/}
             <NumberCell>
                 <EditableCell
-                    value={formatNumber(row.cost) || ''}
-                    onSave={handleInputChange('cost')}
+                    value={formatNumber(row.total_sum) || ''}
+                    type="number"
+                    onSave={handleInputChange('total_sum')}
                     isEditable={isAdmin}
                 />
             </NumberCell>

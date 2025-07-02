@@ -3,7 +3,6 @@ import {useNavigate, useParams} from "react-router";
 import styled, {createGlobalStyle} from "styled-components";
 import {activesAPI} from "../../api/index.js";
 import {TableResolutions} from "./sections/Info/TableResolutions.jsx";
-import DebitTable from "./sections/Info/DebitTable.jsx";
 import ActivesStatistics from "./sections/Info/ActivesStatistics.jsx";
 import {TableRowTransport} from "./sections/Actives/TableRowTransport.jsx";
 import {TableRowProperty} from "./sections/Actives/TableRowProperty.jsx";
@@ -207,7 +206,7 @@ export function Client() {
     ], []);
 
     const sidebarItems = useMemo(() => ({
-        info: ["Постановления", "Статистика по активам", "Дебиторская задолженность"],
+        info: ["Постановления", "Статистика по активам"],
         actives: ["Транспорт", "Недвижимость", "Земельные участки", "Дебиторская задолженность", "Иные активы"],
         interaction: ["Направление ходатайства в ГМУ", "Примечание ТНО"]
     }), []);
@@ -219,8 +218,7 @@ export function Client() {
     const contentMap = useMemo(() => ({
         info: {
             "Постановления": <TableResolutions/>,
-            "Статистика по активам": <ActivesStatistics/>,
-            "Дебиторская задолженность": <DebitTable/>,
+            "Статистика по активам": <ActivesStatistics/>
         },
         actives: {
             'Транспорт': (
