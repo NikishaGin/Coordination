@@ -23,7 +23,7 @@ const StyledButton = styled.button`
   }
 `;
 
-export const AddOtherAssetsButton = ({ titleBtn }) => {
+export const AddButton = ({ titleBtn }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const openModal = () => setIsModalOpen(true);

@@ -13,7 +13,6 @@ import storage from 'redux-persist/lib/storage';
 import globalReducer, { resetGlobal } from "./globalSlice";
 import userReducer, { resetUser } from "./userSlice";
 import tableDataReducer from "./tableDataSlice.js";
-import debitReducer from "./debitSlice.js";
 import fileStorageReducer from "./fileStorageSlice.js";
 import activesReducer from "./activesSlice.js";
 import appStatusReducer from "./appStatusSlice.js";
@@ -30,7 +29,6 @@ const rootReducer = combineReducers({
     global: globalReducer,
     user: userReducer,
     tableData: tableDataReducer,
-    debit: debitReducer,
     fileStorage: fileStorageReducer,
     actives: activesReducer,
     appStatus: appStatusReducer,

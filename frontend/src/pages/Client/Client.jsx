@@ -17,7 +17,7 @@ import {
     tableHeadersTransport
 } from "./tableHeaders.js";
 import TnoInteractionResultForm from "./sections/Interaction/TnoInteractionResultForm.jsx";
-import { AddOtherAssetsButton } from "./sections/Actives/AddOtherAssetsButton.jsx";
+import { AddButton } from "./sections/Actives/AddButton.jsx";
 import { useSelector } from "react-redux";
 import { ROLES } from "../../types.js";
 
@@ -253,7 +253,7 @@ export function Client() {
                     RowComponent={TableRowDebit}
                     Button={isAdmin && (
                         <ButtonBox>
-                            <AddOtherAssetsButton titleBtn={'Добавить дебиторскую задолженность'}/>
+                            <AddButton titleBtn={'Добавить дебиторскую задолженность'}/>
                         </ButtonBox>
                     )}
                 />
@@ -266,7 +266,7 @@ export function Client() {
                     RowComponent={TableOtherAssets}
                     Button={isAdmin && (
                         <ButtonBox>
-                            <AddOtherAssetsButton titleBtn={'Добавить иные активы'}/>
+                            <AddButton titleBtn={'Добавить иные активы'}/>
                         </ButtonBox>
                     )}
                 />
