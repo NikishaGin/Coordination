@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { Check, X } from 'lucide-react';
-import { formatDate, formatDateForInput } from "../../../../utils/formatData.js";
-import { handlesInputNumber } from "../../../../utils/handleInput.js";
+import { formatDate, formatDateForInput } from "../../../../../../utils/formatData.js";
+import { handlesInputNumber } from "../../../../../../utils/handleInput.js";
 
 
 
@@ -132,12 +132,25 @@ export function EditableCell({value, onSave, type = "text", isEditable = true}) 
     }, [value, type]);
 
 
+
+
+
+
+
+
+
+
+
+
     const handleSave = () => {
         if (tempValue !== value) {
             if (type === "inn" && ![0, 10, 12].includes(tempValue.length))
                 return
-            if (type === "year" && ![0, 4].includes(tempValue.length))
-                return
+            if ((type === "year") && (tempValue.length > 0)) {
+                const year = Number(tempValue);
+                if ((year > 1901) || (2155 > year))
+                    return;
+            }
             if (type === "number")
                 onSave(parseNumber(tempValue) || null)
             else
@@ -221,6 +234,22 @@ export function EditableCell({value, onSave, type = "text", isEditable = true}) 
         }
         return val || "";
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     if (editing)

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import AssetModal from './AssetModal';
+import AssetModal from './AssetModal.jsx';
 
 const StyledButton = styled.button`
   background-color: #3a3a6a;

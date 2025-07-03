@@ -87,7 +87,7 @@ const AssetForm = ({ onSave, onCancel }) => {
             </FormField>
 
             <ButtonGroup>
-                <CancelButton type="button" onClick={onCancel}>Отменить</CancelButton>
+                <CancelButton type="button" data-closemodal onClick={onCancel}>Отменить</CancelButton>
                 <SaveButton type="submit" disabled={!isFormValid}>Сохранить</SaveButton>
             </ButtonGroup>
         </Form>

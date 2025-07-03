@@ -179,6 +179,7 @@ export const actives = {
             return subqueries
                 .getActivesDetails("property")
                 .select("share_size")
+                .select("square")
                 .select("address")
                 .select("registration_start_date")
                 .select("registration_end_date")
@@ -190,6 +191,7 @@ export const actives = {
             return subqueries
                 .getActivesDetails("property")
                 .select("share_size")
+                .select("square")
                 .select("address")
                 .select("registration_start_date")
                 .select("registration_end_date")
@@ -353,9 +355,6 @@ const buildCommonFieldsQuery = async (
         if (innList?.length > 0)
             query.whereIn("meta.inn", innList)
 
-
-        console.log("360", typeof isArchive, typeof isDerived)
-
         if (isDerived)
             query.select(db.ref(db.raw("MAX(resolutions.is_derivative_debt)")).as("isDerived"))
         else
@@ -426,7 +425,18 @@ const getActivesDownloadingData = async ({
                     0: "Данные из АИС",
                     2: "Данные из ГМУ",
                     3: "Пара АИС-ГМУ",
-                }, { newField: "statusName" });
+                }, { newField: "statusName" })
+                .mapStatusToTextField(table, "obj_status", {
+                    arrest: "Арест",
+                    grade: "Оценка",
+                    sale: "Реализация",
+                    wanted: "Розыск",
+                    appeal: "Обжалование в суде испол. действия",
+                    lizing: "Лизинг (залог иного лица)",
+                    other: {
+                        obj_status_manual: "Иное: "
+                    }
+                }, { newField: "objectStatus" })
         };
 
         const applyFilters = query => {
@@ -478,9 +488,6 @@ const getActivesDownloadingData = async ({
             // isArchive
             //     ? query.havingRaw(`COUNT(*) = SUM(CASE WHEN is_archive = 1 THEN 1 ELSE 0 END)`)
             //     : query.havingRaw(`SUM(CASE WHEN is_archive = 0 THEN 1 ELSE 0 END) > 0`);
-
-
-            console.log("480", typeof isArchive, typeof isDerived)
 
             if (isDerived)
                 query.select(db.ref(db.raw("MAX(resolutions.is_derivative_debt)")).as("isDerived"))
@@ -562,17 +569,13 @@ export const download = {
     },
     getActivesStatistics: async (inn, isDerived, isArchive, activeSheetConfigs, lizingKeyPostfix) => {
         const stats = {};
-
-        console.log("566", typeof isDerived, isDerived);
-        console.log("567", typeof isArchive, isArchive);
-
-
         for (const [ nameActive,  { withLizing } ]  of Object.entries(activeSheetConfigs)) {
             const props = { inn, nameActive,  isDerived, isArchive } ;
 
             stats[nameActive] = await getActivesDownloadingData({
                 ...props, isNotFnsLizing: false
             });
+            console.log(stats[nameActive][2])
 
             if (withLizing) {
                 stats[nameActive + lizingKeyPostfix] = await getActivesDownloadingData({

@@ -213,7 +213,13 @@ function mapStatusToTextField(table, originField, statusMapping, options = {}) {
     const caseExpr = Object.entries(cases)
         .map(([ key, value ]) => {
             const formattedKey = isNaN(key) ? `'${key}'` : key;
-            return `WHEN \`${table}\`.\`${originField}\` = ${formattedKey} THEN '${value}'`;
+
+            if (typeof value === "string")
+                return `WHEN \`${table}\`.\`${originField}\` = ${formattedKey} THEN '${value}'`;
+            else {
+                const [[fieldName, text]] = Object.entries(value);
+                return `WHEN \`${table}\`.\`${originField}\` = ${formattedKey} THEN CONCAT('${text}', '\"', IFNULL(${table}.${fieldName}, ''), '\"')`;
+            }
         }).join(' ');
 
     const fullCase = `CASE ${caseExpr} ELSE '${defaultText}' END`;

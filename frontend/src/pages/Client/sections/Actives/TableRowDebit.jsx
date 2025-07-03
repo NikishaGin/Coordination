@@ -1,10 +1,10 @@
 import React, { memo } from 'react';
-import { TableRow as StyledTableRow, TableCell, NumberCell, SelectCell, InputCell, DateCell } from '../../TableStyles.js';
-import { UniversalSelect } from "./UniversalSelect.jsx";
-import { CustomInput } from "./CustomInput.jsx";
-import { MoneyInput } from "./MoneyInput.jsx";
-import { DatePickerCell } from "./DatePickerCell.jsx";
-import { EditableCell } from "./EditableCell.jsx";
+import { TableRow as StyledTableRow, TableCell, NumberCell, SelectCell, InputCell, DateCell } from './components/table/TableStyles.js';
+import { UniversalSelect } from "./components/inputs/UniversalSelect.jsx";
+import { CustomInput } from "./components/inputs/CustomInput.jsx";
+import { MoneyInput } from "./components/inputs/MoneyInput.jsx";
+import { DatePickerCell } from "./components/inputs/DatePickerCell.jsx";
+import { EditableCell } from "./components/inputs/EditableCell.jsx";
 import { useSelector } from "react-redux";
 import { ROLES } from "../../../../types.js";
 import { formatNumber } from "../../../../utils/formatData.js";

@@ -15,9 +15,9 @@ import {
     tableHeadersGround,
     tableHeadersProperty,
     tableHeadersTransport
-} from "./tableHeaders.js";
+} from "./sections/Actives/components/table/tableHeaders.js";
 import TnoInteractionResultForm from "./sections/Interaction/TnoInteractionResultForm.jsx";
-import { AddButton } from "./sections/Actives/AddButton.jsx";
+import { AddButton } from "./sections/Actives/components/modalForm/AddButton.jsx";
 import { useSelector } from "react-redux";
 import { ROLES } from "../../types.js";
 
@@ -172,7 +172,7 @@ const ButtonBox = styled.div`
   z-index: 2;
 `;
 
-const TableUniversal = lazy(() => import('./TableUniversal.jsx'));
+const TableUniversal = lazy(() => import('./sections/Actives/components/table/TableUniversal.jsx'));
 
 export function Client() {
     const role = useSelector((state) => state.user.role)

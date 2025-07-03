@@ -41,6 +41,8 @@ const Table = styled.table`
 `;
 
 const TableHeader = styled.thead`
+  position: sticky;
+  top: 0;  
   background-color: #2a2a40;
 
   th {

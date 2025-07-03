@@ -14,18 +14,12 @@ export const getResolutions = (is_derivative_debt, is_archive, {selectSumData = 
                     .sum({is_pending: db.raw('IF(pending_date IS NULL, 0, 1)')})
                     .sum({is_terminate: db.raw('IF(terminate_date IS NULL, 0, 1)')})
                     .max({max_exec_date: 'exec_date'})
-
-
             if (is_derivative_debt)
                 query.select(db.ref(db.raw("MAX(resolutions.is_derivative_debt)")).as("isDerived"))
             else
                 query.select(db.ref(db.raw("MIN(resolutions.is_derivative_debt)")).as("isDerived"))
             query.select(db.ref(db.raw("MIN(resolutions.is_archive OR (resolutions.end_date IS NOT NULL) OR (resolutions.terminate_date IS NOT NULL))")).as("isArchive"))
             query.havingRaw("(isDerived = ?) AND (isArchive = ?)", [+is_derivative_debt, +is_archive])
-
-
-
-
         })
         .groupBy('inn')
 }

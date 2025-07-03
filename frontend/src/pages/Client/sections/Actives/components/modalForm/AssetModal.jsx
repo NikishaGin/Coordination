@@ -1,9 +1,9 @@
 import React, { useState} from 'react';
 import styled from 'styled-components';
-import AssetForm from './AssetForm';
+import AssetForm from './AssetForm.jsx';
 import {useParams} from "react-router";
 import {useDispatch} from "react-redux";
-import {createRow} from "../../../../store/activesSlice.js";
+import {createRow} from "../../../../../../store/activesSlice.js";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -74,15 +74,17 @@ const AssetModal = ({ onClose }) => {
         handleClose();
     };
 
-    const handleClose = () => {
-        setIsClosing(true);
-        setTimeout(onClose, 200);
+    const handleClose = (event) => {
+        if (event.target.dataset.closemodal) {
+            setIsClosing(true);
+            //setTimeout(onClose, 200);
+        }
     };
 
 
     return (
-        <ModalOverlay style={isClosing ? { animation: 'fadeOut 0.2s ease-in forwards' } : {}}>
-            <ModalContent style={isClosing ? { animation: 'slideOut 0.2s ease-in forwards' } : {}}>
+        <ModalOverlay style={{ animation: 'fadeOut 0.2s ease-in forwards' }}  data-closemodal onClick={handleClose}>
+            <ModalContent style={{ animation: 'slideOut 0.2s ease-in forwards' }}>
                 <ModalHeader>
                     <ModalTitle>Добавить иные активы</ModalTitle>
                 </ModalHeader>

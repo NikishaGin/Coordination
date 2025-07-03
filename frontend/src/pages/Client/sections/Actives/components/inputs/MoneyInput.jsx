@@ -1,8 +1,8 @@
 import React, { useRef, useState, memo } from "react";
 import styled from "styled-components";
 import { Check, X } from "lucide-react";
-import { handlesInputNumber } from "../../../../utils/handleInput.js";
-import { formatNumber } from "../../../../utils/formatData.js";
+import { handlesInputNumber } from "../../../../../../utils/handleInput.js";
+import { formatNumber } from "../../../../../../utils/formatData.js";
 
 const InputWrapper = styled.div`
   position: relative;
