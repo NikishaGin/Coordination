@@ -7,7 +7,6 @@ import ActivesStatistics from "./sections/Info/ActivesStatistics.jsx";
 import {TableRowTransport} from "./sections/Actives/TableRowTransport.jsx";
 import {TableRowProperty} from "./sections/Actives/TableRowProperty.jsx";
 import {TableRowDebit} from "./sections/Actives/TableRowDebit.jsx";
-import InteractionResultForm from "./sections/Interaction/InteractionResultForm.jsx";
 import {TableOtherAssets} from "./sections/Actives/TableOtherAssets.jsx";
 import {
     tableHeadersAnother,
@@ -16,6 +15,9 @@ import {
     tableHeadersProperty,
     tableHeadersTransport
 } from "./sections/Actives/components/table/tableHeaders.js";
+import DebitForm from "./sections/Actives/components/modalForm/DebitForm.jsx";
+import OtherAssetForm from "./sections/Actives/components/modalForm/OtherAssetForm.jsx";
+import InteractionResultForm from "./sections/Interaction/InteractionResultForm.jsx";
 import TnoInteractionResultForm from "./sections/Interaction/TnoInteractionResultForm.jsx";
 import { AddButton } from "./sections/Actives/components/modalForm/AddButton.jsx";
 import { useSelector } from "react-redux";
@@ -253,7 +255,7 @@ export function Client() {
                     RowComponent={TableRowDebit}
                     Button={isAdmin && (
                         <ButtonBox>
-                            <AddButton titleBtn={'Добавить дебиторскую задолженность'}/>
+                            <AddButton titleBtn="Добавить дебиторскую задолженность" Form={DebitForm}/>
                         </ButtonBox>
                     )}
                 />
@@ -266,7 +268,7 @@ export function Client() {
                     RowComponent={TableOtherAssets}
                     Button={isAdmin && (
                         <ButtonBox>
-                            <AddButton titleBtn={'Добавить иные активы'}/>
+                            <AddButton titleBtn="Добавить иные активы" Form={OtherAssetForm}/>
                         </ButtonBox>
                     )}
                 />

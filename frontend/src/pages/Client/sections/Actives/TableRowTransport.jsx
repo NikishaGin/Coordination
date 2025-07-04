@@ -116,7 +116,7 @@ export const TableRowTransport = memo(({ row, onValueChange }) => {
             {/*Иной статус*/}
             <InputCell>
                 <CustomInput
-                    value={row.obj_status_manual || ''}
+                    value={(row.obj_status_manual && (row.obj_status === "other")) ? row.obj_status_manual : ''}
                     valuePlaceholder={'Введите статус'}
                     onChange={handleInputChange('obj_status_manual')}
                     disabled={row.obj_status !== "other"}

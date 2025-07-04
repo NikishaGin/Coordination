@@ -42,23 +42,10 @@ export const updateActiveThunk = createAsyncThunk(
 // thunk для добавленния строки
 export const createRow = createAsyncThunk(
     'actives/createRow',
-    async ({inn, newRow}, {rejectWithValue}) => {
+    async ({inn, data, nameActive}, {rejectWithValue}) => {
         try {
-            const cleanedRow = {
-                type_id: 5,
-                name: (newRow.name.length > 0) ? newRow.name : undefined,
-                cost: (newRow.cost.length > 0) ? cleanTotalSum(newRow.cost) : undefined,
-                obj_status: "other",
-            };
-
-            console.log('cleanedRow', cleanedRow)
-
-            const response = await activesAPI.createNewActives("another", inn, cleanedRow);
-            console.log('response', response)
-            return cleanedRow;
-
-
-
+            await activesAPI.createNewActives(nameActive, inn, data);
+            return {nameActive, data};
         } catch (error) {
             console.error("Ошибка при обновлении:", error);
             return rejectWithValue(error.message);
@@ -150,7 +137,8 @@ const activesSlice = createSlice({
                 // можно обработать успех
             })
             .addCase(createRow.fulfilled, (state, action) => {
-                state.another.push(action.payload);
+                const {nameActive, data} = action.payload;
+                state[nameActive].push(data);
             });
     },
 });

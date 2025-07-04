@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import AssetModal from './AssetModal.jsx';
+import Modal from './Modal.jsx';
 
 const StyledButton = styled.button`
   background-color: #3a3a6a;
@@ -23,7 +23,7 @@ const StyledButton = styled.button`
   }
 `;
 
-export const AddButton = ({ titleBtn }) => {
+export const AddButton = ({ titleBtn, Form }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const openModal = () => setIsModalOpen(true);
@@ -32,7 +32,7 @@ export const AddButton = ({ titleBtn }) => {
     return (
         <>
             <StyledButton onClick={openModal}>{titleBtn}</StyledButton>
-            {isModalOpen && <AssetModal onClose={closeModal} />}
+            {isModalOpen && <Modal Form={Form} onClose={closeModal} />}
         </>
     );
 };

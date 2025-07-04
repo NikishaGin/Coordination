@@ -507,7 +507,7 @@ const getActivesDownloadingData = async ({
 
         const queryName = "resolutionsSubQuery";
         query
-            .leftJoin(
+            .innerJoin(
                 subResolutions.as(queryName),
                 'meta.inn', queryName + '.inn'
             )
