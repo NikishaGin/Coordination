@@ -89,7 +89,7 @@ export function createNewActives(request, response) {
     const data = {...request.body, inn}
     updates
         .createNewActives(nameActive, data, {inn, id: userInfo.id, role: userInfo.role})
-        .then(() => response.end(JSON.stringify("")))
+        .then(newId => response.end(JSON.stringify({ newId })))
         .catch(console.log)
 }
 

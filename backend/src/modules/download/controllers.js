@@ -74,15 +74,12 @@ export const getDebtorActivesStat = async (request, response) =>  {
     const headers = headersActivesStatistics(lizingKeyPostfix);
     const sheets = activesSheets(lizingKeyPostfix, lizingKeyTextPostfix);
 
-
     const stats = await downloadSelectors.getActivesStatistics(
         inn,
         isDerived === "true",
         isArchive === "true",
         activeSheetConfigs, lizingKeyPostfix
     );
-
-    console.log(isDerived, isArchive)
 
     const name = (
         (inn ? `Выгрузка активов НП ${inn} ` : 'Активы НП регионов ')

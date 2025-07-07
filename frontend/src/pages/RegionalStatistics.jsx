@@ -181,7 +181,7 @@ export const RegionalStatistics = () => {
             enqueueSnackbar("Начало загрузки...",  { variant: "info" });
 
             const apiTarget =  downloadingMap[statName];
-            const response = await apiTarget(null, isArchive, isDerived);
+            const response = await apiTarget(null, isDerived, isArchive);
 
             downloadExcel(response);
             enqueueSnackbar("Загружено",  { variant: "info" });

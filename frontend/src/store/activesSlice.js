@@ -44,8 +44,9 @@ export const createRow = createAsyncThunk(
     'actives/createRow',
     async ({inn, data, nameActive}, {rejectWithValue}) => {
         try {
-            await activesAPI.createNewActives(nameActive, inn, data);
-            return {nameActive, data};
+            const newRow = Object.fromEntries(Object.entries(data).map(([field, value]) => [field, value || null]));
+            const response = await activesAPI.createNewActives(nameActive, inn, newRow);
+            return {nameActive, data: { ...data, id: response.data.newId }};
         } catch (error) {
             console.error("Ошибка при обновлении:", error);
             return rejectWithValue(error.message);

@@ -171,8 +171,6 @@ export const actives = {
                 .select("year")
                 .select("state_number")
                 .select("vin")
-                .select("registration_start_date")
-                .select("registration_end_date")
                 .where("inn", inn)
                 .andWhere("status", "<>", 2)
         else if (nameActive === "property")
@@ -181,8 +179,6 @@ export const actives = {
                 .select("share_size")
                 .select("square")
                 .select("address")
-                .select("registration_start_date")
-                .select("registration_end_date")
                 .select("cadastral_number")
                 .where("inn", inn)
                 .andWhere("status", "<>", 2)
@@ -193,8 +189,6 @@ export const actives = {
                 .select("share_size")
                 .select("square")
                 .select("address")
-                .select("registration_start_date")
-                .select("registration_end_date")
                 .select("cadastral_number")
                 .where("inn", inn)
                 .andWhere("status", "<>", 2)
@@ -377,6 +371,7 @@ const buildCommonFieldsQuery = async (
 
     const result = await db("meta")
         .select([
+            "meta.region as region",
             "meta.kno as kno",
             "meta.inn as inn",
             "meta.name as name",
@@ -390,7 +385,8 @@ const buildCommonFieldsQuery = async (
             addDebitSums,
             applyFilters,
         ]))
-        .groupBy("meta.inn");
+        .groupBy("meta.inn")
+        .orderBy(["region", "kno", "inn"])
 
     for (const row of result) {
         row.securing_arrest = await securingArrest(row)
@@ -548,6 +544,7 @@ const getActivesDownloadingData = async ({
             addResolutionsData,
             addDebtType,
         ]))
+        .orderBy(["meta.region", "meta.kno", "meta.inn"])
         .then(async result => await addIndicators(result));
 };
 
@@ -575,8 +572,6 @@ export const download = {
             stats[nameActive] = await getActivesDownloadingData({
                 ...props, isNotFnsLizing: false
             });
-            console.log(stats[nameActive][2])
-
             if (withLizing) {
                 stats[nameActive + lizingKeyPostfix] = await getActivesDownloadingData({
                     ...props, isNotFnsLizing: true

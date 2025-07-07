@@ -30,7 +30,6 @@ const ButtonGroup = styled.div`
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  margin-top: 10px;
 `;
 
 const parseNumber = (value) => {
@@ -39,6 +38,7 @@ const parseNumber = (value) => {
     const number = parseFloat(cleaned);
     return isNaN(number) ? null : number;
 };
+
 
 
 const DebitForm = ({ onCancel }) => {
@@ -62,20 +62,22 @@ const DebitForm = ({ onCancel }) => {
         setData(prevData => ({ ...prevData, [nameField]: value }));
     }
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if ((data.debitor_inn.trim().length === 0) && (data.debitor_names.trim().length === 0)) {
+    const handleSubmit = event => {
+        event.preventDefault();
+        if ((data.debitor_inn.trim().length === 0) || (data.debitor_names.trim().length === 0)) {
             setError("Обязательно укажите ИНН и наименование дебитора");
+            return;
+        }
+        if (![10, 12].includes(data.debitor_inn.trim().length)) {
+            setError("Неверный формат: ИНН должен содержать 10 или 12 символов");
             return;
         }
         const newRow = data
         if (newRow.total_sum.length !== 0)
             newRow.total_sum = parseNumber(newRow.total_sum);
         dispatch(createRow({ inn, data: newRow, nameActive: "debit" }))
-        // onCancel();
+        onCancel(event);
     };
-
-    const isFormValid = error.length > 0
 
 
     return (
@@ -83,7 +85,7 @@ const DebitForm = ({ onCancel }) => {
             <ModalHeader>
                 <ModalTitle>Добавить дебиторскую задолженность</ModalTitle>
             </ModalHeader>
-            <Form onSubmit={handleSubmit}>
+            <Form onSubmit={handleSubmit} data-closemodal>
                 <FormField>
                     <InputLabel>ИНН дебитора</InputLabel>
                     <InputWrapper>
@@ -170,10 +172,10 @@ const DebitForm = ({ onCancel }) => {
                         />
                     </InputWrapper>
                 </FormField>
-
+                <div style={{ color: '#ff6b6b', fontSize: '12px', height: "5px" }}>{error}</div>
                 <ButtonGroup>
                     <CancelButton type="button" data-closemodal onClick={onCancel}>Отменить</CancelButton>
-                    <SaveButton type="submit" data-closemodal onClick={onCancel}>Сохранить</SaveButton>
+                    <SaveButton type="submit">Сохранить</SaveButton>
                 </ButtonGroup>
             </Form>
         </>

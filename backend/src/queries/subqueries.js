@@ -58,6 +58,10 @@ export function getActivesDetails(tableName) {
         .select("is_verified")
         .select("obj_status")
         .select("obj_status_manual")
+        .select("lizing_name")
+        .select("is_fns_lizing")
+        .select("encumbrance_type")
+        .select("encumbrance_date")
         .select("arrest_propperty")
         .select("arrest_sum")
         .select("arrest_end_date")
@@ -94,15 +98,15 @@ export function getActivesDetails(tableName) {
         query = query
             .select("name")
             .select("cost")
-            .select("lizing_name")
-            .select("is_fns_lizing")
-            .select("encumbrance_type")
-            .select("encumbrance_date")
     else
         query = query
             .select("debitor_inn")
             .select("debitor_names")
             .select("total_sum")
             .select("date")
+    if (!["debit", "another"].includes(tableName))
+        query = query
+            .select("registration_start_date")
+            .select("registration_end_date")
     return query
 }

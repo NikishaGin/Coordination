@@ -28,8 +28,8 @@ export async function createNewActives(nameActive, data, userInfo) {
     try {
         const result = await db(tableName).insert(data)
         const newId = result[0]
-
         await setHistory(tableName, data, newId, userInfo, "insert")
+        return newId
     } catch (error) {
         throw error
     }

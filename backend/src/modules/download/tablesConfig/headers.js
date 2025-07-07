@@ -7,9 +7,10 @@ const getSourceName = isDerived =>
 
 
 const ID_HEADERS = {
-    kno:  `Код НО`,
-    inn:  `ИНН должника`,
-    name: `Наименование должника`,
+    region: "Регион",
+    kno:    `Код НО`,
+    inn:    `ИНН должника`,
+    name:   `Наименование должника`,
 }
 
 

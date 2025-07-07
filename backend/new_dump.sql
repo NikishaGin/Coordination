@@ -33,9 +33,21 @@ DELETE FROM `users` WHERE username = "gmu";
 INSERT INTO `users` (username, region, surname, password, role)
 VALUES ("gmu", "0000", "Архангельск - ГМУ", "$2b$10$XDXDW4Zxqk6WCd52Xt359ectAx0e.bmQgxQ3ADmkt.cJeUlJRxLGS", "gmu_arkhangelsk_admin")
 
+ALTER TABLE another
+ALTER COLUMN type_id SET DEFAULT 5;
+
+ALTER TABLE debit
+ALTER COLUMN type_id SET DEFAULT 3;
+
+ALTER TABLE debit
+ADD COLUMN encumbrance_type varchar(250) comment 'Вид обременения' AFTER total_sum,
+ADD COLUMN encumbrance_date date comment 'Дата обременения' AFTER encumbrance_type,
+ADD COLUMN lizing_name varchar(250) comment 'наименование залогодержателя/лизингодателя' AFTER encumbrance_date,
+ADD COLUMN is_fns_lizing tinyint comment 'есть ли залог перед ФНС: 0 - нет залога, 1 залог перед ФНС, 2 - залог не перед ФНС' AFTER lizing_name;
+
 
 alter table transport
-    add column arrest_end_date date comment "Дата снятия ареста" after arrest_sum,
+add column arrest_end_date date comment "Дата снятия ареста" after arrest_sum,
 add column arrest_end_cause text comment "Основания снятитя ареста с имущества" after arrest_end_date,
 add column person_filed_complaint varchar(255) comment "Лицо, подавшее жалобу" after arrest_end_cause,
 add column complaint_date date comment "Дата жалобы" after person_filed_complaint,
@@ -44,7 +56,7 @@ add column complaint_source varchar(255) comment "Орган, рассматри
 add column complaint_result text comment "Результат рассмотрения жалобы" after complaint_source;
 
 alter table property
-    add column arrest_end_date date comment "Дата снятия ареста" after arrest_sum,
+add column arrest_end_date date comment "Дата снятия ареста" after arrest_sum,
 add column arrest_end_cause text comment "Основания снятитя ареста с имущества" after arrest_end_date,
 add column person_filed_complaint varchar(255) comment "Лицо, подавшее жалобу" after arrest_end_cause,
 add column complaint_date date comment "Дата жалобы" after person_filed_complaint,
@@ -53,7 +65,7 @@ add column complaint_source varchar(255) comment "Орган, рассматри
 add column complaint_result text comment "Результат рассмотрения жалобы" after complaint_source;
 
 alter table debit
-    add column arrest_end_date date comment "Дата снятия ареста" after arrest_sum,
+add column arrest_end_date date comment "Дата снятия ареста" after arrest_sum,
 add column arrest_end_cause text comment "Основания снятитя ареста с имущества" after arrest_end_date,
 add column person_filed_complaint varchar(255) comment "Лицо, подавшее жалобу" after arrest_end_cause,
 add column complaint_date date comment "Дата жалобы" after person_filed_complaint,
@@ -62,7 +74,7 @@ add column complaint_source varchar(255) comment "Орган, рассматри
 add column complaint_result text comment "Результат рассмотрения жалобы" after complaint_source;
 
 alter table another
-    add column arrest_end_date date comment "Дата снятия ареста" after arrest_sum,
+add column arrest_end_date date comment "Дата снятия ареста" after arrest_sum,
 add column arrest_end_cause text comment "Основания снятитя ареста с имущества" after arrest_end_date,
 add column person_filed_complaint varchar(255) comment "Лицо, подавшее жалобу" after arrest_end_cause,
 add column complaint_date date comment "Дата жалобы" after person_filed_complaint,
@@ -72,17 +84,17 @@ add column complaint_result text comment "Результат рассмотре�
 
 
 ALTER TABLE another
-    ADD COLUMN realisation1_failure_reason TEXT,
-    ADD COLUMN realisation2_failure_reason TEXT;
+ADD COLUMN realisation1_failure_reason TEXT,
+ADD COLUMN realisation2_failure_reason TEXT;
 
 ALTER TABLE transport
-    ADD COLUMN realisation1_failure_reason TEXT,
-    ADD COLUMN realisation2_failure_reason TEXT;
+ADD COLUMN realisation1_failure_reason TEXT,
+ADD COLUMN realisation2_failure_reason TEXT;
 
 ALTER TABLE property
-    ADD COLUMN realisation1_failure_reason TEXT,
-    ADD COLUMN realisation2_failure_reason TEXT;
+ADD COLUMN realisation1_failure_reason TEXT,
+ADD COLUMN realisation2_failure_reason TEXT;
 
 ALTER TABLE debit
-    ADD COLUMN realisation1_failure_reason TEXT,
-    ADD COLUMN realisation2_failure_reason TEXT;
+ADD COLUMN realisation1_failure_reason TEXT,
+ADD COLUMN realisation2_failure_reason TEXT;

@@ -40,6 +40,7 @@ const parseNumber = (value) => {
 };
 
 
+
 const OtherAssetForm = ({ onCancel }) => {
     const [data, setData] = useState({
         name: "",
@@ -56,8 +57,8 @@ const OtherAssetForm = ({ onCancel }) => {
         setData(prevData => ({ ...prevData, [nameField]: value }));
     }
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    const handleSubmit = event => {
+        event.preventDefault();
         if (data.name.trim().length === 0) {
             setError("Обязательно укажите наименование актива");
             return;
@@ -66,10 +67,8 @@ const OtherAssetForm = ({ onCancel }) => {
         if (newRow.cost.length !== 0)
             newRow.cost = parseNumber(newRow.cost);
         dispatch(createRow({ inn, data: newRow, nameActive: "another" }))
-        onCancel();
+        onCancel(event);
     };
-
-    const isFormValid = error.length > 0
 
 
     return (
@@ -77,7 +76,7 @@ const OtherAssetForm = ({ onCancel }) => {
             <ModalHeader>
                 <ModalTitle>Добавить иные активы</ModalTitle>
             </ModalHeader>
-            <Form onSubmit={handleSubmit}>
+            <Form onSubmit={handleSubmit} data-closemodal>
                 <FormField>
                     <InputLabel>Наименование</InputLabel>
                     <InputWrapper>
@@ -113,9 +112,9 @@ const OtherAssetForm = ({ onCancel }) => {
                         />
                     </InputWrapper>
                 </FormField>
-                {(isFormValid) && <div style={{ color: '#ff6b6b', fontSize: '12px', marginTop: '4px' }}>{error}</div>}
+                <div style={{ color: '#ff6b6b', fontSize: '12px', height: "5px" }}>{error}</div>
                 <ButtonGroup>
-                    <CancelButton type="button" data-closemodal onClick={onCancel}>Отменить</CancelButton>
+                    <CancelButton type="button" onClick={onCancel}>Отменить</CancelButton>
                     <SaveButton type="submit">Сохранить</SaveButton>
                 </ButtonGroup>
             </Form>

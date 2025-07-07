@@ -1,25 +1,43 @@
 import XLSX from "xlsx-js-style"
 
 
+const fieldsWithNumberFormay = [
+    "post_sum",
+    "cur_debt",
+    "arrest_sum",
+    "evaluation_sum",
+    "realization_property_sum",
+    "price_reduction_sum",
+    "realization_sum_1",
+    "realization_sum_2",
+    "property_to_debtor_sum",
+    "dz_sum",
+    "actives_sum",
+    "cost",
+    "square",
+    "share_size",
+    "total_sum",
+    "dz_foreclose_sum",
+]
+
+
 const mergeHeaderWithData = (data, header) => {
     const headerTitles = Object.values(header);
     const headerKeyNames = Object.keys(header);
 
-    const reorderRow = row => headerKeyNames.map(keyName => {
+    const reorderRow = (row, index) => headerKeyNames.map(keyName => {
         const value = row[keyName];
-
+        if (index === 0) return value
         if (value === null || value === undefined) {
             return "";
         }
-
         if (value instanceof Date) {
-            return value.toISOString().split('T')[0];
+            return value.toLocaleDateString("ru-RU");
         }
-
-        if (typeof value === 'number') {
-            return value.toString();
-        }
-
+        if (fieldsWithNumberFormay.includes(keyName)) {
+            const price = (typeof value !== "number") ? parseFloat(value) : value;
+            return price.toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
         return String(value);
     });
 
