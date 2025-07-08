@@ -60,6 +60,8 @@ const DebitForm = ({ onCancel }) => {
         if ((nameField === "debitor_inn") && (!/^\d*$/.test(value) || (value.length > 12)))
             return
         setData(prevData => ({ ...prevData, [nameField]: value }));
+        if (error.length > 0)
+            setError("");
     }
 
     const handleSubmit = event => {
@@ -76,16 +78,17 @@ const DebitForm = ({ onCancel }) => {
         if (newRow.total_sum.length !== 0)
             newRow.total_sum = parseNumber(newRow.total_sum);
         dispatch(createRow({ inn, data: newRow, nameActive: "debit" }))
-        onCancel(event);
+        onCancel();
     };
 
+    const isValidForm = ([10, 12].includes(data.debitor_inn.trim().length)) && (data.debitor_names.trim().length !== 0)
 
     return (
         <>
             <ModalHeader>
                 <ModalTitle>Добавить дебиторскую задолженность</ModalTitle>
             </ModalHeader>
-            <Form onSubmit={handleSubmit} data-closemodal>
+            <Form onSubmit={handleSubmit}>
                 <FormField>
                     <InputLabel>ИНН дебитора</InputLabel>
                     <InputWrapper>
@@ -174,8 +177,8 @@ const DebitForm = ({ onCancel }) => {
                 </FormField>
                 <div style={{ color: '#ff6b6b', fontSize: '12px', height: "5px" }}>{error}</div>
                 <ButtonGroup>
-                    <CancelButton type="button" data-closemodal onClick={onCancel}>Отменить</CancelButton>
-                    <SaveButton type="submit">Сохранить</SaveButton>
+                    <CancelButton type="button" onClick={onCancel}>Отменить</CancelButton>
+                    <SaveButton type="submit" className={isValidForm ? "" : "disabled"}>Сохранить</SaveButton>
                 </ButtonGroup>
             </Form>
         </>

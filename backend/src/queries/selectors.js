@@ -422,6 +422,11 @@ const getActivesDownloadingData = async ({
                     2: "Данные из ГМУ",
                     3: "Пара АИС-ГМУ",
                 }, { newField: "statusName" })
+                .mapStatusToTextField(table, "is_verified", {
+                    0: "Нет",
+                    1: "Да",
+                    _: ""
+                }, { newField: "isVerified" })
                 .mapStatusToTextField(table, "obj_status", {
                     arrest: "Арест",
                     grade: "Оценка",
@@ -431,8 +436,22 @@ const getActivesDownloadingData = async ({
                     lizing: "Лизинг (залог иного лица)",
                     other: {
                         obj_status_manual: "Иное: "
-                    }
+                    },
+                    _: ""
                 }, { newField: "objectStatus" })
+                .mapStatusToTextField(table, "wanted_result", {
+                    0: "В связи с выполнением всех мероприятий по розыску",
+                    1: "В связи с розыском имущества должника",
+                    _: ""
+                }, { newField: "wantedResult" })
+
+            query.select(db.ref(db.raw(`
+                IF(${table}.realization_date_1 IS NULL, "Не завершено", "Завершено")
+            `)).as("auction1_status"))
+
+            query.select(db.ref(db.raw(`
+                IF(${table}.realization_date_2 IS NULL, "Не завершено", "Завершено")                
+            `)).as("auction2_status"))
         };
 
         const applyFilters = query => {
@@ -582,6 +601,7 @@ export const download = {
     },
     getStatisticsIP(innList) {
         return db("meta")
+            .select(db.ref("meta.region").as("region"))
             .select(db.ref("meta.kno").as("kno"))
             .select(db.ref("meta.inn").as("inn"))
             .select(db.ref("meta.name").as("name"))

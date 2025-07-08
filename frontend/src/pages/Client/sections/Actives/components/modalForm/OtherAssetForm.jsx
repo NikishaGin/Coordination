@@ -55,6 +55,8 @@ const OtherAssetForm = ({ onCancel }) => {
     const handleChange = nameField => event => {
         const value = event.target.value;
         setData(prevData => ({ ...prevData, [nameField]: value }));
+        if (error.length > 0)
+            setError("");
     }
 
     const handleSubmit = event => {
@@ -67,16 +69,17 @@ const OtherAssetForm = ({ onCancel }) => {
         if (newRow.cost.length !== 0)
             newRow.cost = parseNumber(newRow.cost);
         dispatch(createRow({ inn, data: newRow, nameActive: "another" }))
-        onCancel(event);
+        onCancel();
     };
 
+    const isValidForm = data.name.trim().length !== 0
 
     return (
         <>
             <ModalHeader>
                 <ModalTitle>Добавить иные активы</ModalTitle>
             </ModalHeader>
-            <Form onSubmit={handleSubmit} data-closemodal>
+            <Form onSubmit={handleSubmit}>
                 <FormField>
                     <InputLabel>Наименование</InputLabel>
                     <InputWrapper>
@@ -115,7 +118,7 @@ const OtherAssetForm = ({ onCancel }) => {
                 <div style={{ color: '#ff6b6b', fontSize: '12px', height: "5px" }}>{error}</div>
                 <ButtonGroup>
                     <CancelButton type="button" onClick={onCancel}>Отменить</CancelButton>
-                    <SaveButton type="submit">Сохранить</SaveButton>
+                    <SaveButton type="submit" className={isValidForm ? "" : "disabled"}>Сохранить</SaveButton>
                 </ButtonGroup>
             </Form>
         </>

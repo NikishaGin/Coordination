@@ -105,13 +105,13 @@ const newFields = {
 }
 
 const enforcementHeaders = {
-    is_verified:                    "Верифицированы активы ФССП",
+    isVerified:                    "Верифицированы активы ФССП",
     arrest_propperty:               "Арест имущества",
     arrest_sum:                    "Сумма ареста (руб.)",
     arrestStatus:                  "Статус ареста",
     wanted_open:                    "Заведено розыскное дело",
     wanted_close:                   "Прекращено розыскное дело",
-    wanted_result:                 "Результат розыска",
+    wantedResult:                  "Результат розыска",
     wantedStatus:                  "Статус Разыскного дела",
     evaluation_submit:             "Передано на оценку",
     evaluation_accept:             "Принятие результатов оценки имущества",

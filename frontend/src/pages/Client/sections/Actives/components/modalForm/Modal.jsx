@@ -69,16 +69,19 @@ const ModalContent = styled.div`
 const Modal = ({ Form, onClose }) => {
     const [isClosing, setIsClosing] = useState(false);
 
-    const handleClose = (event) => {
-        if (event.target.dataset.closemodal) {
-            setIsClosing(true);
-            setTimeout(onClose, 200);
-        }
+    const handleClose = () => {
+        setIsClosing(true);
+        setTimeout(onClose, 200);
     };
+
+    const onCloseByClickOnOverlay = event => {
+        if (event.target.dataset.closemodal)
+            handleClose();
+    }
 
 
     return (
-        <ModalOverlay style={{ animation: !isClosing ? 'fadeIn 0.2s ease-in forwards' : 'fadeOut 0.2s ease-in forwards' }}  data-closemodal onClick={handleClose}>
+        <ModalOverlay style={{ animation: !isClosing ? 'fadeIn 0.2s ease-in forwards' : 'fadeOut 0.2s ease-in forwards' }} data-closemodal onClick={onCloseByClickOnOverlay}>
             <ModalContent style={{ animation: !isClosing ? 'slideIn 0.2s ease-in forwards' : 'slideOut 0.2s ease-in forwards' }}>
                 <Form onCancel={handleClose} />
             </ModalContent>

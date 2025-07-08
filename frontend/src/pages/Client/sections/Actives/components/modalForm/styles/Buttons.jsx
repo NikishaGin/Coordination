@@ -20,7 +20,7 @@ export const SaveButton = styled.button`
     transform: translateY(0);
   }
 
-  &:disabled {
+  &.disabled {
     background-color: #2a2a4a;
     color: #777;
     cursor: not-allowed;
