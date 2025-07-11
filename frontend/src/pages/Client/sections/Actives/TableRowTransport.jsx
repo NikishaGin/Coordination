@@ -1,5 +1,12 @@
-import React, { memo } from 'react';
-import {TableRow as StyledTableRow, NumberCell, SelectCell, InputCell, DateCell} from './components/table/TableStyles.js';
+import React, { memo, useState } from 'react';
+import {
+    TableRow as StyledTableRow,
+    NumberCell,
+    SelectCell,
+    InputCell,
+    DateCell,
+    TableCell
+} from './components/table/TableStyles.js';
 import {UniversalSelect} from "./components/inputs/UniversalSelect.jsx";
 import {CustomInput} from "./components/inputs/CustomInput.jsx";
 import {MoneyInput} from "./components/inputs/MoneyInput.jsx";
@@ -8,6 +15,7 @@ import { EditableCell } from "./components/inputs/EditableCell.jsx";
 import {formatNumber} from "../../../../utils/formatData.js";
 import { useSelector } from "react-redux";
 import { ROLES } from "../../../../types.js";
+import { CustomCheckbox } from "./components/inputs/CustomCheckbox.jsx";
 
 const objStatusOptions = [
     {text: "Арест", value: "arrest"},
@@ -35,7 +43,7 @@ const isFnsLizingOptions = [
     {value: 0, text: "Не является, нет залога"},
 ];
 
-export const TableRowTransport = memo(({ row, onValueChange }) => {
+export const TableRowTransport = memo(({ row, onValueChange, active, toggleActive }) => {
     const role = useSelector((state) => state.user.role)
     const isAdmin = role === ROLES.Admin
 
@@ -47,14 +55,9 @@ export const TableRowTransport = memo(({ row, onValueChange }) => {
         onValueChange(row.id, fieldName, val);
     };
 
-
     const handleInputChange = (fieldName) => (val) => {
         onValueChange(row.id, fieldName, val); // val — уже число или null
     };
-
-    const d = new Date(row.arrest_propperty);
-    console.log(d)
-    console.log(d.toISOString())
 
     const handleDateChange = (fieldName) => (date) => {
         const formattedDate = (date) ? date.toLocaleDateString('en-CA') : date;
@@ -63,6 +66,16 @@ export const TableRowTransport = memo(({ row, onValueChange }) => {
 
     return (
         <StyledTableRow>
+            <TableCell>
+                <CustomCheckbox>
+                    <input
+                        type="checkbox"
+                        checked={active}
+                        onChange={toggleActive}
+                    />
+                    <span></span>
+                </CustomCheckbox>
+            </TableCell>
             {/*Марка*/}
             <InputCell>
                 <EditableCell

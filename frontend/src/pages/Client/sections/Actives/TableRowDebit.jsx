@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import { TableRow as StyledTableRow, TableCell, NumberCell, SelectCell, InputCell, DateCell } from './components/table/TableStyles.js';
 import { UniversalSelect } from "./components/inputs/UniversalSelect.jsx";
 import { CustomInput } from "./components/inputs/CustomInput.jsx";
@@ -8,6 +8,7 @@ import { EditableCell } from "./components/inputs/EditableCell.jsx";
 import { useSelector } from "react-redux";
 import { ROLES } from "../../../../types.js";
 import { formatNumber } from "../../../../utils/formatData.js";
+import { CustomCheckbox } from "./components/inputs/CustomCheckbox.jsx";
 
 const objStatusOptions = [
     {text: "Арест", value: "arrest"},
@@ -37,6 +38,7 @@ const isFnsLizingOptions = [
 
 
 export const TableRowDebit = memo(({row, onValueChange}) => {
+    const [active, setActive] = useState(false);
     const role = useSelector((state) => state.user.role)
     const isAdmin = role === ROLES.Admin
 
@@ -69,7 +71,17 @@ export const TableRowDebit = memo(({row, onValueChange}) => {
     };
 
     return (
-        <StyledTableRow>
+        <StyledTableRow active={active}>
+            <TableCell>
+                <CustomCheckbox>
+                    <input
+                        type="checkbox"
+                        checked={active}
+                        onChange={() => setActive(!active)}
+                    />
+                    <span></span>
+                </CustomCheckbox>
+            </TableCell>
             {/*ИНН дебитора*/}
             <TableCell>
                 <EditableCell

@@ -1,4 +1,5 @@
 export const tableHeadersTransport = [
+    "",
     "Марка",
     "VIN-номер",
     "Гос. номер",
@@ -47,6 +48,7 @@ export const tableHeadersTransport = [
     "Комментарий",
 ];
 export const tableHeadersProperty = [
+    "",
     "Наименование",
     "Площадь",
     "Кадастровый номер",
@@ -96,6 +98,7 @@ export const tableHeadersProperty = [
     "Комментарий",
 ]
 export const tableHeadersGround = [
+    "",
     "Наименование",
     "Площадь",
     "Кадастровый номер",
@@ -145,6 +148,7 @@ export const tableHeadersGround = [
     "Комментарий",
 ];
 export const tableHeadersDebit = [
+    "",
     "ИНН дебитора",
     "Наименование дебитора",
     "Адрес дебитора",
@@ -195,6 +199,7 @@ export const tableHeadersDebit = [
     "Комментарий"
 ];
 export const tableHeadersAnother = [
+    "",
     "Наименование",
     "Стоимость, ₽",
     "Статус объекта",

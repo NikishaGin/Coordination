@@ -19,7 +19,7 @@ const getTimeout = (token) => {
         const expireTime = payload.exp * 1000;
         const now = Date.now();
         const timeout = expireTime - now - TOKEN_EXPIRE_DELTA;
-        return timeout > 0 ? timeout : 0;
+        return timeout > 0 ? timeout : undefined;
     } catch (error) {
         console.log(error)
         return undefined;
@@ -41,7 +41,6 @@ export const useLogoutUser = (isAuth) => {
 
         if (serviceMode && (role !== ROLES.Admin)) {
             resetStore()
-            window.location.reload()
             return
         }
 
@@ -49,6 +48,8 @@ export const useLogoutUser = (isAuth) => {
         let timeoutId
         if (timeout)
             timeoutId = setTimeout(resetStore, timeout)
+        else
+            resetStore()
         return () => {
             if (timeoutId) clearTimeout(timeoutId)
         }

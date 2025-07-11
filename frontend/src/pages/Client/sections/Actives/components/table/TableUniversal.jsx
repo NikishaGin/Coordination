@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useParams } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import {Container, TableWrapper, TableHeader, Table2} from './TableStyles.js';
-import { clearActives, fetchActives, updateActiveField, updateActiveThunk } from "../../../../../../store/activesSlice.js";
+import { clearActives, fetchActives, updateActiveThunk } from "../../../../../../store/activesSlice.js";
 import Snackbar from "./Snacbar.jsx";
 import { VariableSizeList } from 'react-window';
 
@@ -13,6 +13,14 @@ const TableUniversal = ({ type, headers, selectorKey, RowComponent, Button }) =>
     const data = useSelector((state) => state.actives[selectorKey]);
     const [snackbarVisible, setSnackbarVisible] = useState(false);
     const status = useSelector((state) => state.actives.status[selectorKey]);
+
+    const [selected, setSelected] = useState({
+        transport: [],
+        property: [],
+        ground: [],
+        debit: [],
+        another: []
+    });
 
     const rowHeightsRef = useRef({});
     const defaultHeight = 60;
@@ -52,8 +60,7 @@ const TableUniversal = ({ type, headers, selectorKey, RowComponent, Button }) =>
     const handleValueChange = useCallback(async (id, field, newValue) => {
         const updatedRow = { [field]: newValue };
         try {
-            const response = await dispatch(updateActiveThunk({ id, type, inn, updatedRow })).unwrap();
-            dispatch(updateActiveField({ id, field, value: newValue, type }));
+            const response = await dispatch(updateActiveThunk({ id, type, inn, updatedRow }))
             if (response) {
                 setSnackbarVisible(true);
             }
@@ -92,8 +99,30 @@ const TableUniversal = ({ type, headers, selectorKey, RowComponent, Button }) =>
             }
         }, [index, row]);
 
+        const toggleActive = () => {
+            setSelected(prevValue => {
+
+                console.log("RERENDER WAS CAUSED")
+                return {
+                    ...prevValue,
+                    [type]: (prevValue[type].includes(index))
+                        ? prevValue[type].filter(i => i !== index)
+                        : [...prevValue[type], index]
+                }
+
+            })
+        }
+
+
+        const colorRow = (selected[type].includes(index))
+            ? '#027AF228'
+            : ((index % 2 === 0)
+                ? '#1e1e30'
+                : 'transparent')
+
         return (
             <div
+                key={index}
                 ref={rowRef}
                 style={{
                     ...style,
@@ -102,23 +131,25 @@ const TableUniversal = ({ type, headers, selectorKey, RowComponent, Button }) =>
                     width: '100%',
                     minWidth: '1300px',
                     borderBottom: '1px solid #333',
-                    backgroundColor: index % 2 === 0 ? '#1e1e30' : 'transparent'
+                    backgroundColor: colorRow
                 }}
                 className="virtual-row"
                 onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = '#2a2a50';
                 }}
                 onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#1e1e30' : 'transparent';
+                    e.currentTarget.style.backgroundColor = colorRow;
                 }}
             >
                 <RowComponent
                     row={row}
+                    active={selected[type].includes(index)}
+                    toggleActive={toggleActive}
                     onValueChange={handleValueChange}
                 />
             </div>
         );
-    }, [data, handleValueChange, setRowHeight]);
+    }, [data, handleValueChange, setRowHeight, selected[type]]);
 
     const getListHeight = () => {
         const containerHeight = document.querySelector('.table-container')?.clientHeight;
