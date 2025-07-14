@@ -1,21 +1,15 @@
 import React, { memo, useState } from 'react';
-import {
-    TableRow as StyledTableRow,
-    NumberCell,
-    SelectCell,
-    InputCell,
-    DateCell,
-    TableCell
-} from './components/table/TableStyles.js';
+import {TableRow, NumberCell, SelectCell, InputCell, DateCell, TableCell} from './components/table/TableStyles.js';
 import {UniversalSelect} from "./components/inputs/UniversalSelect.jsx";
 import {CustomInput} from "./components/inputs/CustomInput.jsx";
 import {MoneyInput} from "./components/inputs/MoneyInput.jsx";
 import {DatePickerCell} from "./components/inputs/DatePickerCell.jsx";
 import { EditableCell } from "./components/inputs/EditableCell.jsx";
 import {formatNumber} from "../../../../utils/formatData.js";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { ROLES } from "../../../../types.js";
 import { CustomCheckbox } from "./components/inputs/CustomCheckbox.jsx";
+import { toggleSelectedRow } from "../../../../store/activesSlice.js";
 
 const objStatusOptions = [
     {text: "Арест", value: "arrest"},
@@ -43,9 +37,12 @@ const isFnsLizingOptions = [
     {value: 0, text: "Не является, нет залога"},
 ];
 
-export const TableOtherAssets = memo(({ row, onValueChange }) => {
-    const [active, setActive] = useState(false);
+export const TableOtherAssets = memo(({ type, row, onValueChange }) => {
+    const dispatch = useDispatch();
+    const selectedRow = useSelector(state => state.actives.selectedRows[type])
     const role = useSelector((state) => state.user.role)
+
+    const activeRow = selectedRow.includes(row.id);
     const isAdmin = role === ROLES.Admin
 
     const handleSelectChange = (fieldName) => (val) => {
@@ -65,16 +62,16 @@ export const TableOtherAssets = memo(({ row, onValueChange }) => {
         onValueChange(row.id, fieldName, formattedDate);
     };
 
-
+    const setActiveRow = () => dispatch(toggleSelectedRow({ type, index: row.id }));
 
     return (
-        <StyledTableRow active={active}>
+        <TableRow className={activeRow ? "active" : ""}>
             <TableCell>
                 <CustomCheckbox>
                     <input
                         type="checkbox"
-                        checked={active}
-                        onChange={() => setActive(!active)}
+                        checked={activeRow}
+                        onChange={setActiveRow}
                     />
                     <span></span>
                 </CustomCheckbox>
@@ -385,7 +382,7 @@ export const TableOtherAssets = memo(({ row, onValueChange }) => {
                     onChange={handleInputChange('comment')}
                 />
             </InputCell>
-        </StyledTableRow>
+        </TableRow>
     );
 });
 

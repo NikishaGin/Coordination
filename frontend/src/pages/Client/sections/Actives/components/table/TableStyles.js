@@ -198,10 +198,16 @@ export const TableWrapper = styled.div`
 `;
 
 export const TableHeader = styled.thead`
-  background-color: #2a2a40;
+  position: sticky;
+  top: 0;
   display: table;
   table-layout: fixed;
   width: 100%;
+  min-width: 1300px;
+  z-index: 2;  
+  background-color: #2a2a40;
+  border-collapse: collapse;
+  font-size: 14px;
 
   th {
     padding: 12px 15px;
@@ -210,21 +216,6 @@ export const TableHeader = styled.thead`
     font-weight: 600;
     letter-spacing: 0.5px;
   }
-`;
-
-export const Table2 = styled.table`
-  min-width: 1300px;
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-`;
-
-export const Table = styled.table`
-  min-width: 1300px;
-  width: 100%;
-  table-layout: fixed;
-  border-collapse: collapse;
-  font-size: 14px;
 `;
 
 export const TableRow = styled.tr`
@@ -238,6 +229,10 @@ export const TableRow = styled.tr`
   &:hover {
     background-color: #2a2a50;
   }
+    
+  &.active {
+    background-color: #027AF228;
+  }  
 `;
 
 export const TableCell = styled.td`

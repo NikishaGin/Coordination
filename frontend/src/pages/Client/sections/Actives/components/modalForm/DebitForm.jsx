@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import {FormField, Input, InputIcon, InputLabel, InputWrapper} from "./styles/FormElements.jsx";
 import {CancelButton, SaveButton} from "./styles/Buttons.jsx";
 import { FileSignature as RubleSign } from 'lucide-react';
-import { createRow } from "../../../../../../store/activesSlice.js";
+import { createRow, updateActiveThunk } from "../../../../../../store/activesSlice.js";
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router";
 import { handlesInputNumber } from "../../../../../../utils/handleInput.js";
@@ -41,7 +41,7 @@ const parseNumber = (value) => {
 
 
 
-const DebitForm = ({ onCancel }) => {
+const DebitForm = ({ onCancel,  setSnackbarVisible }) => {
     const [data, setData] = useState({
         debitor_inn: "",
         debitor_names: "",
@@ -64,7 +64,7 @@ const DebitForm = ({ onCancel }) => {
             setError("");
     }
 
-    const handleSubmit = event => {
+    const handleSubmit = async event => {
         event.preventDefault();
         if ((data.debitor_inn.trim().length === 0) || (data.debitor_names.trim().length === 0)) {
             setError("Обязательно укажите ИНН и наименование дебитора");
@@ -77,7 +77,14 @@ const DebitForm = ({ onCancel }) => {
         const newRow = data
         if (newRow.total_sum.length !== 0)
             newRow.total_sum = parseNumber(newRow.total_sum);
-        dispatch(createRow({ inn, data: newRow, nameActive: "debit" }))
+        try {
+            const response = await dispatch(createRow({ inn, data: newRow, nameActive: "debit" }))
+            if (response) {
+                setSnackbarVisible(true);
+            }
+        } catch (error) {
+            console.error("Ошибка при обновлении:", error);
+        }
         onCancel();
     };
 

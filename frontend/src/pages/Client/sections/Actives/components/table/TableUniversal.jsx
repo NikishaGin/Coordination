@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
-import {Container, TableWrapper, TableHeader, Table2} from './TableStyles.js';
-import { clearActives, fetchActives, updateActiveThunk } from "../../../../../../store/activesSlice.js";
+import {Container, TableWrapper, TableHeader} from './TableStyles.js';
+import {clearActives, fetchActives, updateActiveThunk} from "../../../../../../store/activesSlice.js";
 import Snackbar from "./Snacbar.jsx";
 import { VariableSizeList } from 'react-window';
 
@@ -13,14 +13,6 @@ const TableUniversal = ({ type, headers, selectorKey, RowComponent, Button }) =>
     const data = useSelector((state) => state.actives[selectorKey]);
     const [snackbarVisible, setSnackbarVisible] = useState(false);
     const status = useSelector((state) => state.actives.status[selectorKey]);
-
-    const [selected, setSelected] = useState({
-        transport: [],
-        property: [],
-        ground: [],
-        debit: [],
-        another: []
-    });
 
     const rowHeightsRef = useRef({});
     const defaultHeight = 60;
@@ -92,33 +84,14 @@ const TableUniversal = ({ type, headers, selectorKey, RowComponent, Button }) =>
         const row = data[index];
         const rowRef = useRef(null);
 
+        const colorRow = (index % 2 === 0) ? '#1e1e30' : 'transparent'
+
         useEffect(() => {
             if (rowRef.current) {
                 const height = rowRef.current.getBoundingClientRect().height;
                 setRowHeight(index, Math.max(height, defaultHeight));
             }
         }, [index, row]);
-
-        const toggleActive = () => {
-            setSelected(prevValue => {
-
-                console.log("RERENDER WAS CAUSED")
-                return {
-                    ...prevValue,
-                    [type]: (prevValue[type].includes(index))
-                        ? prevValue[type].filter(i => i !== index)
-                        : [...prevValue[type], index]
-                }
-
-            })
-        }
-
-
-        const colorRow = (selected[type].includes(index))
-            ? '#027AF228'
-            : ((index % 2 === 0)
-                ? '#1e1e30'
-                : 'transparent')
 
         return (
             <div
@@ -142,18 +115,18 @@ const TableUniversal = ({ type, headers, selectorKey, RowComponent, Button }) =>
                 }}
             >
                 <RowComponent
+                    type={type}
                     row={row}
-                    active={selected[type].includes(index)}
-                    toggleActive={toggleActive}
                     onValueChange={handleValueChange}
                 />
             </div>
         );
-    }, [data, handleValueChange, setRowHeight, selected[type]]);
+    }, [data, handleValueChange, setRowHeight]);
 
     const getListHeight = () => {
-        const containerHeight = document.querySelector('.table-container')?.clientHeight;
-        return containerHeight ? containerHeight - 48 : 400;
+        //const headerHeight = headerRef.current.clientHeight + 15;
+        const containerHeight = document.querySelector('.virtual-table-body')?.scrollHeight;
+        return containerHeight ? containerHeight : 400;
     };
 
     return (
@@ -170,12 +143,11 @@ const TableUniversal = ({ type, headers, selectorKey, RowComponent, Button }) =>
                                 }
                             }}>
                                 <div className="inner-scroll" style={{ minWidth: '1300px' }}>
-                                    <Table2>
-                                        <TableHeader ref={headerRef}>
-                                            <tr>{tableHeaders}</tr>
-                                        </TableHeader>
-                                    </Table2>
+                                    <TableHeader ref={headerRef}>
+                                        <tr>{tableHeaders}</tr>
+                                    </TableHeader>
                                     <VariableSizeList
+                                        style={{overflow: "visible"}}
                                         ref={listRef}
                                         height={getListHeight()}
                                         itemCount={data.length}

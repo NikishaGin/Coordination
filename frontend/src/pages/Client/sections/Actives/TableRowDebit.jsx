@@ -1,14 +1,15 @@
-import React, { memo, useState } from 'react';
-import { TableRow as StyledTableRow, TableCell, NumberCell, SelectCell, InputCell, DateCell } from './components/table/TableStyles.js';
+import React, { memo } from 'react';
+import { TableRow, TableCell, NumberCell, SelectCell, InputCell, DateCell } from './components/table/TableStyles.js';
 import { UniversalSelect } from "./components/inputs/UniversalSelect.jsx";
 import { CustomInput } from "./components/inputs/CustomInput.jsx";
 import { MoneyInput } from "./components/inputs/MoneyInput.jsx";
 import { DatePickerCell } from "./components/inputs/DatePickerCell.jsx";
 import { EditableCell } from "./components/inputs/EditableCell.jsx";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { ROLES } from "../../../../types.js";
 import { formatNumber } from "../../../../utils/formatData.js";
 import { CustomCheckbox } from "./components/inputs/CustomCheckbox.jsx";
+import { toggleSelectedRow } from "../../../../store/activesSlice.js";
 
 const objStatusOptions = [
     {text: "Арест", value: "arrest"},
@@ -37,9 +38,12 @@ const isFnsLizingOptions = [
 ];
 
 
-export const TableRowDebit = memo(({row, onValueChange}) => {
-    const [active, setActive] = useState(false);
+export const TableRowDebit = memo(({type, row, onValueChange}) => {
+    const dispatch = useDispatch();
+    const selectedRow = useSelector(state => state.actives.selectedRows[type])
     const role = useSelector((state) => state.user.role)
+
+    const activeRow = selectedRow.includes(row.id);
     const isAdmin = role === ROLES.Admin
 
     const handleSelectChange = (fieldName) => (val) => {
@@ -50,34 +54,25 @@ export const TableRowDebit = memo(({row, onValueChange}) => {
         onValueChange(row.id, fieldName, val);
     };
 
-    // const handleInputChange = (fieldName) => (val) => {
-    //     let cleanedVal = val;
-    //
-    //     if (fieldName.includes('sum') && typeof val === 'string') {
-    //         cleanedVal = Number(val.replace(/\s/g, '').replace(",", "."));
-    //     }
-    //
-    //     onValueChange(row.id, fieldName, cleanedVal);
-    // };
-
     const handleInputChange = (fieldName) => (val) => {
         onValueChange(row.id, fieldName, val); // val — уже число или null
     };
-
 
     const handleDateChange = (fieldName) => (date) => {
         const formattedDate = (date) ? date.toLocaleDateString('en-CA') : date;
         onValueChange(row.id, fieldName, formattedDate);
     };
 
+    const setActiveRow = () => dispatch(toggleSelectedRow({ type, index: row.id }));
+
     return (
-        <StyledTableRow active={active}>
+        <TableRow className={activeRow ? "active" : ""}>
             <TableCell>
                 <CustomCheckbox>
                     <input
                         type="checkbox"
-                        checked={active}
-                        onChange={() => setActive(!active)}
+                        checked={activeRow}
+                        onChange={setActiveRow}
                     />
                     <span></span>
                 </CustomCheckbox>
@@ -443,7 +438,7 @@ export const TableRowDebit = memo(({row, onValueChange}) => {
                     onChange={handleInputChange('comment')}
                 />
             </InputCell>
-        </StyledTableRow>
+        </TableRow>
     );
 });
 

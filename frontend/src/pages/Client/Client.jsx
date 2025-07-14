@@ -8,20 +8,15 @@ import {TableRowTransport} from "./sections/Actives/TableRowTransport.jsx";
 import {TableRowProperty} from "./sections/Actives/TableRowProperty.jsx";
 import {TableRowDebit} from "./sections/Actives/TableRowDebit.jsx";
 import {TableOtherAssets} from "./sections/Actives/TableOtherAssets.jsx";
-import {
-    tableHeadersAnother,
-    tableHeadersDebit,
-    tableHeadersGround,
-    tableHeadersProperty,
-    tableHeadersTransport
-} from "./sections/Actives/components/table/tableHeaders.js";
+import {tableHeadersAnother, tableHeadersDebit, tableHeadersGround, tableHeadersProperty, tableHeadersTransport} from "./sections/Actives/components/table/tableHeaders.js";
 import DebitForm from "./sections/Actives/components/modalForm/DebitForm.jsx";
 import OtherAssetForm from "./sections/Actives/components/modalForm/OtherAssetForm.jsx";
 import InteractionResultForm from "./sections/Interaction/InteractionResultForm.jsx";
 import TnoInteractionResultForm from "./sections/Interaction/TnoInteractionResultForm.jsx";
 import { AddButton } from "./sections/Actives/components/modalForm/AddButton.jsx";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { ROLES } from "../../types.js";
+import { clearSelectedRows } from "../../store/activesSlice.js";
 
 
 
@@ -36,6 +31,7 @@ const GlobalStyle = createGlobalStyle`
     font-family: 'Inter', sans-serif;
   }
 `;
+
 const Container = styled.div`
   min-height: 100vh;
   display: grid;
@@ -47,12 +43,14 @@ const Container = styled.div`
     grid-column: 1 / span 2;
   }
 `;
+
 const InfoBlock = styled.div`
   padding: 24px 32px;
   background-color: #1e1e1e;
   border-bottom: 1px solid #333;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 `;
+
 const Back = styled.div`
   position: relative;
   width: 105px;
@@ -95,6 +93,7 @@ const Back = styled.div`
     transform: translateX(-3px);
   }
 `;
+
 const CompanyTitle = styled.h2`
   font-size: 28px;
   font-weight: 700;
@@ -102,6 +101,7 @@ const CompanyTitle = styled.h2`
   margin: 0 0 16px 0;
   letter-spacing: 0.5px;
 `;
+
 const InfoBox = styled.div`
   margin-top: 20px;
   display: flex;
@@ -117,6 +117,7 @@ const InfoBox = styled.div`
     color: #a0a0ff;
   }
 `;
+
 const Nav = styled.div`
   margin-top: 30px;
   display: flex;
@@ -125,6 +126,7 @@ const Nav = styled.div`
   border-bottom: 1px solid #333;
   padding-bottom: 10px;
 `;
+
 const StyledNavItem = styled.div`
   padding: 10px 20px;
   border-radius: 6px;
@@ -138,6 +140,7 @@ const StyledNavItem = styled.div`
     background-color: ${props => props.active ? '#3a3a6a' : '#2a2a3a'};
   }
 `;
+
 const Sidebar = styled.div`
   background-color: #1a1a2e;
   padding: 20px 0;
@@ -145,6 +148,7 @@ const Sidebar = styled.div`
   grid-row: 2;
   grid-column: 1;
 `;
+
 const MenuItem = styled.div`
   padding: 14px 20px;
   font-weight: 500;
@@ -158,6 +162,7 @@ const MenuItem = styled.div`
     color: #ffffff;
   }
 `;
+
 const ContentArea = styled.div`
   grid-row: 2;
   grid-column: 2;
@@ -176,7 +181,10 @@ const ButtonBox = styled.div`
 
 const TableUniversal = lazy(() => import('./sections/Actives/components/table/TableUniversal.jsx'));
 
+
+
 export function Client() {
+    const dispatch = useDispatch();
     const role = useSelector((state) => state.user.role)
     const isAdmin = role === ROLES.Admin
 
@@ -200,6 +208,11 @@ export function Client() {
         }
     }, [nav]);
 
+    useEffect(() => {
+        if (nav === "actives")
+            dispatch(clearSelectedRows())
+    }, [nav, sidebarNav]);
+
 
     const mainNavItems = useMemo(() => [
         {key: "info", label: "Информация о должнике"},
@@ -212,10 +225,6 @@ export function Client() {
         actives: ["Транспорт", "Недвижимость", "Земельные участки", "Дебиторская задолженность", "Иные активы"],
         interaction: ["Направление ходатайства в ГМУ", "Примечание ТНО"]
     }), []);
-
-    const MyButton = () => (
-        <button>Нажми меня</button>
-    );
 
     const contentMap = useMemo(() => ({
         info: {

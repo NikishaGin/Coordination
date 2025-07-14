@@ -41,7 +41,7 @@ const parseNumber = (value) => {
 
 
 
-const OtherAssetForm = ({ onCancel }) => {
+const OtherAssetForm = ({ onCancel, setSnackbarVisible }) => {
     const [data, setData] = useState({
         name: "",
         cost: "",
@@ -59,7 +59,7 @@ const OtherAssetForm = ({ onCancel }) => {
             setError("");
     }
 
-    const handleSubmit = event => {
+    const handleSubmit = async event => {
         event.preventDefault();
         if (data.name.trim().length === 0) {
             setError("Обязательно укажите наименование актива");
@@ -68,7 +68,14 @@ const OtherAssetForm = ({ onCancel }) => {
         const newRow = data
         if (newRow.cost.length !== 0)
             newRow.cost = parseNumber(newRow.cost);
-        dispatch(createRow({ inn, data: newRow, nameActive: "another" }))
+        try {
+            const response = await dispatch(createRow({ inn, data: newRow, nameActive: "another" }))
+            if (response) {
+                setSnackbarVisible(true);
+            }
+        } catch (error) {
+            console.error("Ошибка при обновлении:", error);
+        }
         onCancel();
     };
 

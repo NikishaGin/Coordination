@@ -2,6 +2,7 @@ import {useLocation} from "react-router";
 import {useDispatch, useSelector} from "react-redux";
 import resetStore from "../store/store.js"
 import {useEffect} from "react";
+import { jwtDecode } from 'jwt-decode'
 import {fetchGetServiceMode} from "../store/globalSlice.js";
 import { ROLES } from "../types.js";
 
@@ -12,11 +13,9 @@ const TOKEN_EXPIRE_DELTA = 30 * 1000;
 
 const getTimeout = (token) => {
     try {
-        const payloadBase64 = token.split('.')[1];
-        const payloadJson = atob(payloadBase64);
-        const payload = JSON.parse(payloadJson);
-        if (!payload.exp) return undefined;
-        const expireTime = payload.exp * 1000;
+        const expiresAt = jwtDecode(token).exp;
+        if (!expiresAt) return undefined;
+        const expireTime = expiresAt * 1000;
         const now = Date.now();
         const timeout = expireTime - now - TOKEN_EXPIRE_DELTA;
         return timeout > 0 ? timeout : undefined;
@@ -36,14 +35,11 @@ export const useLogoutUser = (isAuth) => {
 
     useEffect(() => {
         if (!isAuth) return
-
         dispatch(fetchGetServiceMode())
-
         if (serviceMode && (role !== ROLES.Admin)) {
             resetStore()
             return
         }
-
         const timeout = getTimeout(token);
         let timeoutId
         if (timeout)

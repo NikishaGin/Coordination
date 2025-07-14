@@ -17,7 +17,10 @@ function bcryptToPhpHash(hash) {
 }
 
 
-const password = "gmu"
+const password = "eBXhfT"
 const passwordHash = generatePasswordHash(password)
 
 console.log("passwordHash", passwordHash)
+
+
+process.exit(0)

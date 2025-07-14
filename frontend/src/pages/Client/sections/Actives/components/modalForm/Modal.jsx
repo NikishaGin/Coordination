@@ -66,7 +66,7 @@ const ModalContent = styled.div`
   }
 `;
 
-const Modal = ({ Form, onClose }) => {
+const Modal = ({ Form, onClose, setSnackbarVisible }) => {
     const [isClosing, setIsClosing] = useState(false);
 
     const handleClose = () => {
@@ -83,7 +83,7 @@ const Modal = ({ Form, onClose }) => {
     return (
         <ModalOverlay style={{ animation: !isClosing ? 'fadeIn 0.2s ease-in forwards' : 'fadeOut 0.2s ease-in forwards' }} data-closemodal onClick={onCloseByClickOnOverlay}>
             <ModalContent style={{ animation: !isClosing ? 'slideIn 0.2s ease-in forwards' : 'slideOut 0.2s ease-in forwards' }}>
-                <Form onCancel={handleClose} />
+                <Form onCancel={handleClose} setSnackbarVisible={setSnackbarVisible} />
             </ModalContent>
         </ModalOverlay>
     );

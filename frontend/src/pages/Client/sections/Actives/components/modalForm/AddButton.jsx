@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import Modal from './Modal.jsx';
+import Snackbar from "../table/Snacbar.jsx";
+
 
 const StyledButton = styled.button`
   background-color: #3a3a6a;
@@ -25,6 +27,7 @@ const StyledButton = styled.button`
 
 export const AddButton = ({ titleBtn, Form }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [snackbarVisible, setSnackbarVisible] = useState(false);
 
     const openModal = () => setIsModalOpen(true);
     const closeModal = () => setIsModalOpen(false);
@@ -32,7 +35,12 @@ export const AddButton = ({ titleBtn, Form }) => {
     return (
         <>
             <StyledButton onClick={openModal}>{titleBtn}</StyledButton>
-            {isModalOpen && <Modal Form={Form} onClose={closeModal} />}
+            <Snackbar
+                message="Данные успешно сохранены!"
+                visible={snackbarVisible}
+                onClose={() => setSnackbarVisible(false)}
+            />
+            {isModalOpen && <Modal Form={Form} setSnackbarVisible={setSnackbarVisible} onClose={closeModal} />}
         </>
     );
 };

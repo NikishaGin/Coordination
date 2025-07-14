@@ -58,11 +58,18 @@ export const createRow = createAsyncThunk(
 const activesSlice = createSlice({
     name: 'actives',
     initialState: {
-        transport: [],
+        transport: new Set(),
         property: [],
         ground: [],
         debit: [],
         another: [],
+        selectedRows: {
+            transport: [],
+            property: [],
+            ground: [],
+            debit: [],
+            another: []
+        },
         status: {
             transport: 'idle',
             property: 'idle',
@@ -100,8 +107,22 @@ const activesSlice = createSlice({
                 debit: null,
                 another: null,
             };
+        },
+        toggleSelectedRow: (state, action) => {
+            const { type, index } = action.payload;
+            state.selectedRows[type] = (state.selectedRows[type].includes(index))
+                ? state.selectedRows[type].filter(i => i !== index)
+                : [...state.selectedRows[type], index]
+        },
+        clearSelectedRows: (state) => {
+            state.selectedRows = {
+                transport: [],
+                property: [],
+                ground: [],
+                debit: [],
+                another: []
+            };
         }
-
     },
     extraReducers: (builder) => {
         builder
@@ -145,4 +166,4 @@ const activesSlice = createSlice({
 });
 
 export default activesSlice.reducer;
-export const {clearActives} = activesSlice.actions;
+export const {clearActives, toggleSelectedRow, clearSelectedRows} = activesSlice.actions;
