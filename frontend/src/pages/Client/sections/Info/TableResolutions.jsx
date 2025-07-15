@@ -6,7 +6,7 @@ import {useParams} from "react-router";
 import { useSelector } from "react-redux";
 
 const Container = styled.div`
-  height: calc(100vh - 350px);
+  height: calc(100vh - 300px);
   background-color: #171722;
   border-radius: 8px;
   overflow: hidden;
@@ -36,7 +36,6 @@ const TableWrapper = styled.div`
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
   font-size: 14px;
 `;
 

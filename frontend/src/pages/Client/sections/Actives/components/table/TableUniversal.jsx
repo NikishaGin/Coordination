@@ -124,40 +124,43 @@ const TableUniversal = ({ type, headers, selectorKey, RowComponent, Button }) =>
     }, [data, handleValueChange, setRowHeight]);
 
     const getListHeight = () => {
-        //const headerHeight = headerRef.current.clientHeight + 15;
-        const containerHeight = document.querySelector('.virtual-table-body')?.scrollHeight;
-        return containerHeight ? containerHeight : 400;
+
+        /*
+        const containerHeight = document.querySelector('.scroll-container')?.scrollHeight;
+        console.log(containerHeight)
+        return containerHeight ? containerHeight - 48 : 400;
+        */
+
+
+        const rowHeights = Object.values(rowHeightsRef.current)
+        const n = Math.max(0, data.length - rowHeights.length);
+        return rowHeights.reduce((a, b) => a + b, 0) + n * defaultHeight;
+
     };
 
     return (
         <>
-            <Container className={`table-container ${type}`}>
+            <Container className={`table-container ${type}`} withButton={!!Button}>
                 <TableWrapper>
                     {status === 'loading' ? (
                         'Загрузка...'
                     ) : data && data.length > 0 ? (
                         <>
-                            <div className="scroll-container" ref={bodyRef} onScroll={(e) => {
-                                if (headerRef.current) {
-                                    headerRef.current.scrollLeft = e.currentTarget.scrollLeft;
-                                }
-                            }}>
-                                <div className="inner-scroll" style={{ minWidth: '1300px' }}>
-                                    <TableHeader ref={headerRef}>
-                                        <tr>{tableHeaders}</tr>
-                                    </TableHeader>
-                                    <VariableSizeList
-                                        style={{overflow: "visible"}}
-                                        ref={listRef}
-                                        height={getListHeight()}
-                                        itemCount={data.length}
-                                        itemSize={getRowHeight}
-                                        width="100%"
-                                        className="virtual-table-body"
-                                    >
-                                        {RowRenderer}
-                                    </VariableSizeList>
-                                </div>
+                            <div className="scroll-container" ref={bodyRef}>
+                                <TableHeader ref={headerRef}>
+                                    <tr>{tableHeaders}</tr>
+                                </TableHeader>
+                                <VariableSizeList
+                                    style={{ overflow: 'visible' }}
+                                    ref={listRef}
+                                    height={getListHeight()}
+                                    itemCount={data.length}
+                                    itemSize={getRowHeight}
+                                    width="100%"
+                                    className="virtual-table-body"
+                                >
+                                    {RowRenderer}
+                                </VariableSizeList>
                             </div>
                         </>
                     ) : (

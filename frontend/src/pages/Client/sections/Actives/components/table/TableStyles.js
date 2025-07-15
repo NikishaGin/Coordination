@@ -111,7 +111,7 @@
 import styled from "styled-components";
 
 export const Container = styled.div`
-  height: calc(100vh - 350px);
+  height: ${({ withButton }) => withButton ? 'calc(100vh - 350px)' : 'calc(100vh - 300px)'};
   background-color: #171722;
   border-radius: 4px;
   display: flex;
@@ -168,10 +168,6 @@ export const TableWrapper = styled.div`
     overflow: auto;
   }
 
-  .inner-scroll {
-    display: inline-block;
-  }
-
   .virtual-table-body {
     min-width: 1300px;
   }
@@ -184,7 +180,8 @@ export const TableWrapper = styled.div`
   }
 
   .scroll-container::-webkit-scrollbar {
-    height: 8px;
+    width: 10px;  
+    height: 10px;
   }
 
   .scroll-container::-webkit-scrollbar-track {
