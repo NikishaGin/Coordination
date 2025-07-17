@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import {activesAPI} from "../api/index.js";
 import {setLoading} from "./appStatusSlice.js";
+import axios from "axios";
 
 let currentAbortController = null; // глобальная переменная для хранения текущего контроллера
 
@@ -10,10 +11,8 @@ export const fetchTableData = createAsyncThunk(
         if (currentAbortController) {
             currentAbortController.abort(); // отменяем предыдущий
         }
-
         currentAbortController = new AbortController();
         const { signal } = currentAbortController;
-
         try {
             dispatch(setLoading(true));
             const response = await activesAPI.getTables(pageKey, region, signal);
@@ -42,6 +41,7 @@ const tableDataSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(fetchTableData.pending, (state) => {
+                state.tableData = []
                 state.isLoading = true;
                 state.error = null;
             })
@@ -50,8 +50,8 @@ const tableDataSlice = createSlice({
                 state.isLoading = false;
             })
             .addCase(fetchTableData.rejected, (state, action) => {
-                state.error = action.error.message;
                 state.isLoading = false;
+                state.error = action.error.message;
             });
     },
 });

@@ -147,8 +147,8 @@ const TableUniversal = ({ type, headers, RowComponent, Button }) => {
                                 if (!bodyRef.current && !listRef.current)
                                     listRef.current.scrollTop = bodyRef.current.scrollTop
                             }}
-                            onWheel={event => event.preventDefault()}
-                            onTouchMove={event => event.preventDefault()}
+                                 onWheel={event => event.preventDefault()}
+                                 onTouchMove={event => event.preventDefault()}
                             >
 
 
