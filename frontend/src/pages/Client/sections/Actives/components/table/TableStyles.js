@@ -169,9 +169,19 @@ export const TableWrapper = styled.div`
   }
 
   .virtual-table-body {
-    min-width: 1300px;
+    display: table;
+    //overflow: auto;
+    //scrollbar-width: none;
   }
-
+    
+  .virtual-table-body::-webkit-scrollbar {
+    //display: none;
+  }  
+    
+  .virtual-table-body > div {
+      height: 100%;
+  }  
+    
   .virtual-row td {
     display: table-cell;
     padding: 12px 15px;

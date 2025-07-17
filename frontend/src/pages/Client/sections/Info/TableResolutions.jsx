@@ -6,7 +6,7 @@ import {useParams} from "react-router";
 import { useSelector } from "react-redux";
 
 const Container = styled.div`
-  height: calc(100vh - 300px);
+  height: calc(100vh - 350px);
   background-color: #171722;
   border-radius: 8px;
   overflow: hidden;

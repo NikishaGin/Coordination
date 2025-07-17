@@ -4,6 +4,15 @@ import Modal from './Modal.jsx';
 import Snackbar from "../table/Snacbar.jsx";
 
 
+const ButtonBox = styled.div`
+  display: flex;
+  justify-content: flex-start;
+  padding: 16px;
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+`;
+
 const StyledButton = styled.button`
   background-color: #3a3a6a;
   color: #ffffff;
@@ -25,6 +34,7 @@ const StyledButton = styled.button`
   }
 `;
 
+
 export const AddButton = ({ titleBtn, Form }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [snackbarVisible, setSnackbarVisible] = useState(false);
@@ -33,7 +43,7 @@ export const AddButton = ({ titleBtn, Form }) => {
     const closeModal = () => setIsModalOpen(false);
 
     return (
-        <>
+        <ButtonBox>
             <StyledButton onClick={openModal}>{titleBtn}</StyledButton>
             <Snackbar
                 message="Данные успешно сохранены!"
@@ -41,7 +51,7 @@ export const AddButton = ({ titleBtn, Form }) => {
                 onClose={() => setSnackbarVisible(false)}
             />
             {isModalOpen && <Modal Form={Form} setSnackbarVisible={setSnackbarVisible} onClose={closeModal} />}
-        </>
+        </ButtonBox>
     );
 };
 

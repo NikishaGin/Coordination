@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react';
+import React, { memo } from 'react';
 import {TableRow, NumberCell, SelectCell, InputCell, DateCell, TableCell} from './components/table/TableStyles.js';
 import {UniversalSelect} from "./components/inputs/UniversalSelect.jsx";
 import {CustomInput} from "./components/inputs/CustomInput.jsx";

@@ -1,7 +1,6 @@
 import { Navigate, Route, Routes } from "react-router";
 import { Login } from "../pages/Login.jsx";
 import { Coordination } from "../pages/Coordination.jsx";
-import { Derivative } from "../pages/Derivative.jsx";
 import { Client } from "../pages/Client/Client.jsx";
 import { Library } from "../pages/Library.jsx";
 import { RegionalStatistics } from "../pages/RegionalStatistics.jsx";

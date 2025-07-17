@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useMemo, useCallback, Suspense, lazy} from 'react';
+import React, {useState, useEffect, useMemo, useCallback, Suspense, lazy, memo} from 'react';
 import {useNavigate, useParams} from "react-router";
 import styled, {createGlobalStyle} from "styled-components";
 import {activesAPI} from "../../api/index.js";
@@ -8,14 +8,13 @@ import {TableRowTransport} from "./sections/Actives/TableRowTransport.jsx";
 import {TableRowProperty} from "./sections/Actives/TableRowProperty.jsx";
 import {TableRowDebit} from "./sections/Actives/TableRowDebit.jsx";
 import {TableOtherAssets} from "./sections/Actives/TableOtherAssets.jsx";
-import {tableHeadersAnother, tableHeadersDebit, tableHeadersGround, tableHeadersProperty, tableHeadersTransport} from "./sections/Actives/components/table/tableHeaders.js";
+import {tableHeadersAnother, tableHeadersDebit, tableHeadersProperty, tableHeadersTransport} from "./sections/Actives/components/table/tableHeaders.js";
+import { AddButton } from "./sections/Actives/components/modalForm/AddButton.jsx";
 import DebitForm from "./sections/Actives/components/modalForm/DebitForm.jsx";
 import OtherAssetForm from "./sections/Actives/components/modalForm/OtherAssetForm.jsx";
 import InteractionResultForm from "./sections/Interaction/InteractionResultForm.jsx";
 import TnoInteractionResultForm from "./sections/Interaction/TnoInteractionResultForm.jsx";
-import { AddButton } from "./sections/Actives/components/modalForm/AddButton.jsx";
-import { useSelector, useDispatch } from "react-redux";
-import { ROLES } from "../../types.js";
+import { useDispatch } from "react-redux";
 import { clearSelectedRows } from "../../store/activesSlice.js";
 
 
@@ -170,27 +169,15 @@ const ContentArea = styled.div`
   background-color: #171722;
 `;
 
-const ButtonBox = styled.div`
-  display: flex;
-  justify-content: flex-start;
-  padding: 16px;
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
-`;
 
 const TableUniversal = lazy(() => import('./sections/Actives/components/table/TableUniversal.jsx'));
 
 
 
-export function Client() {
+export const Client = memo(() => {
     const dispatch = useDispatch();
-    const role = useSelector((state) => state.user.role)
-    const isAdmin = role === ROLES.Admin
-
     const {inn} = useParams();
     const navigate = useNavigate();
-
     const [nav, setNav] = useState("info");
     const [sidebarNav, setSidebarNav] = useState("");
     const [info, setInfo] = useState({});
@@ -236,7 +223,6 @@ export function Client() {
                 <TableUniversal
                     type="transport"
                     headers={tableHeadersTransport}
-                    selectorKey="transport"
                     RowComponent={TableRowTransport}
                 />
             ),
@@ -244,15 +230,13 @@ export function Client() {
                 <TableUniversal
                     type="property"
                     headers={tableHeadersProperty}
-                    selectorKey="property"
                     RowComponent={TableRowProperty}
                 />
             ),
             'Земельные участки': (
                 <TableUniversal
                     type="ground"
-                    headers={tableHeadersGround}
-                    selectorKey="ground"
+                    headers={tableHeadersProperty}
                     RowComponent={TableRowProperty}
                 />
             ),
@@ -260,26 +244,16 @@ export function Client() {
                 <TableUniversal
                     type="debit"
                     headers={tableHeadersDebit}
-                    selectorKey="debit"
                     RowComponent={TableRowDebit}
-                    Button={isAdmin && (
-                        <ButtonBox>
-                            <AddButton titleBtn="Добавить дебиторскую задолженность" Form={DebitForm}/>
-                        </ButtonBox>
-                    )}
+                    Button={<AddButton titleBtn="Добавить дебиторскую задолженность" Form={DebitForm}/>}
                 />
             ),
             "Иные активы": (
                 <TableUniversal
                     type="another"
                     headers={tableHeadersAnother}
-                    selectorKey="another"
                     RowComponent={TableOtherAssets}
-                    Button={isAdmin && (
-                        <ButtonBox>
-                            <AddButton titleBtn="Добавить иные активы" Form={OtherAssetForm}/>
-                        </ButtonBox>
-                    )}
+                    Button={<AddButton titleBtn="Добавить иные активы" Form={OtherAssetForm}/>}
                 />
             )
         },
@@ -364,12 +338,4 @@ export function Client() {
             </Container>
         </>
     );
-}
-
-export default React.memo(Client);
-
-
-// const currentContent = useMemo(() => {
-//     if (!nav || !sidebarNav) return <div>Выберите раздел</div>;
-//     return contentMap[nav]?.[sidebarNav] || <div>Выберите раздел</div>;
-// }, [nav, sidebarNav, contentMap]);
+})
