@@ -2,26 +2,38 @@ import db from "../connection.js"
 
 
 export const getResolutions = (is_derivative_debt, is_archive, {selectSumData = true} = {}) => {
+    const subQueries = db('resolutions')
+        .select("inn")
+        .sum({post_sum: db.raw('IFNULL(post_sum, 0.00)')})
+        .sum({cur_debt: db.raw('IFNULL(cur_debt, 0.00)')})
+        .sum({is_end: db.raw('IF(end_date IS NULL, 0, 1)')})
+        .sum({is_stop: db.raw('IF(stop_date IS NULL, 0, 1)')})
+        .sum({is_pending: db.raw('IF(pending_date IS NULL, 0, 1)')})
+        .sum({is_terminate: db.raw('IF(terminate_date IS NULL, 0, 1)')})
+        .max({max_exec_date: 'exec_date'})
+        .where({ is_derivative_debt, is_archive })
+        .groupBy('inn')
+
+
     return db('resolutions')
-        .select('inn')
         .modify(query => {
-            if (selectSumData)
-                query
-                    .sum({post_sum: db.raw('IFNULL(post_sum, 0.00)')})
-                    .sum({cur_debt: db.raw('IFNULL(cur_debt, 0.00)')})
-                    .sum({is_end: db.raw('IF(end_date IS NULL, 0, 1)')})
-                    .sum({is_stop: db.raw('IF(stop_date IS NULL, 0, 1)')})
-                    .sum({is_pending: db.raw('IF(pending_date IS NULL, 0, 1)')})
-                    .sum({is_terminate: db.raw('IF(terminate_date IS NULL, 0, 1)')})
-                    .max({max_exec_date: 'exec_date'})
             if (is_derivative_debt)
                 query.select(db.ref(db.raw("MAX(resolutions.is_derivative_debt)")).as("isDerived"))
             else
                 query.select(db.ref(db.raw("MIN(resolutions.is_derivative_debt)")).as("isDerived"))
             query.select(db.ref(db.raw("MIN(resolutions.is_archive OR (resolutions.end_date IS NOT NULL) OR (resolutions.terminate_date IS NOT NULL))")).as("isArchive"))
+            if (selectSumData)
+                query
+                    .select("res.*")
+                    .leftJoin(db.raw("(??) as res", [subQueries]), "resolutions.inn", "res.inn")
+            else
+                query
+                    .select('inn')
             query.havingRaw("(isDerived = ?) AND (isArchive = ?)", [+is_derivative_debt, +is_archive])
         })
         .groupBy('inn')
+
+
 }
 
 

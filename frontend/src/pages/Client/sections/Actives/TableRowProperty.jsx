@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import {TableRow, NumberCell, SelectCell, InputCell, DateCell, TableCell} from './components/table/TableStyles.js';
 import {UniversalSelect} from "./components/inputs/UniversalSelect.jsx";
+import {objStatusOptions, yesNoOptions, installedOptions, isFnsLizingOptions} from "./components/inputs/OptionsSelect.js"
 import {CustomInput} from "./components/inputs/CustomInput.jsx";
 import {MoneyInput} from "./components/inputs/MoneyInput.jsx";
 import {DatePickerCell} from "./components/inputs/DatePickerCell.jsx";
@@ -11,31 +12,6 @@ import { ROLES } from "../../../../types.js";
 import { CustomCheckbox } from "./components/inputs/CustomCheckbox.jsx";
 import { toggleSelectedRow } from "../../../../store/activesSlice.js";
 
-const objStatusOptions = [
-    {text: "Арест", value: "arrest"},
-    {text: "Оценка", value: "grade"},
-    {text: "Реализация", value: "sale"},
-    {text: "Розыск", value: "wanted"},
-    {text: "Обжалование в суде испол. действия", value: "appeal"},
-    {text: "Лизинг (залог иного лица)", value: "lizing"},
-    {text: "Иное", value: "other"},
-];
-
-const yesNoOptions = [
-    {value: 1, text: "Да"},
-    {value: 0, text: "Нет"},
-];
-
-const installedOptions = [
-    {value: 1, text: "В связи с розыском имущества должника"},
-    {value: 0, text: "В связи с выполнением всех мероприятий по розыску"},
-];
-
-const isFnsLizingOptions = [
-    {value: 1, text: "Является"},
-    {value: 2, text: "Не является"},
-    {value: 0, text: "Не является, нет залога"},
-];
 
 
 export const TableRowProperty = memo(({ type, row, onValueChange }) => {
@@ -392,13 +368,6 @@ export const TableRowProperty = memo(({ type, row, onValueChange }) => {
                     onChange={handleInputChange('person_filed_complaint')}
                 />
             </InputCell>
-            {/*"Дата жалобы"*/}
-            <DateCell>
-                <DatePickerCell
-                    value={row.complaint_date}
-                    onChange={handleDateChange('complaint_date')}
-                />
-            </DateCell>
             {/*"Предмет жалобы"*/}
             <InputCell>
                 <CustomInput
@@ -415,6 +384,13 @@ export const TableRowProperty = memo(({ type, row, onValueChange }) => {
                     onChange={handleInputChange('complaint_source')}
                 />
             </InputCell>
+            {/*"Дата жалобы"*/}
+            <DateCell>
+                <DatePickerCell
+                    value={row.complaint_date}
+                    onChange={handleDateChange('complaint_date')}
+                />
+            </DateCell>
             {/*"Результат рассмотрения жалобы"*/}
             <InputCell>
                 <CustomInput

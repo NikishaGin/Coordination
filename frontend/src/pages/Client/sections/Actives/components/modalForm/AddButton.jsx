@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import Modal from './Modal.jsx';
-import Snackbar from "../table/Snacbar.jsx";
+import Snackbar from "../Snacbar.jsx";
 
 
 const ButtonBox = styled.div`

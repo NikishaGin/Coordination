@@ -2,7 +2,7 @@ import styled from "styled-components";
 import React, { memo } from 'react';
 
 const StyledSelect = styled.select`
-  width: 100%;
+  width: 100%;  
   padding: 8px 12px;
   background-color: #232330;
   color: #e0e0e0;
@@ -38,13 +38,15 @@ const StyledSelect = styled.select`
 `;
 
 export const UniversalSelect = memo(({ value, onChange, options, placeholder, disabled }) => {
+    const existNull = options.some(item => !item.value);
     return (
         <StyledSelect
             value={value ?? ""}
+
             onChange={(e) => onChange(e.target.value)}
             disabled={disabled}
         >
-            <option value="" disabled>{placeholder}</option>
+            {existNull || <option value="" disabled>{placeholder}</option>}
             {options.map(({ value, text }) => (
                 <option key={value} value={value}>
                     {text}

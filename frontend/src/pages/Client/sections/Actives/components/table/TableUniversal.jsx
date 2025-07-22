@@ -3,21 +3,17 @@ import { useParams } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import {Container, TableWrapper, TableHeader} from './TableStyles.js';
 import {clearActives, fetchActives, updateActiveThunk} from "../../../../../../store/activesSlice.js";
-import Snackbar from "./Snacbar.jsx";
+import Snackbar from "../Snacbar.jsx";
 import { VariableSizeList } from 'react-window';
-import {ROLES} from "../../../../../../types.js";
-
 
 
 const TableUniversal = ({ type, headers, RowComponent, Button }) => {
     const { inn } = useParams();
     const dispatch = useDispatch();
     const data = useSelector((state) => state.actives[type]);
-    const status = useSelector((state) => state.actives.status[type]);
-    const role = useSelector((state) => state.user.role)
-    const isAdmin = role === ROLES.Admin
-
     const [snackbarVisible, setSnackbarVisible] = useState(false);
+    const status = useSelector((state) => state.actives.status[type]);
+
     const rowHeightsRef = useRef({});
     const defaultHeight = 60;
     const listRef = useRef(null);
@@ -128,45 +124,38 @@ const TableUniversal = ({ type, headers, RowComponent, Button }) => {
     }, [data, handleValueChange, setRowHeight]);
 
     const getListHeight = () => {
-        const containerHeight = document.querySelector('.table-container')?.clientHeight ?? 400
-        const headerHeight = headerRef.current?.clientHeight ?? 72
-
-        console.log(containerHeight - headerHeight)
-        return containerHeight - headerHeight
+        const containerHeight = document.querySelector('.table-container')?.clientHeight;
+        return containerHeight ? containerHeight - 48 : 400;
     };
 
     return (
         <>
-            <Container className={`table-container ${type}`} withButton={isAdmin && !!Button}>
+            <Container className={`table-container ${type}`} withButton={!!Button}>
                 <TableWrapper>
                     {status === 'loading' ? (
                         'Загрузка...'
                     ) : data && data.length > 0 ? (
                         <>
-                            <div className="scroll-container" ref={bodyRef} onScroll={() => {
-                                if (!bodyRef.current && !listRef.current)
-                                    listRef.current.scrollTop = bodyRef.current.scrollTop
-                            }}
-                                 onWheel={event => event.preventDefault()}
-                                 onTouchMove={event => event.preventDefault()}
-                            >
-
-
-                                <TableHeader ref={headerRef}>
-                                    <tr>{tableHeaders}</tr>
-                                </TableHeader>
-                                <VariableSizeList
-                                    ref={listRef}
-                                    height={getListHeight()}
-                                    itemCount={data.length}
-                                    itemSize={getRowHeight}
-                                    width="100%"
-                                    className="virtual-table-body"
-                                >
-                                    {RowRenderer}
-                                </VariableSizeList>
-
-
+                            <div className="scroll-container" ref={bodyRef} onScroll={(e) => {
+                                if (headerRef.current) {
+                                    headerRef.current.scrollLeft = e.currentTarget.scrollLeft;
+                                }
+                            }}>
+                                <div className="inner-scroll" style={{ minWidth: '1300px' }}>
+                                    <TableHeader ref={headerRef}>
+                                        <tr>{tableHeaders}</tr>
+                                    </TableHeader>
+                                    <VariableSizeList
+                                        ref={listRef}
+                                        height={getListHeight()}
+                                        itemCount={data.length}
+                                        itemSize={getRowHeight}
+                                        width="100%"
+                                        className="virtual-table-body"
+                                    >
+                                        {RowRenderer}
+                                    </VariableSizeList>
+                                </div>
                             </div>
                         </>
                     ) : (
@@ -174,7 +163,7 @@ const TableUniversal = ({ type, headers, RowComponent, Button }) => {
                     )}
                 </TableWrapper>
             </Container>
-            {(isAdmin && !!Button) && Button}
+            {Button}
             <Snackbar
                 message="Данные успешно сохранены!"
                 visible={snackbarVisible}
@@ -185,18 +174,6 @@ const TableUniversal = ({ type, headers, RowComponent, Button }) => {
 };
 
 export default React.memo(TableUniversal);
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // const TableUniversal = ({type, headers, selectorKey, RowComponent, Button}) => {

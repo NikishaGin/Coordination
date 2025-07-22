@@ -98,9 +98,9 @@ const newFields = {
     arrest_end_date: "Дата снятия ареста",
     arrest_end_cause: "Основания снятия ареста с имущества",
     person_field_complaint: "Лицо подавшее жалобу",
-    complaint_date: "Дата жалобы",
     complaint_subject: "Предмет жалобы",
     complaint_source: "Орган рассматривающий жалобу",
+    complaint_date: "Дата жалобы",
     complaint_result: "Результат рассмотрения жалобы",
 }
 
@@ -175,6 +175,7 @@ const realEstateHeaders = {
     address:          "Адрес",
     cost:             "Стоимость",
     share_size:       "Размер доли в праве",
+    objectStatus:    "Статус объекта",
     registration_start_date: "Дата регистрации владения",
     registration_end_date: "Дата прекращения владения",
     encumbrance_type:  "Вид обременения",
@@ -188,10 +189,11 @@ const realEstateHeaders = {
 const debtorHeaders = {
     ...commonHeaders,
     debitor_inn:                   "ИНН дебитора",
-    debitor_names:                  "Наименование дебитора",
+    debitor_names:                 "Наименование дебитора",
     debitor_address:               "Адрес дебитора",
     date:                          "Дата ходатайства",
     total_sum:                     "Сумма по ходатайству",
+    objectStatus:                  "Статус объекта",
     ...enforcementHeaders,
     dz_foreclose_date:              "Обращение на взыскание ДЗ",
     dz_foreclose_sum:               "Сумма обращения на взыскание ДЗ (руб.)",
@@ -207,6 +209,7 @@ const otherAssetsHeaders = {
     category:          "Вид объекта собственности",     // type_id вместо property_type
     name:             "Наименование",
     cost:             "Стоимость",
+    objectStatus:     "Статус объекта",
     encumbrance_type: "Вид обременения",
     encumbrance_date: "Дата обременения",
     lizing_name:      "Наименование залогодержателя/лизингодателя", // lizing_name вместо holder_name
