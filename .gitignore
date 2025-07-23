@@ -11,6 +11,7 @@ BD
 SQL
 FileStore
 
+/generated/prisma
 node_modules
 dist
 dist-ssr

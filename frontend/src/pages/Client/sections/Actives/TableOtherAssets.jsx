@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import {TableRow, NumberCell, SelectCell, InputCell, DateCell, TableCell} from './components/table/TableStyles.js';
 import {UniversalSelect} from "./components/inputs/UniversalSelect.jsx";
-import {objStatusOptions, yesNoOptions, installedOptions, isFnsLizingOptions} from "./components/inputs/OptionsSelect.js"
+import {objStatusOptions, isVerifiedOptions, wantedResultOptions, isFnsLizingOptions} from "./components/inputs/OptionsSelect.js"
 import {CustomInput} from "./components/inputs/CustomInput.jsx";
 import {MoneyInput} from "./components/inputs/MoneyInput.jsx";
 import {DatePickerCell} from "./components/inputs/DatePickerCell.jsx";
@@ -75,7 +75,7 @@ export const TableOtherAssets = memo(({ type, row, onValueChange }) => {
                 <UniversalSelect
                     value={row.obj_status}
                     onChange={handleStringSelectChange('obj_status')}
-                    options={objStatusOptions}
+                    options={objStatusOptions(type)}
                 />
             </SelectCell>
             {/*Иной статус*/}
@@ -123,7 +123,7 @@ export const TableOtherAssets = memo(({ type, row, onValueChange }) => {
                 <UniversalSelect
                     value={row.is_verified}
                     onChange={handleSelectChange('is_verified')}
-                    options={yesNoOptions}
+                    options={isVerifiedOptions}
                 />
             </SelectCell>
             {/*Арест имущества*/}
@@ -159,7 +159,7 @@ export const TableOtherAssets = memo(({ type, row, onValueChange }) => {
                 <UniversalSelect
                     value={row.wanted_result}
                     onChange={handleSelectChange('wanted_result')}
-                    options={installedOptions}
+                    options={wantedResultOptions}
                 />
             </SelectCell>
             {/*Передано на оценку*/}

@@ -1,4 +1,4 @@
-export const objStatusOptions = [
+export const objStatusOptions = (type) => [
     {text: "", value: null},
     {text: "Розыск открыт", value: "wanted_open"},
     {text: "Розыск закрыт", value: "wanted_close"},
@@ -15,16 +15,25 @@ export const objStatusOptions = [
     {text: "Снятие ареста", value: "arrest_end"},
     {text: "Обжалование", value: "complaint"},
     {text: "Рассмотрена жалоба", value: "complaint_has_been_reviewed"},
-    {text: "Лизинг (залог иного лица)", value: "lizing"},
+    {text: "Лизинг (залог иного лица)", value: "leasing"},
+    ...(
+        (type === "debit")
+            ? [
+                {text: "Обращено взыскание", value: "foreclosure"},
+                {text: "Отмена взыскания", value: "foreclosure_cancel"},
+            ]
+            : []
+    ),
     {text: "Иное", value: "other"},
 ];
 
-export const yesNoOptions = [
+export const isVerifiedOptions = [
+    {value: null, text: ""},
     {value: 1, text: "Да"},
     {value: 0, text: "Нет"},
 ];
 
-export const installedOptions = [
+export const wantedResultOptions = [
     {value: 1, text: "В связи с розыском имущества должника"},
     {value: 0, text: "В связи с выполнением всех мероприятий по розыску"},
 ];

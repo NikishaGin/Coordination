@@ -1,0 +1,205 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// Роли пользователей
+enum UsersRole {
+  User
+  Admin
+  LimitedAdmin
+  LimitedAdminGMU
+}
+
+/// Раздел библиотеки
+enum LibraryType {
+  Documentation
+  Practice
+}
+
+/// Типы изменений данных
+enum ActionHistory {
+  Insert
+  Update
+  Delete
+}
+
+/// Виды активов
+enum ActivesType {
+  Transport
+  Property
+  Ground
+  Debit
+  Another
+}
+
+/// Таблица "Пользователи"
+model Users {
+  id           Int       @id @default(autoincrement())
+  regoinId     Int
+  role         UsersRole @default(User)
+  login        String    @unique @db.VarChar(250)
+  passwordHash String    @db.VarChar(250)
+  firstName    String?   @db.VarChar(250)
+  lastName     String?   @db.VarChar(250)
+  secondName   String?   @db.VarChar(250)
+
+  history History[]
+  region  Regions   @relation(fields: [regoinId], references: [id])
+}
+
+/// Таблица "История изменений"
+model History {
+  id        Int           @id @default(autoincrement())
+  userId    Int
+  tableName String        @db.VarChar(50)
+  fieldName String        @db.VarChar(50)
+  rowId     Int
+  value     Json?         @db.Json
+  action    ActionHistory
+  stamp     DateTime      @default(now())
+
+  user Users @relation(fields: [userId], references: [id])
+}
+
+/// Таблица настройки сервиса - включение/выключение сервисного режима
+model Settings {
+  id          Int     @id @default(autoincrement())
+  serviceMode Boolean @default(false)
+}
+
+/// Таблица "Библиотека"
+model Library {
+  id               Int         @id @default(autoincrement())
+  source           LibraryType
+  originalFilename String      @db.VarChar(250)
+  systemsFilename  String?     @db.VarChar(250)
+}
+
+/// Таблица "Регионы"
+model Regions {
+  id         Int     @id @default(autoincrement())
+  regionCode String  @unique @db.VarChar(4)
+  regionName String? @db.VarChar(128)
+  codeTNO    String? @db.VarChar(4)
+
+  sonoName String? @db.VarChar(512)
+
+  user   Users[]
+  person DebtorPersons[]
+}
+
+/// Таблица "Должники"
+model DebtorPersons {
+  id       Int     @id @default(autoincrement())
+  regoinId Int
+  inn      String  @unique @db.VarChar(12)
+  name     String  @db.Text
+  category String? @db.VarChar(10)
+
+  codeTNO  String? @db.VarChar(4)
+  codeSOSP String? @db.VarChar(10)
+
+  region      Regions       @relation(fields: [regoinId], references: [id])
+  resolutions Resolutions[]
+  actives     Actives[]
+
+  @@map("debtor_persons")
+}
+
+/// Таблица "Постановления"
+model Resolutions {
+  id                         Int       @id @default(autoincrement())
+  userId                     Int
+  resolutionNumber           String    @db.Text
+  resolutionDate             DateTime  @db.Date
+  resolutionAmount           Float     @db.Float
+  currentBalance             Float     @db.Float
+  proceedingNumber           String?   @db.Text
+  proceedingBeginDate        DateTime? @db.Date
+  proceedingStopDate         DateTime? @db.Date
+  proceedingEndDate          DateTime? @db.Date
+  proceedingEndReason        String?   @db.Text
+  proceedingPostponementDate DateTime? @db.Date
+  proceedingTerminateDate    DateTime? @db.Date
+  isArchived                 Boolean   @default(false)
+  isDerived                  Boolean   @default(false)
+
+  person DebtorPersons @relation(fields: [userId], references: [id])
+}
+
+/// Таблица "Активы должника"
+model Actives {
+  id     Int         @id @default(autoincrement())
+  userId Int
+  type   ActivesType
+
+  name              String  @db.VarChar(512)
+  totalSum          Float   @db.Float
+  statusObject      String  @db.VarChar(10)
+  otherStatusObject String  @db.VarChar(50)
+  isVerified        Boolean @default(false)
+  nameLessor        String? @db.VarChar(250)
+  isDepositFNS      Boolean @default(false)
+  verifyFSSP        String? @db.Text
+  comment           String? @db.Text
+
+  person DebtorPersons     @relation(fields: [userId], references: [id])
+  action ExecutiveActions?
+}
+
+model ExecutiveActions {
+  id            Int @id @default(autoincrement())
+  activeId      Int @unique
+  arrestId      Int @unique
+  wantedId      Int @unique
+  evaluationId  Int @unique
+  encumbranceId Int @unique
+
+  active      Actives      @relation(fields: [activeId], references: [id])
+  encumbrance Encumbrance?
+  arrest      Arrests?
+  wanted      Wanted?
+  evaluation  Evaluation?
+
+  @@map("executive_actions")
+}
+
+model Arrests {
+  id     Int       @id @default(autoincrement())
+  date   DateTime? @db.Date
+  amount Float?    @db.Float
+
+  action ExecutiveActions @relation(fields: [id], references: [arrestId])
+}
+
+model Wanted {
+  id        Int       @id @default(autoincrement())
+  beginDate DateTime? @db.Date
+  endDate   DateTime? @db.Date
+  result    String?   @db.VarChar(20)
+
+  action ExecutiveActions @relation(fields: [id], references: [wantedId])
+}
+
+model Evaluation {
+  id        Int       @id @default(autoincrement())
+  beginDate DateTime? @db.Date
+  endDate   DateTime? @db.Date
+  amount    Float?    @db.Float
+
+  action ExecutiveActions @relation(fields: [id], references: [evaluationId])
+}
+
+model Encumbrance {
+  id              Int       @id @default(autoincrement())
+  encumbranceType String?   @db.VarChar(250)
+  encumbranceDate DateTime? @db.Date
+
+  action ExecutiveActions @relation(fields: [id], references: [encumbranceId])
+}
