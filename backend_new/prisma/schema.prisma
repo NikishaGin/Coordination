@@ -38,25 +38,51 @@ enum ActivesType {
   Another
 }
 
+enum StatusObject {
+  wanted_open
+  wanted_close
+  arrest
+  evaluation_submit
+  evaluation
+  realization_submit_1
+  realization_1
+  not_realization_1
+  realization_submit_2
+  realization_2
+  not_realization_2
+  return_property_to_debtor
+  arrest_end
+  complaint
+  complaint_has_been_reviewed
+  leasing
+  foreclosure
+  foreclosure_cancel
+  other
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+
 /// Таблица "Пользователи"
 model Users {
   id           Int       @id @default(autoincrement())
-  regoinId     Int
   role         UsersRole @default(User)
-  login        String    @unique @db.VarChar(250)
-  passwordHash String    @db.VarChar(250)
-  firstName    String?   @db.VarChar(250)
-  lastName     String?   @db.VarChar(250)
-  secondName   String?   @db.VarChar(250)
+  login        String    @db.VarChar(50) @unique
+  passwordHash String    @db.VarChar(255)
+  firstName    String?   @db.VarChar(50)
+  lastName     String?   @db.VarChar(50)
+  secondName   String?   @db.VarChar(50)
 
-  history History[]
+  regoinId Int
+
   region  Regions   @relation(fields: [regoinId], references: [id])
+  history History[]
 }
+
+//////////////////////////////////////////////////////////////////////////////////
 
 /// Таблица "История изменений"
 model History {
   id        Int           @id @default(autoincrement())
-  userId    Int
   tableName String        @db.VarChar(50)
   fieldName String        @db.VarChar(50)
   rowId     Int
@@ -64,8 +90,12 @@ model History {
   action    ActionHistory
   stamp     DateTime      @default(now())
 
+  userId Int
+
   user Users @relation(fields: [userId], references: [id])
 }
+
+//////////////////////////////////////////////////////////////////////////////////
 
 /// Таблица настройки сервиса - включение/выключение сервисного режима
 model Settings {
@@ -73,49 +103,94 @@ model Settings {
   serviceMode Boolean @default(false)
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+
 /// Таблица "Библиотека"
 model Library {
   id               Int         @id @default(autoincrement())
   source           LibraryType
-  originalFilename String      @db.VarChar(250)
-  systemsFilename  String?     @db.VarChar(250)
+  originalFilename String      @db.VarChar(255)
+  systemsFilename  String?     @db.VarChar(255)
 }
+
+//////////////////////////////////////////////////////////////////////////////////
+
+/// Таблица "СОСП"
+model SOSP {
+  id       Int    @id @default(autoincrement())
+  CodeSOSP String @db.VarChar(10)
+
+  user Users[]
+
+  @@map("sosp")
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+
+/// Таблица "ТНО"
+model TNO {
+  id      Int    @id @default(autoincrement())
+  CodeTNO String @db.VarChar(4)
+
+  regionId Int
+
+  region Regions         @relation(fields: [regionId], references: [id])
+  person DebtorPersons[]
+
+  @@map("tno")
+}
+
+//////////////////////////////////////////////////////////////////////////////////
 
 /// Таблица "Регионы"
 model Regions {
   id         Int     @id @default(autoincrement())
-  regionCode String  @unique @db.VarChar(4)
+  regionCode String  @db.VarChar(4) @unique
   regionName String? @db.VarChar(128)
-  codeTNO    String? @db.VarChar(4)
+  sonoName   String? @db.VarChar(512)
 
-  sonoName String? @db.VarChar(512)
-
-  user   Users[]
-  person DebtorPersons[]
+  user Users[]
+  tno  TNO[]
 }
+
+//////////////////////////////////////////////////////////////////////////////////
+
+/// Таблица "Категории должников"
+model DebtorCategories {
+  id       Int    @id @default(autoincrement())
+  category String @db.VarChar(10)
+
+  user Users[]
+
+  @@map("debtor_categories")
+}
+
+//////////////////////////////////////////////////////////////////////////////////
 
 /// Таблица "Должники"
 model DebtorPersons {
-  id       Int     @id @default(autoincrement())
-  regoinId Int
-  inn      String  @unique @db.VarChar(12)
-  name     String  @db.Text
-  category String? @db.VarChar(10)
+  id   Int    @id @default(autoincrement())
+  inn  String @db.VarChar(12) @unique
+  name String @db.VarChar(512)
 
-  codeTNO  String? @db.VarChar(4)
-  codeSOSP String? @db.VarChar(10)
+  categoryId Int
+  tnoId      Int
+  sospId     Int
 
-  region      Regions       @relation(fields: [regoinId], references: [id])
+  category    DebtorCategories @relation(fields: [categoryId], references: [id])
+  tno         TNO              @relation(fields: [tnoId], references: [id])
+  sosp        SOSP             @relation(fields: [sospId], references: [id])
   resolutions Resolutions[]
   actives     Actives[]
 
   @@map("debtor_persons")
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+
 /// Таблица "Постановления"
 model Resolutions {
   id                         Int       @id @default(autoincrement())
-  userId                     Int
   resolutionNumber           String    @db.Text
   resolutionDate             DateTime  @db.Date
   resolutionAmount           Float     @db.Float
@@ -127,29 +202,33 @@ model Resolutions {
   proceedingEndReason        String?   @db.Text
   proceedingPostponementDate DateTime? @db.Date
   proceedingTerminateDate    DateTime? @db.Date
-  isArchived                 Boolean   @default(false)
-  isDerived                  Boolean   @default(false)
 
-  person DebtorPersons @relation(fields: [userId], references: [id])
+  isArchived Boolean @default(false)
+  isDerived  Boolean @default(false)
+
+  personId Int
+  person   DebtorPersons @relation(fields: [personId], references: [id])
 }
+
+//////////////////////////////////////////////////////////////////////////////////
 
 /// Таблица "Активы должника"
 model Actives {
-  id     Int         @id @default(autoincrement())
-  userId Int
-  type   ActivesType
+  id                Int         @id @default(autoincrement())
+  type              ActivesType
+  name              String      @db.VarChar(512)
+  totalSum          Float       @db.Float
+  statusObject      String      @db.VarChar(10)
+  otherStatusObject String      @db.VarChar(50)
+  isVerified        Boolean     @default(false)
+  nameLessor        String?     @db.VarChar(250)
+  isDepositFNS      Boolean     @default(false)
+  verifyFSSP        String?     @db.Text ////////////
+  comment           String?     @db.Text
 
-  name              String  @db.VarChar(512)
-  totalSum          Float   @db.Float
-  statusObject      String  @db.VarChar(10)
-  otherStatusObject String  @db.VarChar(50)
-  isVerified        Boolean @default(false)
-  nameLessor        String? @db.VarChar(250)
-  isDepositFNS      Boolean @default(false)
-  verifyFSSP        String? @db.Text
-  comment           String? @db.Text
+  personId Int
+  person   DebtorPersons @relation(fields: [personId], references: [id])
 
-  person DebtorPersons     @relation(fields: [userId], references: [id])
   action ExecutiveActions?
 }
 
