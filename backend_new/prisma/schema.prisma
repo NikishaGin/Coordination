@@ -275,6 +275,7 @@ model Resolutions {
   WritExecutionTerminateDate    DateTime? @db.Date
   isArchived                    Boolean?  @default(false)
   isDerived                     Boolean?  @default(false)
+  isVisible                     Boolean   @default(true)
 
   personId Int
   person   DebtorPersons @relation(fields: [personId], references: [id])
@@ -296,6 +297,7 @@ model Actives {
   isLeasing         LeasStatus?
   comment           String?       @db.Text
   uploadDate        DateTime?     @db.Date
+  isVisible         Boolean       @default(true)
 
   personId Int
   person   DebtorPersons @relation(fields: [personId], references: [id])
@@ -429,7 +431,7 @@ model DebitForeclosure {
   requestDate   DateTime? @db.Date
   requestAmount Decimal?  @db.Decimal(15, 2)
   cancelDate    DateTime? @db.Date
-  cancelAmount  Decimal?  @db.Decimal(15, 2)
+  cancelReason  String?   @db.VarChar(512)
 
   activeId Int     @unique
   active   Actives @relation("Actives_DebitForeclosure", fields: [activeId], references: [id])

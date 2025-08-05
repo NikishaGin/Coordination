@@ -138,7 +138,7 @@ LEFT JOIN (
 LEFT JOIN coordination_new.sosp ON coordination.meta.sosp_code COLLATE utf8mb4_general_ci = coordination_new.sosp.CodeSOSP
 UNION ALL
 SELECT
-    DISTINCT result.inn,
+    result.inn,
     NULL,
     0,
     NULL,
@@ -273,7 +273,19 @@ ORDER BY coordination_new.debtor_persons.id, result.type;
 
 SET sql_mode = (SELECT REPLACE(@@sql_mode, 'NO_ZERO_DATE', ''));
 
-INSERT INTO coordination_new.actives
+INSERT INTO coordination_new.actives (
+                                      id,
+                                      type,
+                                      status,
+                                      objectStatus,
+                                      otherObjectStatus,
+                                      isVerified,
+                                      nameLessor,
+                                      isLeasing,
+                                      comment,
+                                      uploadDate,
+                                      personId
+)
 SELECT
     temp.activeId,
     temp.type,
@@ -293,7 +305,7 @@ SELECT
         WHEN result.is_fns_lizing = 2 THEN 'IS_NOT_PLEDGE_HOLDER'
     END,
     result.comment,
-    IF(result.load_date = '0000-00-00', NULL, result.load_date),
+    NULLIF(result.load_date, '0000-00-00'),
     temp.personId
 FROM (
      SELECT
@@ -328,11 +340,11 @@ SELECT
     result.f3,
     result.f4,
     result.f5,
-    CAST(REPLACE(IF(result.f6 = '', NULL, result.f6), ',', '.') AS FLOAT),
+    CAST(REPLACE(NULLIF(result.f6, ''), ',', '.') AS FLOAT),
     result.f7,
     result.f8,
     result.f9,
-    result.f10,
+    REGEXP_REPLACE(result.f10, '[[:space:]]', ''),
     result.f11,
     result.f12
 FROM (
@@ -362,10 +374,10 @@ ORDER BY temp.activeId;
 
 INSERT INTO coordination_new.arrests (beginDate, endDate, endReason, amount, activeId)
 SELECT
-    result.arrest_propperty,
-    result.arrest_end_date,
-    result.arrest_end_cause,
-    result.arrest_sum,
+    result.arrest_propperty AS beginDate,
+    result.arrest_end_date AS endDate,
+    result.arrest_end_cause AS endReason,
+    result.arrest_sum AS amount,
     temp.activeId
 FROM (
          SELECT
@@ -389,26 +401,26 @@ FROM (
          FROM coordination.another t
      ) AS result
 LEFT JOIN coordination_new.temp_active_mapping temp ON ((result.type = temp.type) AND (result.id = temp.oldActiveId))
-WHERE
-    result.arrest_propperty IS NOT NULL
+HAVING
+    beginDate IS NOT NULL
    OR
-    result.arrest_end_date IS NOT NULL
+    endDate IS NOT NULL
    OR
-    result.arrest_end_cause IS NOT NULL
+    endReason IS NOT NULL
    OR
-    result.arrest_sum IS NOT NULL
-ORDER BY temp.activeId, result.arrest_propperty;
+    amount IS NOT NULL
+ORDER BY temp.activeId, beginDate;
 
 
 INSERT INTO coordination_new.wanteds (beginDate, endDate, result, activeId)
 SELECT
-    result.wanted_open,
-    result.wanted_close,
+    result.wanted_open AS beginDate,
+    result.wanted_close AS endDate,
     CASE
         WHEN result.wanted_result = '1' THEN 'FINDING_PROPERTY'
         WHEN result.wanted_result = 'Не установлено' THEN 'END_PROPERTY_SEARCH_ACTIVITIES'
         WHEN result.wanted_result = '0' THEN 'END_PROPERTY_SEARCH_ACTIVITIES'
-    END,
+    END AS resultWanted,
     temp.activeId
 FROM (
      SELECT
@@ -432,20 +444,20 @@ FROM (
      FROM coordination.another t
  ) AS result
 LEFT JOIN coordination_new.temp_active_mapping temp ON ((result.type = temp.type) AND (result.id = temp.oldActiveId))
-WHERE
-    result.wanted_open IS NOT NULL
+HAVING
+    beginDate IS NOT NULL
     OR
-    result.wanted_close IS NOT NULL
+    endDate IS NOT NULL
     OR
-    result.wanted_result IS NOT NULL
-ORDER BY temp.activeId, result.wanted_open;
+    resultWanted IS NOT NULL
+ORDER BY temp.activeId, beginDate;
 
 
 INSERT INTO coordination_new.evaluations (beginDate, endDate, amount, activeId)
 SELECT
-    result.evaluation_submit,
-    result.evaluation_accept,
-    result.evaluation_sum,
+    result.evaluation_submit AS beginDate,
+    result.evaluation_accept AS endDate,
+    result.evaluation_sum AS amount,
     temp.activeId
 FROM (
          SELECT
@@ -469,19 +481,19 @@ FROM (
          FROM coordination.another t
      ) AS result
 LEFT JOIN coordination_new.temp_active_mapping temp ON ((result.type = temp.type) AND (result.id = temp.oldActiveId))
-WHERE
-    result.evaluation_submit IS NOT NULL
+HAVING
+    beginDate IS NOT NULL
     OR
-    result.evaluation_accept IS NOT NULL
+    endDate IS NOT NULL
     OR
-    result.evaluation_sum IS NOT NULL
-ORDER BY temp.activeId, result.evaluation_submit;
+    amount IS NOT NULL
+ORDER BY temp.activeId, beginDate;
 
 
 INSERT INTO coordination_new.encumbrances (type, date, activeId)
 SELECT
-    result.encumbrance_type,
-    result.encumbrance_date,
+    NULLIF(result.encumbrance_type, '') AS type,
+    result.encumbrance_date AS date,
     temp.activeId
 FROM (
      SELECT
@@ -505,11 +517,11 @@ FROM (
      FROM coordination.another t
 ) AS result
 LEFT JOIN coordination_new.temp_active_mapping temp ON ((result.type = temp.type) AND (result.id = temp.oldActiveId))
-WHERE
-    result.encumbrance_type IS NOT NULL
+HAVING
+    type IS NOT NULL
     OR
-    result.encumbrance_date IS NOT NULL
-ORDER BY temp.activeId, result.encumbrance_date;
+    date IS NOT NULL
+ORDER BY temp.activeId, date;
 
 
 DROP TABLE IF EXISTS coordination_new.temp_realizations;
@@ -589,29 +601,29 @@ UNION ALL
 INSERT INTO coordination_new.realizations
 SELECT *
 FROM coordination_new.temp_realizations t
-WHERE
-    t.submitDate IS NOT NULL
+HAVING
+    submitDate IS NOT NULL
     OR
-    t.submitAmount IS NOT NULL
+    submitAmount IS NOT NULL
     OR
-    t.realizationDate IS NOT NULL
+    realizationDate IS NOT NULL
     OR
-    t.realizationResultDate IS NOT NULL
+    realizationResultDate IS NOT NULL
     OR
-    t.realizedPropertyAmount IS NOT NULL
+    realizedPropertyAmount IS NOT NULL
     OR
-    t.notificationNotRealizationDate IS NOT NULL
+    notificationNotRealizationDate IS NOT NULL
     OR
-    t.notRealizationReason IS NOT NULL
-ORDER BY t.activeId, t.stage;
+    notRealizationReason IS NOT NULL
+ORDER BY activeId, stage;
 
 DROP TABLE IF EXISTS coordination_new.temp_realizations;
 
 
 INSERT INTO coordination_new.refund_property (date, amount, activeId)
 SELECT
-    result.property_to_debtor_act,
-    result.property_to_debtor_sum,
+    result.property_to_debtor_act AS date,
+    result.property_to_debtor_sum AS amount,
     temp.activeId
 FROM (
      SELECT
@@ -635,40 +647,38 @@ FROM (
      FROM coordination.another t
 ) AS result
 LEFT JOIN coordination_new.temp_active_mapping temp ON ((result.type = temp.type) AND (result.id = temp.oldActiveId))
-WHERE
-    result.property_to_debtor_act IS NOT NULL
+HAVING
+    date IS NOT NULL
    OR
-    result.property_to_debtor_sum IS NOT NULL
-ORDER BY temp.activeId, result.property_to_debtor_act;
+    amount IS NOT NULL
+ORDER BY temp.activeId, date;
 
 
-/*
-INSERT INTO coordination_new.debit_foreclosure (requestDate, requestAmount, cancelDate, cancelAmount, activeId)
+
+INSERT INTO coordination_new.debit_foreclosure (requestDate, requestAmount, cancelDate, cancelReason, activeId)
 SELECT
-    t.dz_foreclose_date,
-    t.dz_foreclose_sum,
-    t.dz_cancel_foreclose_date,
-    t.dz_cancel_foreclose_sum,
+    t.dz_foreclose_date AS requestDate,
+    t.dz_foreclose_sum AS requestAmount,
+    t.dz_cancel_foreclose_date AS cancelDate,
+    t.dz_cancel_foreclose_sum AS cancelReason,
     temp.activeId
 FROM coordination.debit t
 LEFT JOIN coordination_new.temp_active_mapping temp ON ((temp.type = 'DEBIT') AND (temp.oldActiveId = t.id))
-WHERE
-    t.dz_foreclose_date IS NOT NULL
+HAVING
+    requestDate IS NOT NULL
     OR
-    t.dz_foreclose_sum IS NOT NULL
+    requestAmount IS NOT NULL
     OR
-    t.dz_cancel_foreclose_date IS NOT NULL
+    cancelDate IS NOT NULL
     OR
-    t.dz_cancel_foreclose_sum IS NOT NULL
-ORDER BY temp.activeId, t.dz_foreclose_date;
- */
+    cancelReason IS NOT NULL
+ORDER BY temp.activeId, requestDate;
 
 
-/*
 INSERT INTO coordination_new.active_registrations (beginDate, endDate, activeId)
 SELECT
-    result.registration_start_date,
-    result.registration_end_date,
+    NULLIF(STR_TO_DATE(result.registration_start_date, '%Y-%m-%d'), '0000-00-00') AS beginDate,
+    NULLIF(STR_TO_DATE(result.registration_end_date, '%Y-%m-%d'), '0000-00-00') AS endDate,
     temp.activeId
 FROM (
      SELECT
@@ -682,21 +692,20 @@ FROM (
      FROM coordination.property t
 ) AS result
 LEFT JOIN coordination_new.temp_active_mapping temp ON ((result.type = temp.type) AND (result.id = temp.oldActiveId))
-WHERE
-    result.registration_start_date IS NOT NULL
-   OR
-    result.registration_end_date IS NOT NULL
-ORDER BY temp.activeId, result.registration_start_date, result.registration_end_date;
- */
+HAVING
+    beginDate IS NOT NULL
+    OR
+    endDate IS NOT NULL
+ORDER BY temp.activeId, beginDate, endDate;
 
 
 INSERT INTO coordination_new.complaints (personWhoFiled, date, subject, source, result, activeId)
 SELECT
-    result.person_filed_complaint,
-    result.complaint_date,
-    result.complaint_subject,
-    result.complaint_source,
-    result.complaint_result,
+    result.person_filed_complaint AS personWhoFiled,
+    result.complaint_date AS date,
+    result.complaint_subject AS subject,
+    result.complaint_source AS source,
+    result.complaint_result AS resultComplint,
     temp.activeId
 FROM (
      SELECT
@@ -720,17 +729,17 @@ FROM (
      FROM coordination.another t
     ) AS result
     LEFT JOIN coordination_new.temp_active_mapping temp ON ((result.type = temp.type) AND (result.id = temp.oldActiveId))
-WHERE
-    result.person_filed_complaint IS NOT NULL
+HAVING
+    personWhoFiled IS NOT NULL
     OR
-    result.complaint_date IS NOT NULL
+    date IS NOT NULL
     OR
-    result.complaint_subject IS NOT NULL
+    subject IS NOT NULL
     OR
-    result.complaint_source IS NOT NULL
+    source IS NOT NULL
     OR
-    result.complaint_result IS NOT NULL
-ORDER BY temp.activeId, result.complaint_date;
+    resultComplint IS NOT NULL
+ORDER BY temp.activeId, date;
 
 
 DROP TABLE IF EXISTS coordination_new.temp_active_mapping;

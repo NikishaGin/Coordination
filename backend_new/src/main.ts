@@ -1,22 +1,30 @@
 import { NestFactory } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
+import {
+    FastifyAdapter,
+    NestFastifyApplication,
+} from '@nestjs/platform-fastify';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-    const port = process.env.PORT ?? 3000;
-    const host = process.env.HOST ?? '127.0.0.1';
-    const origin: string[] = process.env.ORIGIN?.split(',') ?? ['localhost'];
+    const app = await NestFactory.create<NestFastifyApplication>(
+        AppModule,
+        new FastifyAdapter(),
+    );
 
-    const app = await NestFactory.create(AppModule);
+    const configService = app.get(ConfigService);
+    const host = configService.get<string>('HOST');
+    const port = configService.get<number>('PORT');
+    const origins = configService.get<string[]>('ORIGINS') ?? [];
 
     app.setGlobalPrefix('api');
-
     app.enableCors({
-        origin: origin,
+        origin: origins,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
         credentials: true,
     });
 
-    await app.listen(port, host, () => {
+    await app.listen(port!, host!, () => {
         console.log(`Сервер запущен на http://${host}:${port}/ ...`);
     });
 }
