@@ -7,16 +7,17 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-BD
-SQL
 FileStore
 
-/generated/prisma
+/generated/prisma/
+*/prisma/client/
+*/prisma/migrations/
 node_modules
 dist
 dist-ssr
 *.local
 .env
+*-lock.json
 
 # Editor directories and files
 .vscode/*
