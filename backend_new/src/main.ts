@@ -4,6 +4,7 @@ import {
     FastifyAdapter,
     NestFastifyApplication,
 } from '@nestjs/platform-fastify';
+import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -23,6 +24,14 @@ async function bootstrap() {
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
         credentials: true,
     });
+
+    app.useGlobalPipes(
+        new ValidationPipe({
+            whitelist: true,
+            forbidNonWhitelisted: false,
+            transform: true,
+        }),
+    );
 
     await app.listen(port!, host!, () => {
         console.log(`Сервер запущен на http://${host}:${port}/ ...`);

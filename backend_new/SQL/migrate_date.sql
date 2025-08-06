@@ -677,18 +677,20 @@ ORDER BY temp.activeId, requestDate;
 
 INSERT INTO coordination_new.active_registrations (beginDate, endDate, activeId)
 SELECT
-    NULLIF(STR_TO_DATE(result.registration_start_date, '%Y-%m-%d'), '0000-00-00') AS beginDate,
-    NULLIF(STR_TO_DATE(result.registration_end_date, '%Y-%m-%d'), '0000-00-00') AS endDate,
+    result.beginDate,
+    result.endDate,
     temp.activeId
 FROM (
      SELECT
          t.id, 'TRANSPORT' AS type,
-         t.registration_start_date, t.registration_end_date
+         IF(MONTH(t.registration_start_date) > 0, t.registration_start_date, NULL) AS beginDate,
+         IF(MONTH(t.registration_end_date) > 0, t.registration_end_date, NULL) AS endDate
      FROM coordination.transport t
      UNION ALL
      SELECT
          t.id, IF(t.type_id = 2, 'PROPERTY', 'GROUND') AS type,
-         t.registration_start_date, t.registration_end_date
+         IF(MONTH(t.registration_start_date) > 0, t.registration_start_date, NULL) AS beginDate,
+         IF(MONTH(t.registration_end_date) > 0, t.registration_end_date, NULL) AS endDate
      FROM coordination.property t
 ) AS result
 LEFT JOIN coordination_new.temp_active_mapping temp ON ((result.type = temp.type) AND (result.id = temp.oldActiveId))
