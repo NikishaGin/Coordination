@@ -11,10 +11,10 @@ DELETE FROM coordination_new.description_actives WHERE id >= 0;
 DELETE FROM coordination_new.actives WHERE id >= 0;
 DELETE FROM coordination_new.resolutions WHERE id >= 0;
 DELETE FROM coordination_new.interactions WHERE id >= 0;
-DELETE FROM coordination_new.debtor_persons WHERE id >= 0;
+DELETE FROM coordination_new.clients WHERE id >= 0;
 DELETE FROM coordination_new.history WHERE id >= 0;
 DELETE FROM coordination_new.users WHERE id >= 0;
-DELETE FROM coordination_new.debtor_categories WHERE id >= 0;
+DELETE FROM coordination_new.client_categories WHERE id >= 0;
 DELETE FROM coordination_new.tno WHERE id >= 0;
 DELETE FROM coordination_new.sosp WHERE id >= 0;
 DELETE FROM coordination_new.regions WHERE id >= 0;
@@ -27,10 +27,10 @@ ALTER TABLE coordination_new.library AUTO_INCREMENT = 1;
 ALTER TABLE coordination_new.regions AUTO_INCREMENT = 1;
 ALTER TABLE coordination_new.sosp AUTO_INCREMENT = 1;
 ALTER TABLE coordination_new.tno AUTO_INCREMENT = 1;
-ALTER TABLE coordination_new.debtor_categories AUTO_INCREMENT = 1;
+ALTER TABLE coordination_new.client_categories AUTO_INCREMENT = 1;
 ALTER TABLE coordination_new.users AUTO_INCREMENT = 1;
 ALTER TABLE coordination_new.history AUTO_INCREMENT = 1;
-ALTER TABLE coordination_new.debtor_persons AUTO_INCREMENT = 1;
+ALTER TABLE coordination_new.clients AUTO_INCREMENT = 1;
 ALTER TABLE coordination_new.interactions AUTO_INCREMENT = 1;
 ALTER TABLE coordination_new.resolutions AUTO_INCREMENT = 1;
 ALTER TABLE coordination_new.actives AUTO_INCREMENT = 1;
@@ -85,7 +85,7 @@ HAVING
 ORDER BY code, rID;
 
 
-INSERT INTO coordination_new.debtor_categories (category)
+INSERT INTO coordination_new.client_categories (category)
 SELECT
     coordination.debt_type.debt_type
 FROM coordination.debt_type
@@ -111,7 +111,7 @@ LEFT JOIN coordination_new.regions ON coordination.users.region COLLATE utf8mb4_
 ORDER BY coordination.users.username;
 
 
-INSERT INTO coordination_new.debtor_persons (inn, name, isVisible, categoryId, tnoId, sospId)
+INSERT INTO coordination_new.clients (inn, name, isVisible, categoryId, tnoId, sospId)
 SELECT
     coordination.meta.inn,
     coordination.meta.name,
@@ -123,9 +123,9 @@ FROM coordination.meta
 LEFT JOIN (
     SELECT
         coordination.debt_type.id AS oldId,
-        coordination_new.debtor_categories.id AS newId
-    FROM coordination_new.debtor_categories
-    LEFT JOIN coordination.debt_type ON coordination.debt_type.debt_type COLLATE utf8mb4_general_ci = coordination_new.debtor_categories.category
+        coordination_new.client_categories.id AS newId
+    FROM coordination_new.client_categories
+    LEFT JOIN coordination.debt_type ON coordination.debt_type.debt_type COLLATE utf8mb4_general_ci = coordination_new.client_categories.category
 ) AS cat ON coordination.meta.debt_type = cat.oldId
 LEFT JOIN (
     SELECT
@@ -171,7 +171,7 @@ INSERT INTO coordination_new.interactions (
                                            systemsFilename_1,
                                            systemsFilename_2,
                                            tnoId,
-                                           personId
+                                           clientId
 )
 SELECT
     coordination.interactions.source AS type,
@@ -184,11 +184,11 @@ SELECT
     coordination.interactions.systemsFilename_1,
     coordination.interactions.systemsFilename_2,
     coordination_new.tno.id,
-    coordination_new.debtor_persons.id AS personId
+    coordination_new.clients.id AS clientId
 FROM coordination.interactions
 LEFT JOIN coordination_new.tno ON coordination.interactions.kno COLLATE utf8mb4_general_ci = coordination_new.tno.CodeTNO
-LEFT JOIN coordination_new.debtor_persons ON coordination.interactions.inn COLLATE utf8mb4_general_ci = coordination_new.debtor_persons.inn
-ORDER BY personId, type;
+LEFT JOIN coordination_new.clients ON coordination.interactions.inn COLLATE utf8mb4_general_ci = coordination_new.clients.inn
+ORDER BY clientId, type;
 
 
 INSERT INTO coordination_new.resolutions (
@@ -205,7 +205,7 @@ INSERT INTO coordination_new.resolutions (
                                           WritExecutionTerminateDate,
                                           isArchived,
                                           isDerived,
-                                          personId
+                                          clientId
 )
 SELECT
     coordination.resolutions.post_number AS number,
@@ -221,25 +221,25 @@ SELECT
     coordination.resolutions.terminate_date,
     coordination.resolutions.is_archive,
     coordination.resolutions.is_derivative_debt,
-    coordination_new.debtor_persons.id AS personId
+    coordination_new.clients.id AS clientId
 FROM coordination.resolutions
-RIGHT JOIN coordination_new.debtor_persons ON coordination.resolutions.inn COLLATE utf8mb4_general_ci = coordination_new.debtor_persons.inn
-ORDER BY personId, number, date;
+RIGHT JOIN coordination_new.clients ON coordination.resolutions.inn COLLATE utf8mb4_general_ci = coordination_new.clients.inn
+ORDER BY clientId, number, date;
 
 
 DROP TABLE IF EXISTS coordination_new.temp_active_mapping;
 
 CREATE TABLE coordination_new.temp_active_mapping (
     activeId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    personId INT NOT NULL,
+    clientId INT NOT NULL,
     oldActiveId INT NOT NULL,
     type enum('TRANSPORT', 'PROPERTY', 'GROUND', 'DEBIT', 'OTHER') NOT NULL
 );
 
 
-INSERT INTO coordination_new.temp_active_mapping (personId, oldActiveId, type)
+INSERT INTO coordination_new.temp_active_mapping (clientId, oldActiveId, type)
 SELECT
-    coordination_new.debtor_persons.id,
+    coordination_new.clients.id,
     result.id,
     result.type
 FROM (
@@ -267,8 +267,8 @@ FROM (
         'OTHER' AS type
     FROM coordination.another
 ) AS result
-LEFT JOIN coordination_new.debtor_persons ON result.inn COLLATE utf8mb4_general_ci = coordination_new.debtor_persons.inn
-ORDER BY coordination_new.debtor_persons.id, result.type;
+LEFT JOIN coordination_new.clients ON result.inn COLLATE utf8mb4_general_ci = coordination_new.clients.inn
+ORDER BY coordination_new.clients.id, result.type;
 
 
 SET sql_mode = (SELECT REPLACE(@@sql_mode, 'NO_ZERO_DATE', ''));
@@ -284,7 +284,7 @@ INSERT INTO coordination_new.actives (
                                       isLeasing,
                                       comment,
                                       uploadDate,
-                                      personId
+                                      clientId
 )
 SELECT
     temp.activeId,
@@ -306,7 +306,7 @@ SELECT
     END,
     result.comment,
     NULLIF(result.load_date, '0000-00-00'),
-    temp.personId
+    temp.clientId
 FROM (
      SELECT
          t.id, 'TRANSPORT' AS type,

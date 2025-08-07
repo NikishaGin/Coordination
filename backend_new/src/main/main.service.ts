@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, DebtorCategories } from 'src/generated/prisma/client';
+import { Prisma, ClientCategories } from 'src/generated/prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { MainDto } from './main.dto';
 
@@ -8,20 +8,28 @@ export class MainService {
     constructor(private prisma: PrismaService) {}
 
     createClientFilter(data: MainDto): Prisma.ResolutionsListRelationFilter {
+        const isExistsDate = data.isArchived ? { equals: null } : { not: null };
+        const filterIsArchived = {
+            OR: [
+                { isArchived: data.isArchived },
+                { WritExecutionEndDate: isExistsDate },
+                { WritExecutionTerminateDate: isExistsDate },
+            ],
+        };
         return {
             some: {
                 isDerived: data.isDerived,
-                ...(!data.isArchived ? { isArchived: false } : {}), /////////////////////////
+                ...(!data.isArchived ? filterIsArchived : {}),
             },
             every: {
                 isVisible: true,
-                ...(data.isArchived ? { isDerived: true } : {}),
+                ...(data.isArchived ? filterIsArchived : {}),
             },
         };
     }
 
-    getDebtorCategories(): Promise<DebtorCategories[]> {
-        return this.prisma.debtorCategories.findMany();
+    getClientCategories(): Promise<ClientCategories[]> {
+        return this.prisma.clientCategories.findMany();
     }
 
     getRegions(
@@ -32,7 +40,7 @@ export class MainService {
             where: {
                 tno: {
                     some: {
-                        person: {
+                        client: {
                             some: { resolution: clientFilter },
                             every: { isVisible: true },
                         },
@@ -46,16 +54,39 @@ export class MainService {
         regionId: number,
         clientFilter: Prisma.ResolutionsListRelationFilter,
     ): Promise<any> {
-        return this.prisma.debtorPersons.findMany({
+        /*
+        return this.prisma.clients.findMany({
             where: {
                 resolution: clientFilter,
+                isVisible: true,
                 tno: { regionId },
             },
             include: {
                 tno: true,
                 sosp: true,
                 category: true,
-                resolution: true,
+            },
+            select: {
+                _sum: {
+                    select: {
+                        resolutionAmount: {
+                            sum: true,
+                            field: 'amount',
+                        },
+                        resolutionBalance: {
+                            sum: true,
+                            field: 'balance',
+                        },
+                    },
+                },
+            },
+        });
+        */
+        return this.prisma.realizations.groupBy({
+            by: ['clientId'],
+            _sum: {
+                amount: true,
+                ba,
             },
         });
     }

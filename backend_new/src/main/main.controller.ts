@@ -6,14 +6,20 @@ import { MainDto } from './main.dto';
 export class MainController {
     constructor(private readonly mainService: MainService) {}
 
-    @Get('debtor-categories')
-    getDebtorCategories(): Promise<any> {
-        return this.mainService.getDebtorCategories();
+    @Get('client-categories')
+    getClientCategories(): Promise<any> {
+        return this.mainService.getClientCategories();
     }
 
     @Post('regions')
     getRegions(@Body() data: MainDto): Promise<any> {
         const clientFilter = this.mainService.createClientFilter(data);
         return this.mainService.getRegions(clientFilter);
+    }
+
+    @Post('clients')
+    getClients(@Body() data: MainDto): Promise<any> {
+        const clientFilter = this.mainService.createClientFilter(data);
+        return this.mainService.getClients(data.regionId, clientFilter);
     }
 }

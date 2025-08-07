@@ -170,10 +170,10 @@ model Interactions {
   systemsFilename_2  String?          @db.VarChar(255)
 
   tnoId    Int? @db.UnsignedSmallInt
-  personId Int
+  clientId Int
 
-  tno    TNO?          @relation(fields: [tnoId], references: [id])
-  person DebtorPersons @relation(fields: [personId], references: [id])
+  tno    TNO?    @relation(fields: [tnoId], references: [id])
+  client Clients @relation(fields: [clientId], references: [id])
 
   @@map("interactions")
 }
@@ -185,7 +185,7 @@ model SOSP {
   id       Int    @id @default(autoincrement()) @db.UnsignedTinyInt
   CodeSOSP String @unique @db.VarChar(10)
 
-  person DebtorPersons[]
+  client Clients[]
 
   @@map("sosp")
 }
@@ -200,7 +200,7 @@ model TNO {
   regionId Int?     @db.UnsignedSmallInt
   region   Regions? @relation(fields: [regionId], references: [id])
 
-  person      DebtorPersons[]
+  client      Clients[]
   interaction Interactions[]
 
   @@unique([CodeTNO, regionId])
@@ -225,19 +225,19 @@ model Regions {
 //////////////////////////////////////////////////////////////////////////////////
 
 /// Таблица "Категории должников"
-model DebtorCategories {
+model ClientCategories {
   id       Int    @id @default(autoincrement()) @db.UnsignedTinyInt
   category String @unique @db.VarChar(10)
 
-  person DebtorPersons[]
+  client Clients[]
 
-  @@map("debtor_categories")
+  @@map("client_categories")
 }
 
 //////////////////////////////////////////////////////////////////////////////////
 
 /// Таблица "Должники"
-model DebtorPersons {
+model Clients {
   id        Int     @id @default(autoincrement())
   inn       String  @unique @db.VarChar(12)
   name      String? @db.VarChar(512)
@@ -247,14 +247,14 @@ model DebtorPersons {
   tnoId      Int? @db.UnsignedSmallInt
   sospId     Int? @db.UnsignedTinyInt
 
-  category    DebtorCategories? @relation(fields: [categoryId], references: [id])
+  category    ClientCategories? @relation(fields: [categoryId], references: [id])
   tno         TNO?              @relation(fields: [tnoId], references: [id])
   sosp        SOSP?             @relation(fields: [sospId], references: [id])
   interaction Interactions[]
   resolution  Resolutions[]
   active      Actives[]
 
-  @@map("debtor_persons")
+  @@map("clients")
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -277,8 +277,8 @@ model Resolutions {
   isDerived                     Boolean?  @default(false)
   isVisible                     Boolean   @default(true)
 
-  personId Int
-  person   DebtorPersons @relation(fields: [personId], references: [id])
+  clientId Int
+  client   Clients @relation(fields: [clientId], references: [id])
 
   @@map("resolutions")
 }
@@ -299,8 +299,8 @@ model Actives {
   uploadDate        DateTime?     @db.Date
   isVisible         Boolean       @default(true)
 
-  personId Int
-  person   DebtorPersons @relation(fields: [personId], references: [id])
+  clientId Int
+  client   Clients @relation(fields: [clientId], references: [id])
 
   description      DescriptionActives?  @relation("Actives_Description")
   arrest           Arrests?             @relation("Actives_Arrests")

@@ -3,10 +3,10 @@ ALTER TABLE coordination_new.library COMMENT = 'Таблица "Библиоте
 ALTER TABLE coordination_new.regions COMMENT = 'Таблица "Регионы"';
 ALTER TABLE coordination_new.sosp COMMENT = 'Таблица "СОСП"';
 ALTER TABLE coordination_new.tno COMMENT = 'Таблица "ТНО"';
-ALTER TABLE coordination_new.debtor_categories COMMENT = 'Таблица "Категории должников"';
+ALTER TABLE coordination_new.client_categories COMMENT = 'Таблица "Категории должников"';
 ALTER TABLE coordination_new.users COMMENT = 'Таблица "Пользователи сервиса"';
 ALTER TABLE coordination_new.history COMMENT = 'Таблица "История изменений в сервисе"';
-ALTER TABLE coordination_new.debtor_persons COMMENT = 'Таблица "Должники"';
+ALTER TABLE coordination_new.clients COMMENT = 'Таблица "Должники"';
 ALTER TABLE coordination_new.interactions COMMENT = 'Таблица "Взаимодействия"';
 ALTER TABLE coordination_new.resolutions COMMENT = 'Таблица "Постановления"';
 ALTER TABLE coordination_new.actives COMMENT = 'Таблица "Активы должника"';
@@ -36,7 +36,7 @@ MODIFY COLUMN ;
 ALTER TABLE coordination_new.tno
 MODIFY COLUMN ;
 
-ALTER TABLE coordination_new.debtor_categories
+ALTER TABLE coordination_new.client_categories
 MODIFY COLUMN ;
 
 ALTER TABLE coordination_new.users
@@ -45,7 +45,7 @@ MODIFY COLUMN ;
 ALTER TABLE coordination_new.history
 MODIFY COLUMN ;
 
-ALTER TABLE coordination_new.debtor_persons
+ALTER TABLE coordination_new.clients
 MODIFY COLUMN ;
 
 ALTER TABLE coordination_new.interactions
