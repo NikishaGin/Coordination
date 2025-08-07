@@ -28,8 +28,21 @@ export class MainService {
         };
     }
 
-    getClientCategories(): Promise<ClientCategories[]> {
-        return this.prisma.clientCategories.findMany();
+    getClientCategories(
+        clientFilter: Prisma.ResolutionsListRelationFilter,
+    ): Promise<ClientCategories[]> {
+        return this.prisma.clientCategories.findMany({
+            where: {
+                client: {
+                    some: { resolution: clientFilter },
+                    every: { isVisible: true },
+                },
+            },
+        });
+    }
+
+    getStatusesIP(): Promise<any> {
+        return;
     }
 
     getRegions(
@@ -50,44 +63,59 @@ export class MainService {
         });
     }
 
-    getClients(
+    async getClients(
         regionId: number,
         clientFilter: Prisma.ResolutionsListRelationFilter,
     ): Promise<any> {
-        /*
-        return this.prisma.clients.findMany({
+        const clients = await this.prisma.clients.findMany({
             where: {
                 resolution: clientFilter,
                 isVisible: true,
                 tno: { regionId },
             },
+            omit: {
+                tnoId: true,
+                sospId: true,
+                categoryId: true,
+                isVisible: true,
+            },
             include: {
-                tno: true,
-                sosp: true,
+                tno: { select: { CodeTNO: true } },
+                sosp: { select: { CodeSOSP: true } },
                 category: true,
             },
-            select: {
-                _sum: {
-                    select: {
-                        resolutionAmount: {
-                            sum: true,
-                            field: 'amount',
-                        },
-                        resolutionBalance: {
-                            sum: true,
-                            field: 'balance',
-                        },
-                    },
-                },
-            },
         });
-        */
-        return this.prisma.realizations.groupBy({
+
+        const clientIds: number[] = clients.map(({ id }) => id);
+
+        const resolutionSums = await this.prisma.resolutions.groupBy({
             by: ['clientId'],
+            where: {
+                clientId: { in: clientIds },
+                isVisible: true,
+            },
             _sum: {
                 amount: true,
-                ba,
+                balance: true,
+            },
+            _min: {
+                WritExecutionBeginDate: true,
             },
         });
+
+        const activeSums = await this.prisma.descriptionActives.groupBy({
+            by: ['id'],
+            where: {
+                id: { in: clientIds },
+                active: {
+                    isVisible: true,
+                },
+            },
+            _sum: {
+                cost: true,
+            },
+        });
+
+
     }
 }
