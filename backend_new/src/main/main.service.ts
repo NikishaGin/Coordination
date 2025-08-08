@@ -41,9 +41,11 @@ export class MainService {
         });
     }
 
+    /*
     getStatusesIP(): Promise<any> {
         return;
     }
+     */
 
     getRegions(
         clientFilter: Prisma.ResolutionsListRelationFilter,
@@ -91,8 +93,8 @@ export class MainService {
         const resolutionSums = await this.prisma.resolutions.groupBy({
             by: ['clientId'],
             where: {
-                clientId: { in: clientIds },
                 isVisible: true,
+                clientId: { in: clientIds },
             },
             _sum: {
                 amount: true,
@@ -103,19 +105,52 @@ export class MainService {
             },
         });
 
-        const activeSums = await this.prisma.descriptionActives.groupBy({
-            by: ['id'],
-            where: {
-                id: { in: clientIds },
-                active: {
-                    isVisible: true,
-                },
-            },
-            _sum: {
-                cost: true,
-            },
-        });
+        console.log(`
+            SELECT actives.clientId, SUM(t.cost) as totalCost
+            FROM actives
+            WHERE ((isVisible = 1) AND (actives.clientId IN ${clientIds}))
+            LEFT JOIN description_actives t ON actives.id = t.id
+            GROUP BY actives.clientId
+        `);
 
+        const activeSums = await this.prisma.$queryRaw`
+            SELECT actives.clientId, SUM(t.cost) as totalCost
+            FROM actives
+            WHERE ((isVisible = 1) AND (actives.clientId IN ${clientIds}))
+            LEFT JOIN description_actives t ON actives.id = t.id
+            GROUP BY actives.clientId
+        `;
 
+        const arrestSums = await this.prisma.$queryRaw`
+            SELECT actives.clientId, SUM(t.amount) as totalAmount
+            FROM actives
+            WHERE ((isVisible = 1) AND (actives.clientId IN ${clientIds}))
+            LEFT JOIN arrests t ON actives.id = t.id
+            GROUP BY actives.clientId
+        `;
+
+        /*
+        const wontendSums = await this.prisma.$queryRaw`
+            SELECT actives.clientId,
+            FROM actives
+            WHERE ((isVisible = 1) AND (actives.clientId IN ${clientIds}))
+            LEFT JOIN wonteds t ON actives.id = t.id
+            GROUP BY actives.clientId
+        `;
+         */
+
+        const evaluationSums = await this.prisma.$queryRaw`
+            SELECT actives.clientId, SUM(t.amount) as totalAmount
+            FROM actives
+            WHERE ((isVisible = 1) AND (actives.clientId IN ${clientIds}))
+            LEFT JOIN evaluation t ON actives.id = t.id
+            GROUP BY actives.clientId
+        `;
+
+        for (const client of clients) {
+            console.log(client);
+        }
+
+        return clients;
     }
 }
