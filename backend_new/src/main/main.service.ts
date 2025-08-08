@@ -115,7 +115,5 @@ export class MainService {
                 cost: true,
             },
         });
-
-
     }
 }

@@ -346,7 +346,8 @@ SELECT
     result.f9,
     REGEXP_REPLACE(result.f10, '[[:space:]]', ''),
     result.f11,
-    result.f12
+    result.f12,
+    temp.clientId
 FROM (
      SELECT
          t.id, 'TRANSPORT' AS type,
@@ -372,13 +373,14 @@ LEFT JOIN coordination_new.temp_active_mapping temp ON ((result.type = temp.type
 ORDER BY temp.activeId;
 
 
-INSERT INTO coordination_new.arrests (beginDate, endDate, endReason, amount, activeId)
+INSERT INTO coordination_new.arrests (beginDate, endDate, endReason, amount, activeId, clientId)
 SELECT
     result.arrest_propperty AS beginDate,
     result.arrest_end_date AS endDate,
     result.arrest_end_cause AS endReason,
     result.arrest_sum AS amount,
-    temp.activeId
+    temp.activeId,
+    temp.clientId
 FROM (
          SELECT
              t.id, 'TRANSPORT' AS type,
@@ -412,7 +414,7 @@ HAVING
 ORDER BY temp.activeId, beginDate;
 
 
-INSERT INTO coordination_new.wanteds (beginDate, endDate, result, activeId)
+INSERT INTO coordination_new.wanteds (beginDate, endDate, result, activeId, clientId)
 SELECT
     result.wanted_open AS beginDate,
     result.wanted_close AS endDate,
@@ -421,7 +423,8 @@ SELECT
         WHEN result.wanted_result = 'Не установлено' THEN 'END_PROPERTY_SEARCH_ACTIVITIES'
         WHEN result.wanted_result = '0' THEN 'END_PROPERTY_SEARCH_ACTIVITIES'
     END AS resultWanted,
-    temp.activeId
+    temp.activeId,
+    temp.clientId
 FROM (
      SELECT
          t.id, 'TRANSPORT' AS type,
@@ -453,12 +456,13 @@ HAVING
 ORDER BY temp.activeId, beginDate;
 
 
-INSERT INTO coordination_new.evaluations (beginDate, endDate, amount, activeId)
+INSERT INTO coordination_new.evaluations (beginDate, endDate, amount, activeId, clientId)
 SELECT
     result.evaluation_submit AS beginDate,
     result.evaluation_accept AS endDate,
     result.evaluation_sum AS amount,
-    temp.activeId
+    temp.activeId,
+    temp.clientId
 FROM (
          SELECT
              t.id, 'TRANSPORT' AS type,
@@ -490,11 +494,12 @@ HAVING
 ORDER BY temp.activeId, beginDate;
 
 
-INSERT INTO coordination_new.encumbrances (type, date, activeId)
+INSERT INTO coordination_new.encumbrances (type, date, activeId, clientId)
 SELECT
     NULLIF(result.encumbrance_type, '') AS type,
     result.encumbrance_date AS date,
-    temp.activeId
+    temp.activeId,
+    temp.clientId
 FROM (
      SELECT
          t.id, 'TRANSPORT' AS type,
@@ -527,7 +532,7 @@ ORDER BY temp.activeId, date;
 DROP TABLE IF EXISTS coordination_new.temp_realizations;
 CREATE TABLE coordination_new.temp_realizations LIKE coordination_new.realizations;
 
-INSERT INTO coordination_new.temp_realizations (stage, submitDate, submitAmount, realizationDate, realizationResultDate, realizedPropertyAmount, notificationNotRealizationDate, notRealizationReason, activeId)
+INSERT INTO coordination_new.temp_realizations (stage, submitDate, submitAmount, realizationDate, realizationResultDate, realizedPropertyAmount, notificationNotRealizationDate, notRealizationReason, activeId, clientId)
 (
     SELECT
         'FIRST' AS stage,
@@ -538,7 +543,8 @@ INSERT INTO coordination_new.temp_realizations (stage, submitDate, submitAmount,
         result.realization_sum_1 AS realizedPropertyAmount,
         result.not_realization_notification AS notificationNotRealizationDate,
         result.realisation1_failure_reason AS notRealizationReason,
-        temp.activeId
+        temp.activeId,
+        temp.clientId
     FROM (
          SELECT
              t.id, 'TRANSPORT' AS type,
@@ -573,7 +579,8 @@ UNION ALL
         result.realization_sum_2 AS realizedPropertyAmount,
         result.not_realization_notification_2 AS notificationNotRealizationDate,
         result.realisation2_failure_reason AS notRealizationReason,
-        temp.activeId
+        temp.activeId,
+        temp.clientId
     FROM (
          SELECT
              t.id, 'TRANSPORT' AS type,
@@ -620,11 +627,12 @@ ORDER BY activeId, stage;
 DROP TABLE IF EXISTS coordination_new.temp_realizations;
 
 
-INSERT INTO coordination_new.refund_property (date, amount, activeId)
+INSERT INTO coordination_new.refund_property (date, amount, activeId, clientId)
 SELECT
     result.property_to_debtor_act AS date,
     result.property_to_debtor_sum AS amount,
-    temp.activeId
+    temp.activeId,
+    temp.clientId
 FROM (
      SELECT
          t.id, 'TRANSPORT' AS type,
@@ -655,13 +663,14 @@ ORDER BY temp.activeId, date;
 
 
 
-INSERT INTO coordination_new.debit_foreclosure (requestDate, requestAmount, cancelDate, cancelReason, activeId)
+INSERT INTO coordination_new.debit_foreclosure (requestDate, requestAmount, cancelDate, cancelReason, activeId, clientId)
 SELECT
     t.dz_foreclose_date AS requestDate,
     t.dz_foreclose_sum AS requestAmount,
     t.dz_cancel_foreclose_date AS cancelDate,
     t.dz_cancel_foreclose_sum AS cancelReason,
-    temp.activeId
+    temp.activeId,
+    temp.clientId
 FROM coordination.debit t
 LEFT JOIN coordination_new.temp_active_mapping temp ON ((temp.type = 'DEBIT') AND (temp.oldActiveId = t.id))
 HAVING
@@ -675,11 +684,12 @@ HAVING
 ORDER BY temp.activeId, requestDate;
 
 
-INSERT INTO coordination_new.active_registrations (beginDate, endDate, activeId)
+INSERT INTO coordination_new.active_registrations (beginDate, endDate, activeId, clientId)
 SELECT
     result.beginDate,
     result.endDate,
-    temp.activeId
+    temp.activeId,
+    temp.clientId
 FROM (
      SELECT
          t.id, 'TRANSPORT' AS type,
