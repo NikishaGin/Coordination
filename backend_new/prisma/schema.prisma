@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client"
-  previewFeatures = ["relationJoins"]
+  previewFeatures = ["relationJoins", "typedSql"]
   output          = "../src/generated/prisma"
 }
 
@@ -338,8 +338,7 @@ model DescriptionActives {
   debitorAdress String?   @db.Text
   debitorDate   DateTime? @db.Date
 
-  clientId Int
-  active   Actives @relation("Actives_Description", fields: [id], references: [id])
+  active Actives @relation("Actives_Description", fields: [id], references: [id])
 
   @@map("description_actives")
 }
@@ -352,7 +351,6 @@ model Arrests {
   endReason String?   @db.Text
   amount    Decimal?  @db.Decimal(15, 2)
 
-  clientId Int
   activeId Int     @unique
   active   Actives @relation("Actives_Arrests", fields: [activeId], references: [id])
 
@@ -366,7 +364,6 @@ model Wanteds {
   endDate   DateTime?      @db.Date
   result    WantedResults?
 
-  clientId Int
   activeId Int     @unique
   active   Actives @relation("Actives_Wanteds", fields: [activeId], references: [id])
 
@@ -380,7 +377,6 @@ model Evaluations {
   endDate   DateTime? @db.Date
   amount    Decimal?  @db.Decimal(15, 2)
 
-  clientId Int
   activeId Int     @unique
   active   Actives @relation("Actives_Evaluations", fields: [activeId], references: [id])
 
@@ -393,7 +389,6 @@ model Encumbrances {
   type String?   @db.VarChar(250)
   date DateTime? @db.Date
 
-  clientId Int
   activeId Int     @unique
   active   Actives @relation("Actives_Encumbrances", fields: [activeId], references: [id])
 
@@ -412,7 +407,6 @@ model Realizations {
   notificationNotRealizationDate DateTime?        @db.Date
   notRealizationReason           String?          @db.Text
 
-  clientId Int
   activeId Int
   active   Actives @relation("Actives_Realizations", fields: [activeId], references: [id])
 
@@ -425,7 +419,6 @@ model RefundProperty {
   date   DateTime? @db.Date
   amount Decimal?  @db.Decimal(15, 2)
 
-  clientId Int
   activeId Int     @unique
   active   Actives @relation("Actives_RefundProperty", fields: [activeId], references: [id])
 
@@ -440,7 +433,6 @@ model DebitForeclosure {
   cancelDate    DateTime? @db.Date
   cancelReason  String?   @db.VarChar(512)
 
-  clientId Int
   activeId Int     @unique
   active   Actives @relation("Actives_DebitForeclosure", fields: [activeId], references: [id])
 
@@ -453,7 +445,6 @@ model ActiveRegistrations {
   beginDate DateTime? @db.Date
   endDate   DateTime? @db.Date
 
-  clientId Int
   activeId Int     @unique
   active   Actives @relation("Actives_Registrations", fields: [activeId], references: [id])
 
@@ -469,7 +460,6 @@ model Complaints {
   source         String?   @db.VarChar(255)
   result         String?   @db.Text
 
-  clientId Int
   activeId Int     @unique
   active   Actives @relation("Actives_Complaints", fields: [activeId], references: [id])
 

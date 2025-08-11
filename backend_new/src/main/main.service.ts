@@ -41,9 +41,11 @@ export class MainService {
         });
     }
 
+    /*
     getStatusesIP(): Promise<any> {
         return;
     }
+     */
 
     getRegions(
         clientFilter: Prisma.ResolutionsListRelationFilter,
@@ -88,7 +90,7 @@ export class MainService {
 
         const clientIds: number[] = clients.map(({ id }) => id);
 
-        const resolutionSums = await this.prisma.resolutions.groupBy({
+        const resolution = await this.prisma.resolutions.groupBy({
             by: ['clientId'],
             where: {
                 clientId: { in: clientIds },
@@ -103,17 +105,45 @@ export class MainService {
             },
         });
 
-        const activeSums = await this.prisma.descriptionActives.groupBy({
-            by: ['id'],
-            where: {
-                id: { in: clientIds },
-                active: {
-                    isVisible: true,
-                },
-            },
-            _sum: {
-                cost: true,
-            },
-        });
+        type SumsType = {
+            clientId: number;
+            cost: null | number;
+        };
+
+        const activeSums: SumsType[] = await this.prisma.$queryRaw(
+            Prisma.sql`
+            SELECT
+                actives.clientId,
+                SUM(description.cost) AS totalSum,
+                SUM(arrests.amount) AS arrest,
+                SUM(evaluations.amount) AS evaluation,
+                SUM(refund_property.amount) AS refundProperty
+            FROM actives
+            LEFT JOIN description_actives AS description ON actives.id = description.id
+            LEFT JOIN arrests ON actives.id = arrests.activeId
+            LEFT JOIN evaluations ON actives.id = evaluations.activeId
+            LEFT JOIN refund_property ON actives.id = refund_property.activeId
+            WHERE
+                actives.clientId in (${Prisma.join(clientIds)})
+                AND
+                actives.isVisible = 1
+            GROUP BY actives.clientId
+        `,
+        );
+
+        for (const client of clients) {
+            client['CodeTNO'] = client.tno?.CodeTNO;
+            // delete client.tno;
+            client['CodeSOSP'] = client.sosp?.CodeSOSP;
+            // delete client.sosp;
+            client['amounts'] = activeSums.find(
+                (item) => item.clientId === client.id,
+            );
+            client['resolution'] = resolution.find(
+                (item) => item.clientId === client.id,
+            );
+        }
+
+        return clients;
     }
 }
