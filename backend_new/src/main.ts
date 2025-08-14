@@ -33,7 +33,7 @@ async function bootstrap() {
         }),
     );
 
-    await app.listen(port!, host!, () => {
+    await app.listen({ port, host }, () => {
         console.log(`Сервер запущен на http://${host}:${port}/ ...`);
     });
 }

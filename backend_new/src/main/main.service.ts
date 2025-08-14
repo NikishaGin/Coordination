@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma, ClientCategories } from 'src/generated/prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { MainDto } from './main.dto';
+import { getActiveSums } from '../generated/prisma/sql/getActiveSums';
 
 @Injectable()
 export class MainService {
@@ -28,28 +29,9 @@ export class MainService {
         };
     }
 
-    getClientCategories(
-        clientFilter: Prisma.ResolutionsListRelationFilter,
-    ): Promise<ClientCategories[]> {
-        return this.prisma.clientCategories.findMany({
-            where: {
-                client: {
-                    some: { resolution: clientFilter },
-                    every: { isVisible: true },
-                },
-            },
-        });
-    }
-
-    /*
-    getStatusesIP(): Promise<any> {
-        return;
-    }
-     */
-
-    getRegions(
-        clientFilter: Prisma.ResolutionsListRelationFilter,
-    ): Promise<any> {
+    getRegions(data: MainDto): Promise<any> {
+        const clientFilter: Prisma.ResolutionsListRelationFilter =
+            this.createClientFilter(data);
         return this.prisma.regions.findMany({
             omit: { sonoName: true },
             where: {
@@ -63,6 +45,28 @@ export class MainService {
                 },
             },
         });
+    }
+
+    getClientCategories(data: MainDto): Promise<ClientCategories[]> {
+        const clientFilter: Prisma.ResolutionsListRelationFilter =
+            this.createClientFilter(data);
+        return this.prisma.clientCategories.findMany({
+            where: {
+                client: {
+                    some: {
+                        resolution: clientFilter,
+                        ...(data?.regionId
+                            ? { tno: { regionId: data.regionId } }
+                            : {}),
+                    },
+                    every: { isVisible: true },
+                },
+            },
+        });
+    }
+
+    getStatusesIP(): Promise<any> {
+        return;
     }
 
     async getClients(
@@ -85,10 +89,31 @@ export class MainService {
                 tno: { select: { CodeTNO: true } },
                 sosp: { select: { CodeSOSP: true } },
                 category: true,
+                resolution: {
+                    where: {
+                        OR: [
+                            { WritExecutionStopDate: { not: null } },
+                            { WritExecutionEndReason: { not: null } },
+                            { WritExecutionPostponementDate: { not: null } },
+                            { WritExecutionTerminateDate: { not: null } },
+                        ],
+                    },
+                    select: {
+                        WritExecutionStopDate: true,
+                        WritExecutionEndReason: true,
+                        WritExecutionPostponementDate: true,
+                        WritExecutionTerminateDate: true,
+                    },
+                    take: 1,
+                    orderBy: {
+                        WritExecutionStopDate: 'asc',
+                        WritExecutionEndReason: 'asc',
+                        WritExecutionPostponementDate: 'asc',
+                        WritExecutionTerminateDate: 'asc',
+                    },
+                },
             },
         });
-
-        const clientIds: number[] = clients.map(({ id }) => id);
 
         const resolution = await this.prisma.resolutions.groupBy({
             by: ['clientId'],
@@ -105,30 +130,9 @@ export class MainService {
             },
         });
 
-        type SumsType = {
-            clientId: number;
-            cost: null | number;
-        };
-
-        const activeSums: SumsType[] = await this.prisma.$queryRaw(
-            Prisma.sql`
-            SELECT
-                actives.clientId,
-                SUM(description.cost) AS totalSum,
-                SUM(arrests.amount) AS arrest,
-                SUM(evaluations.amount) AS evaluation,
-                SUM(refund_property.amount) AS refundProperty
-            FROM actives
-            LEFT JOIN description_actives AS description ON actives.id = description.id
-            LEFT JOIN arrests ON actives.id = arrests.activeId
-            LEFT JOIN evaluations ON actives.id = evaluations.activeId
-            LEFT JOIN refund_property ON actives.id = refund_property.activeId
-            WHERE
-                actives.clientId in (${Prisma.join(clientIds)})
-                AND
-                actives.isVisible = 1
-            GROUP BY actives.clientId
-        `,
+        const clientIdsArray: string = clientIds.join();
+        const activeSums = await this.prisma.$queryRawTyped(
+            getActiveSums(clientIdsArray),
         );
 
         for (const client of clients) {

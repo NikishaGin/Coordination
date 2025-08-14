@@ -9,7 +9,7 @@ lerna-debug.log*
 
 FileStore
 
-*/prisma/migrations
+*/db/migrations
 */src/generated
 node_modules
 dist

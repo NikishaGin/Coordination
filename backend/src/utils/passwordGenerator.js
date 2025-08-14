@@ -17,10 +17,23 @@ function bcryptToPhpHash(hash) {
 }
 
 
-const password = "eBXhfT"
+// Преобразование существующих хэш паролей из БД, сгенерированных в PHP, в Bcrypt-хэш
+function phpToBcryptHash(hash) {
+    return hash.replace(/^\$2y\$/, "$2a$")
+}
+
+
+// Проверка пароля
+export function isPasswordValid(password, passwordHash) {
+    return bcrypt.compareSync(password, phpToBcryptHash(passwordHash))
+}
+
+
+const password = "grKa4HFR"
 const passwordHash = generatePasswordHash(password)
 
-console.log("passwordHash", passwordHash)
+if (isPasswordValid(password, passwordHash))
+    console.log("passwordHash", passwordHash)
 
 
 process.exit(0)
