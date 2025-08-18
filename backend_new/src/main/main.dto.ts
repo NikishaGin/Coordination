@@ -1,6 +1,7 @@
 import { IsNotEmpty, IsOptional } from 'class-validator';
+import { Prisma } from 'src/generated/prisma/client';
 
-export class MainDto {
+export class GetMainParamsDto {
     @IsNotEmpty()
     isDerived: boolean;
 
@@ -10,3 +11,5 @@ export class MainDto {
     @IsOptional()
     regionId: number;
 }
+
+export type RegionType = Prisma.RegionsGetPayload<{ omit: { sonoName: true } }>;

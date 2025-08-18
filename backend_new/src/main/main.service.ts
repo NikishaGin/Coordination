@@ -1,16 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, ClientCategories } from 'src/generated/prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { MainDto } from './main.dto';
+import { GetMainParamsDto, RegionType } from './main.dto';
 import { getActiveSums } from '../generated/prisma/sql/getActiveSums';
 
 @Injectable()
 export class MainService {
     constructor(private prisma: PrismaService) {}
 
-    createClientFilter(data: MainDto): Prisma.ResolutionsListRelationFilter {
+    createClientFilter(
+        data: GetMainParamsDto,
+    ): Prisma.ResolutionsListRelationFilter {
         const isExistsDate = data.isArchived ? { equals: null } : { not: null };
-        const filterIsArchived = {
+        const filterIsArchived: Prisma.ResolutionsWhereInput = {
             OR: [
                 { isArchived: data.isArchived },
                 { WritExecutionEndDate: isExistsDate },
@@ -29,7 +31,7 @@ export class MainService {
         };
     }
 
-    getRegions(data: MainDto): Promise<any> {
+    getRegions(data: GetMainParamsDto): Promise<RegionType[]> {
         const clientFilter: Prisma.ResolutionsListRelationFilter =
             this.createClientFilter(data);
         return this.prisma.regions.findMany({
@@ -47,17 +49,18 @@ export class MainService {
         });
     }
 
-    getClientCategories(data: MainDto): Promise<ClientCategories[]> {
+    getClientCategories(data: GetMainParamsDto): Promise<ClientCategories[]> {
         const clientFilter: Prisma.ResolutionsListRelationFilter =
             this.createClientFilter(data);
+        const regionFilter: Prisma.ClientsWhereInput = data?.regionId
+            ? { tno: { regionId: data.regionId } }
+            : {};
         return this.prisma.clientCategories.findMany({
             where: {
                 client: {
                     some: {
                         resolution: clientFilter,
-                        ...(data?.regionId
-                            ? { tno: { regionId: data.regionId } }
-                            : {}),
+                        ...regionFilter,
                     },
                     every: { isVisible: true },
                 },
@@ -65,19 +68,26 @@ export class MainService {
         });
     }
 
-    getStatusesIP(): Promise<any> {
+    getStatusesIP(data: GetMainParamsDto): Promise<string[]> {
+        const clientFilter: Prisma.ResolutionsListRelationFilter =
+            this.createClientFilter(data);
+        const regionFilter: Prisma.ClientsWhereInput = data?.regionId
+            ? { tno: { regionId: data.regionId } }
+            : {};
         return;
     }
 
-    async getClients(
-        regionId: number,
-        clientFilter: Prisma.ResolutionsListRelationFilter,
-    ): Promise<any> {
+    async getClients(data: GetMainParamsDto): Promise<any> {
+        const clientFilter: Prisma.ResolutionsListRelationFilter =
+            this.createClientFilter(data);
+        const regionFilter: Prisma.ClientsWhereInput = data?.regionId
+            ? { tno: { regionId: data.regionId } }
+            : {};
         const clients = await this.prisma.clients.findMany({
             where: {
-                resolution: clientFilter,
                 isVisible: true,
-                tno: { regionId },
+                resolution: clientFilter,
+                ...regionFilter,
             },
             omit: {
                 tnoId: true,
@@ -89,6 +99,7 @@ export class MainService {
                 tno: { select: { CodeTNO: true } },
                 sosp: { select: { CodeSOSP: true } },
                 category: true,
+
                 resolution: {
                     where: {
                         OR: [
@@ -106,14 +117,16 @@ export class MainService {
                     },
                     take: 1,
                     orderBy: {
-                        WritExecutionStopDate: 'asc',
-                        WritExecutionEndReason: 'asc',
-                        WritExecutionPostponementDate: 'asc',
-                        WritExecutionTerminateDate: 'asc',
+                        WritExecutionStopDate: 'desc',
+                        WritExecutionEndReason: 'desc',
+                        WritExecutionPostponementDate: 'desc',
+                        WritExecutionTerminateDate: 'desc',
                     },
                 },
             },
         });
+        const clientIds: number[] = clients.map(({ id }) => id);
+        const clientIdsArray: string = clientIds.join();
 
         const resolution = await this.prisma.resolutions.groupBy({
             by: ['clientId'],
@@ -130,7 +143,6 @@ export class MainService {
             },
         });
 
-        const clientIdsArray: string = clientIds.join();
         const activeSums = await this.prisma.$queryRawTyped(
             getActiveSums(clientIdsArray),
         );

@@ -1,32 +1,31 @@
-import { Controller, Get, Query, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { MainService } from './main.service';
-import { MainDto } from './main.dto';
+import { GetMainParamsDto, RegionType } from './main.dto';
+import { ClientCategories } from '../generated/prisma/client';
 
 @Controller('main')
 export class MainController {
     constructor(private readonly mainService: MainService) {}
 
-    @Get('client-categories')
+    @Get('regions')
+    getRegions(@Query() query: GetMainParamsDto): Promise<RegionType[]> {
+        return this.mainService.getRegions(query);
+    }
+
+    @Get('categories')
     getClientCategories(
-        @Query(new ValidationPipe()) query: MainDto,
-    ): Promise<any> {
+        @Query() query: GetMainParamsDto,
+    ): Promise<ClientCategories[]> {
         return this.mainService.getClientCategories(query);
     }
 
-    @Get()
-    getStatusesIP() {
-
-    }
-
-    @Get('regions')
-    getRegions(@Body() data: MainDto): Promise<any> {
-        const clientFilter = this.mainService.createClientFilter(data);
-        return this.mainService.getRegions(clientFilter);
+    @Get('statuses-ip')
+    getStatusesIP(@Query() query: GetMainParamsDto): Promise<string[]> {
+        return this.mainService.getStatusesIP(query);
     }
 
     @Get('clients')
-    getClients(@Param() data: MainDto): Promise<any> {
-        const clientFilter = this.mainService.createClientFilter(data);
-        return this.mainService.getClients(data.regionId, clientFilter);
+    getClients(@Query() query: GetMainParamsDto): Promise<any> {
+        return this.mainService.getClients(query);
     }
 }
