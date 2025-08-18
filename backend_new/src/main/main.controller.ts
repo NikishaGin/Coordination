@@ -19,10 +19,12 @@ export class MainController {
         return this.mainService.getClientCategories(query);
     }
 
+    /*
     @Get('statuses-ip')
     getStatusesIP(@Query() query: GetMainParamsDto): Promise<string[]> {
         return this.mainService.getStatusesIP(query);
     }
+     */
 
     @Get('clients')
     getClients(@Query() query: GetMainParamsDto): Promise<any> {

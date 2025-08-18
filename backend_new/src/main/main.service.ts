@@ -11,7 +11,7 @@ export class MainService {
     createClientFilter(
         data: GetMainParamsDto,
     ): Prisma.ResolutionsListRelationFilter {
-        const isExistsDate = data.isArchived ? { equals: null } : { not: null };
+        const isExistsDate = data.isArchived ? { not: null } : { equals: null };
         const filterIsArchived: Prisma.ResolutionsWhereInput = {
             OR: [
                 { isArchived: data.isArchived },
@@ -32,15 +32,16 @@ export class MainService {
     }
 
     getRegions(data: GetMainParamsDto): Promise<RegionType[]> {
-        const clientFilter: Prisma.ResolutionsListRelationFilter =
-            this.createClientFilter(data);
+        const filter: Prisma.ClientsWhereInput = {
+            resolution: this.createClientFilter(data),
+        };
         return this.prisma.regions.findMany({
             omit: { sonoName: true },
             where: {
                 tno: {
                     some: {
                         client: {
-                            some: { resolution: clientFilter },
+                            some: filter,
                             every: { isVisible: true },
                         },
                     },
@@ -50,24 +51,21 @@ export class MainService {
     }
 
     getClientCategories(data: GetMainParamsDto): Promise<ClientCategories[]> {
-        const clientFilter: Prisma.ResolutionsListRelationFilter =
-            this.createClientFilter(data);
-        const regionFilter: Prisma.ClientsWhereInput = data?.regionId
-            ? { tno: { regionId: data.regionId } }
-            : {};
+        const filter: Prisma.ClientsWhereInput = {
+            resolution: this.createClientFilter(data),
+            ...(data?.regionId ? { tno: { regionId: data.regionId } } : {}),
+        };
         return this.prisma.clientCategories.findMany({
             where: {
                 client: {
-                    some: {
-                        resolution: clientFilter,
-                        ...regionFilter,
-                    },
+                    some: filter,
                     every: { isVisible: true },
                 },
             },
         });
     }
 
+    /*
     getStatusesIP(data: GetMainParamsDto): Promise<string[]> {
         const clientFilter: Prisma.ResolutionsListRelationFilter =
             this.createClientFilter(data);
@@ -76,18 +74,17 @@ export class MainService {
             : {};
         return;
     }
+     */
 
     async getClients(data: GetMainParamsDto): Promise<any> {
-        const clientFilter: Prisma.ResolutionsListRelationFilter =
-            this.createClientFilter(data);
-        const regionFilter: Prisma.ClientsWhereInput = data?.regionId
-            ? { tno: { regionId: data.regionId } }
-            : {};
+        const filter: Prisma.ClientsWhereInput = {
+            resolution: this.createClientFilter(data),
+            ...(data?.regionId ? { tno: { regionId: data.regionId } } : {}),
+        };
         const clients = await this.prisma.clients.findMany({
             where: {
                 isVisible: true,
-                resolution: clientFilter,
-                ...regionFilter,
+                ...filter,
             },
             omit: {
                 tnoId: true,
@@ -99,9 +96,11 @@ export class MainService {
                 tno: { select: { CodeTNO: true } },
                 sosp: { select: { CodeSOSP: true } },
                 category: true,
-
                 resolution: {
                     where: {
+                        isVisible: true,
+                        isDerived: data.isDerived,
+                        isArchived: data.isArchived,
                         OR: [
                             { WritExecutionStopDate: { not: null } },
                             { WritExecutionEndReason: { not: null } },
@@ -116,17 +115,17 @@ export class MainService {
                         WritExecutionTerminateDate: true,
                     },
                     take: 1,
-                    orderBy: {
-                        WritExecutionStopDate: 'desc',
-                        WritExecutionEndReason: 'desc',
-                        WritExecutionPostponementDate: 'desc',
-                        WritExecutionTerminateDate: 'desc',
-                    },
+                    orderBy: [
+                        { WritExecutionStopDate: 'desc' },
+                        { WritExecutionEndReason: 'desc' },
+                        { WritExecutionPostponementDate: 'desc' },
+                        { WritExecutionTerminateDate: 'desc' },
+                    ],
                 },
             },
         });
+
         const clientIds: number[] = clients.map(({ id }) => id);
-        const clientIdsArray: string = clientIds.join();
 
         const resolution = await this.prisma.resolutions.groupBy({
             by: ['clientId'],
@@ -143,8 +142,29 @@ export class MainService {
             },
         });
 
-        const activeSums = await this.prisma.$queryRawTyped(
-            getActiveSums(clientIdsArray),
+        type SumsType = {
+            clientId: number;
+        };
+
+        const activeSums: SumsType[] = await this.prisma.$queryRaw(
+            Prisma.sql`
+            SELECT
+                actives.clientId,
+                SUM(description.cost) AS totalSum,
+                SUM(arrests.amount) AS arrest,
+                SUM(evaluations.amount) AS evaluation,
+                SUM(refund_property.amount) AS refundProperty
+            FROM actives
+            LEFT JOIN description_actives AS description ON actives.id = description.id
+            LEFT JOIN arrests ON actives.id = arrests.activeId
+            LEFT JOIN evaluations ON actives.id = evaluations.activeId
+            LEFT JOIN refund_property ON actives.id = refund_property.activeId
+            WHERE
+                actives.clientId IN (${Prisma.join(clientIds)})
+              AND
+                actives.isVisible = 1
+            GROUP BY actives.clientId
+        `,
         );
 
         for (const client of clients) {
@@ -155,11 +175,11 @@ export class MainService {
             client['amounts'] = activeSums.find(
                 (item) => item.clientId === client.id,
             );
-            client['resolution'] = resolution.find(
-                (item) => item.clientId === client.id,
-            );
+            // client['statusIP'] = client['resolution']
+            client['resolution'] = {
+                ...client['resolution'],
+            };
         }
-
         return clients;
     }
 }

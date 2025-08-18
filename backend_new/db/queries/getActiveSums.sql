@@ -12,7 +12,7 @@ FROM actives
          LEFT JOIN evaluations ON actives.id = evaluations.activeId
          LEFT JOIN refund_property ON actives.id = refund_property.activeId
 WHERE
-    actives.clientId IN (?)
+    actives.clientId IN ?
   AND
     actives.isVisible = 1
 GROUP BY actives.clientId
