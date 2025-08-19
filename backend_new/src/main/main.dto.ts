@@ -20,3 +20,9 @@ export class GetMainParamsDto {
 }
 
 export type RegionType = Prisma.RegionsGetPayload<{ omit: { sonoName: true } }>;
+
+export type AmountsType = {
+    clientId: number;
+};
+
+export type resolutionType = { _count: object; _sum: object; _min: object };

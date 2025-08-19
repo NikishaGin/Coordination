@@ -6,10 +6,14 @@ export const getResolutions = (is_derivative_debt, is_archive, {selectSumData = 
         .select("inn")
         .sum({post_sum: db.raw('IFNULL(post_sum, 0.00)')})
         .sum({cur_debt: db.raw('IFNULL(cur_debt, 0.00)')})
+
+
         .sum({is_end: db.raw('IF(end_date IS NULL, 0, 1)')})
         .sum({is_stop: db.raw('IF(stop_date IS NULL, 0, 1)')})
         .sum({is_pending: db.raw('IF(pending_date IS NULL, 0, 1)')})
         .sum({is_terminate: db.raw('IF(terminate_date IS NULL, 0, 1)')})
+
+
         .max({max_exec_date: 'exec_date'})
         .where({ is_derivative_debt, is_archive })
         .groupBy('inn')

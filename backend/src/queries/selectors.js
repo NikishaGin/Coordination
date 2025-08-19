@@ -88,10 +88,14 @@ export const actives = {
             `)).as("status_ip"))
             .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "arrest_sum"))
             .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "evaluation_sum"))
+
             .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "realization_property_sum"))
             .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "price_reduction_sum"))
             .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "realization_sum_2"))
+
             .select(sumPrices(["transport_data", "nedvizh_data", "debit_data", "another_data"], "return_sum"))
+
+
             .select(db.ref(db.raw("IFNULL(debit_data.foreclose, 0.00)")).as("debitor"))
             .modify(query => {
                 if ([ROLES.User, ROLES.Admin, ROLES.LimitedAdmin].includes(role))
