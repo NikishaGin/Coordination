@@ -1,7 +1,9 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, Request } from '@nestjs/common';
 import { MainService } from './main.service';
 import { GetMainParamsDto, RegionType } from './main.dto';
 import { ClientCategories } from '../generated/prisma/client';
+import { AuthenticatedRequest } from '../common/interfaces/user-request.interface';
+import { Role } from '../common/enums/role.enum';
 
 @Controller('main')
 export class MainController {
@@ -13,21 +15,21 @@ export class MainController {
     }
 
     @Get('categories')
-    getClientCategories(
-        @Query() query: GetMainParamsDto,
-    ): Promise<ClientCategories[]> {
+    getClientCategories(@Query() query: GetMainParamsDto): Promise<ClientCategories[]> {
         return this.mainService.getClientCategories(query);
     }
 
-    /*
     @Get('statuses-ip')
     getStatusesIP(@Query() query: GetMainParamsDto): Promise<string[]> {
         return this.mainService.getStatusesIP(query);
     }
-     */
 
     @Get('clients')
-    getClients(@Query() query: GetMainParamsDto): Promise<any> {
-        return this.mainService.getClients(query);
+    getClients(
+        @Query() query: GetMainParamsDto,
+        @Request() request: AuthenticatedRequest,
+    ): Promise<any> {
+        const role: Role = Role.admin; // request.user.role;
+        return this.mainService.getClients(query, role);
     }
 }

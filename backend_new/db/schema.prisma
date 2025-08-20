@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client"
-  previewFeatures = ["relationJoins", "queryCompiler", "driverAdapters", "typedSql"]
+  previewFeatures = ["relationJoins", "typedSql"]
   output          = "../src/generated/prisma"
 }
 

@@ -1,0 +1,39 @@
+import bcrypt from "bcryptjs"
+
+
+
+// Генератор хэша пароля (аналогично вашей функции проверки)
+function generatePasswordHash(password) {
+    const saltRounds = 10; // Количество раундов соли (можно настроить)
+    const hash = bcrypt.hashSync(password, saltRounds);
+
+    // Преобразование формата для совместимости (если нужно)
+    return bcryptToPhpHash(hash);
+}
+
+// Преобразование bcrypt-хэша в PHP-совместимый формат (обратное вашему phpToBcryptHash)
+function bcryptToPhpHash(hash) {
+    return hash.replace(/^\$2a\$/, "$2y$");
+}
+
+
+// Преобразование существующих хэш паролей из БД, сгенерированных в PHP, в Bcrypt-хэш
+function phpToBcryptHash(hash) {
+    return hash.replace(/^\$2y\$/, "$2a$")
+}
+
+
+// Проверка пароля
+export function isPasswordValid(password, passwordHash) {
+    return bcrypt.compareSync(password, phpToBcryptHash(passwordHash))
+}
+
+
+const password = "grKa4HFR"
+const passwordHash = generatePasswordHash(password)
+
+if (isPasswordValid(password, passwordHash))
+    console.log("passwordHash", passwordHash)
+
+
+process.exit(0)

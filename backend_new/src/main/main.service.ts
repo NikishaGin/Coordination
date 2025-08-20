@@ -1,18 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, ClientCategories } from 'src/generated/prisma/client';
+import { ClientCategories, Prisma } from 'src/generated/prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { GetMainParamsDto, RegionType, AmountsType } from './main.dto';
+import { AmountsType, GetMainParamsDto, RegionType } from './main.dto';
+import { getStatusIP } from '../common/utils/getStatusIP';
+import { Role } from '../common/enums/role.enum';
 
 @Injectable()
 export class MainService {
     constructor(private prisma: PrismaService) {}
 
-    createClientFilter(
-        data: GetMainParamsDto,
-    ): Prisma.ResolutionsListRelationFilter {
+    createClientFilter(data: GetMainParamsDto): Prisma.ResolutionsListRelationFilter {
         const logicalOperator: 'OR' | 'AND' = data.isArchived ? 'OR' : 'AND';
-        const isExistsDate: Partial<{ not: null; equals: null }> =
-            data.isArchived ? { not: null } : { equals: null };
+        const isExistsDate: Partial<{ not: null; equals: null }> = data.isArchived
+            ? { not: null }
+            : { equals: null };
         const filterIsArchived: Prisma.ResolutionsWhereInput = {
             [logicalOperator]: [
                 { isArchived: data.isArchived },
@@ -66,18 +67,46 @@ export class MainService {
         });
     }
 
-    /*
-    getStatusesIP(data: GetMainParamsDto): Promise<string[]> {
-        const clientFilter: Prisma.ResolutionsListRelationFilter =
-            this.createClientFilter(data);
-        const regionFilter: Prisma.ClientsWhereInput = data?.regionId
-            ? { tno: { regionId: data.regionId } }
-            : {};
-        return;
-    }
-     */
+    async getStatusesIP(data: GetMainParamsDto): Promise<string[]> {
+        const filter: Prisma.ClientsWhereInput = {
+            resolution: this.createClientFilter(data),
+            ...(data?.regionId ? { tno: { regionId: data.regionId } } : {}),
+        };
 
-    async getClients(data: GetMainParamsDto): Promise<any> {
+        const clients = await this.prisma.clients.findMany({
+            where: {
+                isVisible: true,
+                ...filter,
+            },
+            select: { id: true },
+        });
+
+        const clientIds: number[] = clients.map(({ id }: { id: number }): number => id);
+
+        return this.prisma.$queryRaw<string[]>(
+            Prisma.sql`
+                SELECT DISTINCT CASE
+                                    WHEN countStopDate > 0 THEN "Окончено"
+                                    WHEN countEndDate > 0 THEN "Приостановлено"
+                                    WHEN countPostponementDate > 0 THEN "Отложено"
+                                    WHEN countTerminateDate > 0 THEN "Прекращено"
+                                    ELSE "На исполнении"
+                                    END
+                FROM (SELECT COUNT(r.WritExecutionStopDate)         AS countStopDate,
+                             COUNT(r.WritExecutionEndDate)          AS countEndDate,
+                             COUNT(r.WritExecutionPostponementDate) AS countPostponementDate,
+                             COUNT(r.WritExecutionTerminateDate)    AS countTerminateDate
+                      FROM resolutions r
+                      WHERE r.clientIs IN (${Prisma.join(clientIds)})
+                        AND r.isDerived = ${data.isDerived}
+                        AND r.isArchived = ${data.isArchived}
+                        AND r.isVisible = 1
+                      GROUP BY r.clientId)
+            `,
+        );
+    }
+
+    async getClients(data: GetMainParamsDto, role: Role): Promise<any> {
         const filter: Prisma.ClientsWhereInput = {
             resolution: this.createClientFilter(data),
             ...(data?.regionId ? { tno: { regionId: data.regionId } } : {}),
@@ -102,7 +131,7 @@ export class MainService {
             orderBy: [{ inn: 'asc' }],
         });
 
-        const clientIds: number[] = clients.map(({ id }) => id);
+        const clientIds: number[] = clients.map(({ id }: { id: number }): number => id);
 
         const resolutionPromise = this.prisma.resolutions.groupBy({
             by: ['clientId'],
@@ -129,38 +158,50 @@ export class MainService {
 
         const activeAmountsPromise = this.prisma.$queryRaw<AmountsType[]>(
             Prisma.sql`
-            SELECT
-                actives.clientId,
-                SUM(description.cost) AS totalSum,
-                SUM(arrests.amount) AS arrest,
-                SUM(evaluations.amount) AS evaluation,
-                SUM(realizationFirst.submitAmount) AS realizationFirst,
-                SUM(realizationSecond.submitAmount) AS realizationSecond,
-                SUM(realizationSecond.realizedPropertyAmount) AS realizationResult,
-                SUM(refund_property.amount) AS refundProperty,
-                SUM(debit_foreclosure.requestAmount) AS debitForeclosure
-            FROM actives
-            LEFT JOIN description_actives AS description ON actives.id = description.id
-            LEFT JOIN arrests ON actives.id = arrests.activeId
-            LEFT JOIN evaluations ON actives.id = evaluations.activeId
-            LEFT JOIN realizations AS realizationFirst 
-                ON 
-                    realizationFirst.id = evaluations.activeId
-                    AND
-                    realizationFirst.stage = 'FIRST'
-            LEFT JOIN realizations AS realizationSecond
-                ON
-                    realizationSecond.id = evaluations.activeId
-                    AND
-                    realizationSecond.stage = 'SECOND'
-            LEFT JOIN refund_property ON actives.id = refund_property.activeId
-            LEFT JOIN debit_foreclosure ON actives.id = debit_foreclosure.activeId
-            WHERE
-                actives.clientId IN (${Prisma.join(clientIds)})
-              AND
-                actives.isVisible = 1
-            GROUP BY actives.clientId
-        `,
+                SELECT actives.clientId,
+                       SUM(
+                           IF(
+                               (wanteds.endDate IS NOT NULL) AND (wanteds.result = 'END_PROPERTY_SEARCH_ACTIVITIES'),
+                               0,
+                               description.cost
+                           )
+                               
+                       )                                             AS totalSum,
+                       SUM(arrests.amount)                           AS arrest,
+                       SUM(
+                            IF(
+                               (wanteds.beginDate IS NOT NULL) AND (wanteds.endDate IS NULL), 
+                               description.cost,
+                               0
+                           )
+                       )                                             AS wanted,                       
+                       SUM(evaluations.amount)                       AS evaluation,
+                       SUM(realizationFirst.submitAmount)            AS realizationFirst,
+                       SUM(realizationSecond.submitAmount)           AS realizationSecond,
+                       SUM(realizationSecond.realizedPropertyAmount) AS realizationResult,
+                       SUM(refund_property.amount)                   AS refundProperty,
+                       SUM(debit_foreclosure.requestAmount)          AS debitForeclosure
+                FROM actives
+                         LEFT JOIN description_actives AS description ON actives.id = description.id
+                         LEFT JOIN arrests ON actives.id = arrests.activeId
+                         LEFT JOIN wanteds ON actives.id = wanteds.activeId                    
+                         LEFT JOIN evaluations ON actives.id = evaluations.activeId
+                         LEFT JOIN realizations AS realizationFirst
+                                   ON
+                                       realizationFirst.id = evaluations.activeId
+                                           AND
+                                       realizationFirst.stage = 'FIRST'
+                         LEFT JOIN realizations AS realizationSecond
+                                   ON
+                                       realizationSecond.id = evaluations.activeId
+                                           AND
+                                       realizationSecond.stage = 'SECOND'
+                         LEFT JOIN refund_property ON actives.id = refund_property.activeId
+                         LEFT JOIN debit_foreclosure ON actives.id = debit_foreclosure.activeId
+                WHERE actives.clientId IN (${Prisma.join(clientIds)})
+                  AND actives.isVisible = 1
+                GROUP BY actives.clientId
+            `,
         );
 
         const interactionsPromise = this.prisma.interactions.groupBy({
@@ -178,23 +219,22 @@ export class MainService {
             },
         });
 
-        const [resolutionsData, activeAmounts, interactionsData] =
-            await Promise.all([
-                resolutionPromise,
-                activeAmountsPromise,
-                interactionsPromise,
-            ]);
+        const [resolutionsData, activeAmounts, interactionsData] = await Promise.all([
+            resolutionPromise,
+            activeAmountsPromise,
+            interactionsPromise,
+        ]);
 
         for (const client of clients) {
             const resolution = resolutionsData.find(
                 (item): boolean => item.clientId === client.id,
-            );
+            )!;
             const amounts = activeAmounts.find(
                 (item: AmountsType): boolean => item.clientId === client.id,
-            );
+            )!;
             const interaction = interactionsData.find(
                 (item): boolean => item.clientId === client.id,
-            );
+            )!;
 
             client['amounts'] = {
                 resolutionAmount: resolution._sum.amount,
@@ -203,30 +243,24 @@ export class MainService {
                 clientId: undefined,
             };
 
-            if (resolution._count.WritExecutionEndDate > 0)
-                client['statusIP'] = 'Окончено';
-            else if (resolution._count.WritExecutionStopDate > 0)
-                client['statusIP'] = 'Приостановлено';
-            else if (resolution._count.WritExecutionPostponementDate > 0)
-                client['statusIP'] = 'Отложено';
-            else if (resolution._count.WritExecutionTerminateDate > 0)
-                client['statusIP'] = 'Прекращено';
-            else client['statusIP'] = 'На исполнении';
+            client['statusIP'] = getStatusIP(resolution._count);
 
-            if (
-                interaction._count.submissionDate +
-                interaction._count.originalFilename_1 > 0
-            )
-                client['interactionWithGMU'] = ''; // в зависимости от роли
+            /*
+            if (interaction._count.submissionDate + interaction._count.originalFilename_1 > 0)
+                client['interactionWithGMU'] =
+                    role === Role.limitedAdminGMU
+                        ? 'Получено сообщение от МИУДОЛ'
+                        : 'Получен ответ от ГМУ';
             else if (
                 interaction._count.reviewDate +
                 interaction._count.result +
                 interaction._count.originalFilename_2 > 0
             )
                 client['interactionWithGMU'] = 'Отправлено';
-            else
-                client['interactionWithGMU'] = '';
+            else client['interactionWithGMU'] = '';
+             */
 
+            // resolution._min.WritExecutionBeginDate
             // client[indicators] = ''
         }
         return clients;
