@@ -17,4 +17,4 @@ export class GetResolutionsParamsDto {
     clientId: number;
 }
 
-export type RegionType = Prisma.ResolutionsGetPayload<{ omit: { sonoName: true } }>;
+// export type RegionType = Prisma.ResolutionsGetPayload<{ omit: { sonoName: true } }>;

@@ -29,7 +29,7 @@ export class MainController {
         @Query() query: GetMainParamsDto,
         @Request() request: AuthenticatedRequest,
     ): Promise<any> {
-        const role: Role = Role.admin; // request.user.role;
+        const role: Role = request.user.role;
         return this.mainService.getClients(query, role);
     }
 }

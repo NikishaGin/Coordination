@@ -1,31 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { GetResolutionsParamsDto } from './client.dto';
 import { Prisma } from 'src/generated/prisma/client';
 import { ActivesType, InteractionType } from '../generated/prisma/enums';
 
 @Injectable()
 export class ClientService {
     constructor(private prisma: PrismaService) {}
-
-    getResolutions(data: GetResolutionsParamsDto) {
-        return this.prisma.resolutions.findMany({
-            where: {
-                clientId: data.clientId,
-                isDerived: data.isDerived,
-                isArchived: data.isArchived,
-                isVisible: true,
-            },
-            select: {
-                number: true,
-                date: true,
-                amount: true,
-                balance: true,
-                WritExecutionNumber: true,
-                WritExecutionBeginDate: true,
-            },
-        });
-    }
 
     getActivesStatistics(clientId: number) {
         return this.prisma.$queryRaw(Prisma.sql`
@@ -65,9 +45,17 @@ export class ClientService {
         });
     }
 
-    getInteractions(clientId: number, type: InteractionType) {
-        return this.prisma.interactions.findMany({
-            where: { clientId, type },
+    createActive(clientId: number, type: ActivesType) {
+
+    }
+
+    async updateActive(activeId: number, sourse: string) {
+        const [entity, field] = sourse.split('.');
+        const model = this.prisma[entity];
+        await model.upsert({
+            where: { activeId },
+            update: {},
+            create: {},
         });
     }
 }

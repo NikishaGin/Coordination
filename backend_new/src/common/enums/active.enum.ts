@@ -6,13 +6,13 @@ export enum ActionHistory {
 }
 
 /// Виды активов
-export enum ActivesType {
-    TRANSPORT,
-    PROPERTY,
-    GROUND,
-    DEBIT,
-    OTHER,
-}
+// export enum ActivesType {
+//     TRANSPORT,
+//     PROPERTY,
+//     GROUND,
+//     DEBIT,
+//     OTHER,
+// }
 
 /// Статус верификации выгрузки
 export enum DataStatus {
