@@ -1,19 +1,22 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { ClientService } from './client.service';
+import { GetResolutionsParamsDto } from './client.dto';
 
 @Controller('client')
 export class ClientController {
     constructor(private readonly clientService: ClientService) {}
 
-    @Get()
-    getInfo() {}
-
     @Get('resolutions')
-    getResolutions() {}
+    getResolutions(@Query() query: GetResolutionsParamsDto) {
+        return this.clientService.getResolutions(query);
+    }
 
     @Get('actives-statistics')
-    getActivesStatistics() {}
+    getActivesStatistics(@Query('clientId') clientId: number) {}
 
     @Get('actives')
-    getActives() {}
+    getActives(@Query('clientId') clientId: number) {}
+
+    @Get('interactions')
+    getInteractions(@Query('clientId') clientId: number) {}
 }
