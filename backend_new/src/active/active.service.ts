@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from 'src/generated/prisma/client';
-import { ActivesType, InteractionType, WantedResults } from '../generated/prisma/enums';
+import { Actives } from 'src/generated/prisma/client';
+import {ActivesType, DataStatus, InteractionType, WantedResults} from '../generated/prisma/enums';
 
 @Injectable()
-export class ClientService {
+export class ActiveService {
     constructor(private prisma: PrismaService) {}
 
     getActivesStatistics(clientId: number) {
@@ -23,10 +23,13 @@ export class ClientService {
         });
     }
 
-    getActives(clientId: number, type: ActivesType) {
+    getActives(clientId: number, type: ActivesType): Promise<Actives> {
         return this.prisma.actives.findMany({
-            where: { clientId, type },
-            omit: { clientId: true },
+            where: {
+                clientId,
+                type,
+                status: { not: DataStatus.GMU }, // !!!!!!!!!!
+            },
             include: {
                 description: true,
                 arrest: true,
@@ -42,7 +45,9 @@ export class ClientService {
         });
     }
 
-    createActive(clientId: number, type: ActivesType) {}
+    createActive(clientId: number, type: ActivesType) {
+
+    }
 
     async updateActive(activeId: number, sourse: string) {
         const [entity, field] = sourse.split('.');

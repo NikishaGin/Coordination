@@ -12,16 +12,6 @@ export class ClientController {
         return this.clientService.getResolutions(query);
     }
 
-    @Get('actives-statistics')
-    getActivesStatistics(@Query('clientId') clientId: number) {
-        return this.clientService.getActivesStatistics(clientId);
-    }
-
-    @Get('actives')
-    getActives(@Query('clientId') clientId: number, @Query('type') type: ActivesType) {
-        return this.clientService.getActives(clientId, type);
-    }
-
     @Get('interactions')
     getInteractions(@Query('clientId') clientId: number, @Query('type') type: InteractionType) {
         return this.clientService.getInteractions(clientId, type);

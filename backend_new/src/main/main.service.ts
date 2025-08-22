@@ -197,8 +197,12 @@ export class MainService {
                                        realizationSecond.stage = 'SECOND'
                          LEFT JOIN refund_property ON actives.id = refund_property.activeId
                          LEFT JOIN debit_foreclosure ON actives.id = debit_foreclosure.activeId
-                WHERE actives.clientId IN (${Prisma.join(clientIds)})
-                  AND actives.isVisible = 1
+                WHERE 
+                    actives.clientId IN (${Prisma.join(clientIds)})
+                  AND
+                    actives.status <> 'GMU' 
+                  AND
+                    actives.isVisible = 1
                 GROUP BY actives.clientId
             `,
         );
