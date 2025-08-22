@@ -163,7 +163,7 @@ export class MainService {
                            IF(
                                (wanteds.endDate IS NOT NULL) AND (wanteds.result = 'END_PROPERTY_SEARCH_ACTIVITIES'),
                                0,
-                               description.cost
+                               actives.cost
                            )
                                
                        )                                             AS totalSum,
@@ -171,7 +171,7 @@ export class MainService {
                        SUM(
                             IF(
                                (wanteds.beginDate IS NOT NULL) AND (wanteds.endDate IS NULL), 
-                               description.cost,
+                               actives.cost,
                                0
                            )
                        )                                             AS wanted,                       
@@ -182,7 +182,6 @@ export class MainService {
                        SUM(refund_property.amount)                   AS refundProperty,
                        SUM(debit_foreclosure.requestAmount)          AS debitForeclosure
                 FROM actives
-                         LEFT JOIN description_actives AS description ON actives.id = description.id
                          LEFT JOIN arrests ON actives.id = arrests.activeId
                          LEFT JOIN wanteds ON actives.id = wanteds.activeId                    
                          LEFT JOIN evaluations ON actives.id = evaluations.activeId

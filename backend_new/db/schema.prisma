@@ -288,6 +288,7 @@ model Resolutions {
 /// Таблица "Активы должника"
 model Actives {
   id                Int           @id @default(autoincrement())
+  cost              Decimal?      @db.Decimal(15, 2)
   type              ActivesType
   status            DataStatus?
   objectStatus      ObjectStatus?
@@ -318,9 +319,8 @@ model Actives {
 
 /// Таблица "Описание имущества"
 model DescriptionActives {
-  id   Int      @id @default(autoincrement())
-  name String?  @db.Text
-  cost Decimal? @db.Decimal(15, 2)
+  id   Int     @id @default(autoincrement())
+  name String? @db.Text
 
   // Характеристики транспорта:
   vin         String? @db.VarChar(255)

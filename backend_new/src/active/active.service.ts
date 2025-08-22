@@ -1,29 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from 'src/generated/prisma/client';
-import { ActivesType, InteractionType } from '../generated/prisma/enums';
+import { ActivesType, InteractionType, WantedResults } from '../generated/prisma/enums';
 
 @Injectable()
 export class ClientService {
     constructor(private prisma: PrismaService) {}
 
     getActivesStatistics(clientId: number) {
-        return this.prisma.$queryRaw(Prisma.sql`
-        SELECT
-            SUM(description.cost) AS cost,
-            COUNT(description.id) AS count
-        FROM actives
-        LEFT JOIN description_actives AS description ON actives.id = description.id
-        WHERE 
-            actives.clientId = ${clientId} 
-          AND
-            actives.isVisible = 1
-          AND
-            wanteds.endDate IS NOT NULL
-          AND 
-            wanteds.result = 'END_PROPERTY_SEARCH_ACTIVITIES'
-        GROUP BY actives.type
-        `);
+        return this.prisma.actives.groupBy({
+            by: ['type'],
+            where: {
+                clientId,
+                isVisible: true,
+                wanted: {
+                    endDate: { not: null },
+                    result: WantedResults.END_PROPERTY_SEARCH_ACTIVITIES,
+                },
+            },
+            _sum: { cost: true },
+            _count: { id: true },
+        });
     }
 
     getActives(clientId: number, type: ActivesType) {
@@ -45,17 +42,25 @@ export class ClientService {
         });
     }
 
-    createActive(clientId: number, type: ActivesType) {
-
-    }
+    createActive(clientId: number, type: ActivesType) {}
 
     async updateActive(activeId: number, sourse: string) {
         const [entity, field] = sourse.split('.');
-        const model = this.prisma[entity];
-        await model.upsert({
+        // realizations
+        const values = await this.prisma[entity].upsert({
             where: { activeId },
-            update: {},
-            create: {},
+            update: {
+                [field]: 1,
+            },
+            create: {
+                activeId,
+                [field]: 1,
+            },
         });
+        const data = Object.entries(values).filter(([f, _]) => !['id', 'activeId'].includes(f));
+        const isEmptyRecord = data.every(([_, v]) => !v);
+        if (isEmptyRecord) {
+            await this.prisma[entity].delete({ where: { id: values.id } });
+        }
     }
 }

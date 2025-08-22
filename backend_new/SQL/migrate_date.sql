@@ -275,6 +275,7 @@ SET sql_mode = (SELECT REPLACE(@@sql_mode, 'NO_ZERO_DATE', ''));
 
 INSERT INTO coordination_new.actives (
     id,
+    cost,
     type,
     status,
     objectStatus,
@@ -288,6 +289,7 @@ INSERT INTO coordination_new.actives (
 )
 SELECT
     temp.activeId,
+    result.cost,
     temp.type,
     CASE
         WHEN result.status = 0 THEN 'AIS'
@@ -310,22 +312,22 @@ SELECT
 FROM (
          SELECT
              t.id, 'TRANSPORT' AS type,
-             t.status, t.obj_status, t.obj_status_manual, t.is_verified, t.lizing_name, t.is_fns_lizing, t.comment, t.load_date
+             t.cost, t.status, t.obj_status, t.obj_status_manual, t.is_verified, t.lizing_name, t.is_fns_lizing, t.comment, t.load_date
          FROM coordination.transport t
          UNION ALL
          SELECT
              t.id, IF(t.type_id = 2, 'PROPERTY', 'GROUND') AS type,
-             t.status, t.obj_status, t.obj_status_manual, t.is_verified, t.lizing_name, t.is_fns_lizing, t.comment, t.load_date
+             t.cost, t.status, t.obj_status, t.obj_status_manual, t.is_verified, t.lizing_name, t.is_fns_lizing, t.comment, t.load_date
          FROM coordination.property t
          UNION ALL
          SELECT
              t.id, 'DEBIT' AS type,
-             t.status, t.obj_status, t.obj_status_manual, t.is_verified, t.lizing_name, t.is_fns_lizing, t.comment, t.load_date
+             t.total_sum AS cost, t.status, t.obj_status, t.obj_status_manual, t.is_verified, t.lizing_name, t.is_fns_lizing, t.comment, t.load_date
          FROM coordination.debit t
          UNION ALL
          SELECT
              t.id, 'OTHER' AS type,
-             t.status, t.obj_status, t.obj_status_manual, t.is_verified, t.lizing_name, t.is_fns_lizing, t.comment, t.load_date
+             t.cost, t.status, t.obj_status, t.obj_status_manual, t.is_verified, t.lizing_name, t.is_fns_lizing, t.comment, t.load_date
          FROM coordination.another t
      ) AS result
          LEFT JOIN coordination_new.temp_active_mapping temp ON ((result.type = temp.type) AND (result.id = temp.oldActiveId))
@@ -336,7 +338,6 @@ INSERT INTO coordination_new.description_actives
 SELECT
     temp.activeId,
     result.f1,
-    result.f2,
     result.f3,
     result.f4,
     result.f5,
@@ -350,22 +351,22 @@ SELECT
 FROM (
          SELECT
              t.id, 'TRANSPORT' AS type,
-             t.name AS f1, t.cost AS f2, t.vin AS f3, t.state_number AS f4, t.year AS f5, NULL AS f6, NULL AS f7, NULL AS f8, NULL AS f9, NULL AS f10, NULL AS f11, NULL AS f12
+             t.name AS f1, t.vin AS f3, t.state_number AS f4, t.year AS f5, NULL AS f6, NULL AS f7, NULL AS f8, NULL AS f9, NULL AS f10, NULL AS f11, NULL AS f12
          FROM coordination.transport t
          UNION ALL
          SELECT
              t.id, IF(t.type_id = 2, 'PROPERTY', 'GROUND') AS type,
-             t.name AS f1, t.cost AS f2, NULL AS f3, NULL AS f4, NULL AS f5, t.square AS f6, t.cadastral_number AS f7, t.address AS f8, t.share_size AS f9, NULL AS f10, NULL AS f11, NULL AS f12
+             t.name AS f1, NULL AS f3, NULL AS f4, NULL AS f5, t.square AS f6, t.cadastral_number AS f7, t.address AS f8, t.share_size AS f9, NULL AS f10, NULL AS f11, NULL AS f12
          FROM coordination.property t
          UNION ALL
          SELECT
              t.id, 'DEBIT' AS type,
-             t.debitor_names AS f1, t.total_sum AS f2, NULL AS f3, NULL AS f4, NULL AS f5, NULL AS f6, NULL AS f7, NULL AS f8, NULL AS f9, t.debitor_inn AS f10, t.debitor_address AS f11, t.date AS f12
+             t.debitor_names AS f1, NULL AS f3, NULL AS f4, NULL AS f5, NULL AS f6, NULL AS f7, NULL AS f8, NULL AS f9, t.debitor_inn AS f10, t.debitor_address AS f11, t.date AS f12
          FROM coordination.debit t
          UNION ALL
          SELECT
              t.id, 'OTHER' AS type,
-             t.name AS f1, t.cost AS f2, NULL AS f3, NULL AS f4, NULL AS f5, NULL AS f6, NULL AS f7, NULL AS f8, NULL AS f9, NULL AS f10, NULL AS f11, NULL AS f12
+             t.name AS f1, NULL AS f3, NULL AS f4, NULL AS f5, NULL AS f6, NULL AS f7, NULL AS f8, NULL AS f9, NULL AS f10, NULL AS f11, NULL AS f12
          FROM coordination.another t
      ) AS result
          LEFT JOIN coordination_new.temp_active_mapping temp ON ((result.type = temp.type) AND (result.id = temp.oldActiveId))
