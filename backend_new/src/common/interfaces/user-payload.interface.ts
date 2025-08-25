@@ -1,7 +1,7 @@
-import { Role } from '../enums/role.enum';
+import { UsersRole } from '../../generated/prisma/enums';
 
 export interface UserPayload {
     userId: number;
-    role: Role;
-    regionId: number;
+    role: UsersRole;
+    regionId: number | null;
 }

@@ -3,24 +3,34 @@ import { MainService } from './main.service';
 import { GetMainParamsDto, RegionType } from './main.dto';
 import { ClientCategories } from '../generated/prisma/client';
 import { AuthenticatedRequest } from '../common/interfaces/user-request.interface';
-import { Role } from '../common/enums/role.enum';
+import { UsersRole } from '../generated/prisma/enums';
 
 @Controller('main')
 export class MainController {
     constructor(private readonly mainService: MainService) {}
 
     @Get('regions')
-    getRegions(@Query() query: GetMainParamsDto): Promise<RegionType[]> {
+    getRegions(
+        @Query() query: GetMainParamsDto,
+        @Request() request: AuthenticatedRequest,
+    ): Promise<RegionType[]> {
+
         return this.mainService.getRegions(query);
     }
 
     @Get('categories')
-    getClientCategories(@Query() query: GetMainParamsDto): Promise<ClientCategories[]> {
+    getClientCategories(
+        @Query() query: GetMainParamsDto,
+        @Request() request: AuthenticatedRequest,
+    ): Promise<ClientCategories[]> {
         return this.mainService.getClientCategories(query);
     }
 
     @Get('statuses-ip')
-    getStatusesIP(@Query() query: GetMainParamsDto): Promise<string[]> {
+    getStatusesIP(
+        @Query() query: GetMainParamsDto,
+        @Request() request: AuthenticatedRequest,
+    ): Promise<string[]> {
         return this.mainService.getStatusesIP(query);
     }
 
@@ -29,7 +39,7 @@ export class MainController {
         @Query() query: GetMainParamsDto,
         @Request() request: AuthenticatedRequest,
     ): Promise<any> {
-        const role: Role = request.user.role;
+        const role: UsersRole = request.user.role;
         return this.mainService.getClients(query, role);
     }
 }

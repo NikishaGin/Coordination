@@ -107,8 +107,8 @@ model Users {
   lastName     String?   @db.VarChar(100)
   secondName   String?   @db.VarChar(100)
 
-  regoinId Int?      @db.UnsignedSmallInt
-  region   Regions?  @relation(fields: [regoinId], references: [id])
+  regionId Int?      @db.UnsignedSmallInt
+  region   Regions?  @relation(fields: [regionId], references: [id])
   history  History[]
 
   @@map("users")

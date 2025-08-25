@@ -3,7 +3,7 @@ import { ClientCategories, Prisma } from 'src/generated/prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AmountsType, GetMainParamsDto, RegionType } from './main.dto';
 import { getStatusIP } from '../common/utils/getStatusIP';
-import { Role } from '../common/enums/role.enum';
+import { UsersRole } from '../generated/prisma/enums';
 
 @Injectable()
 export class MainService {
@@ -106,7 +106,7 @@ export class MainService {
         );
     }
 
-    async getClients(data: GetMainParamsDto, role: Role): Promise<any> {
+    async getClients(data: GetMainParamsDto, role: UsersRole): Promise<any> {
         const filter: Prisma.ClientsWhereInput = {
             resolution: this.createClientFilter(data),
             ...(data?.regionId ? { tno: { regionId: data.regionId } } : {}),
@@ -199,6 +199,8 @@ export class MainService {
                 WHERE 
                     actives.clientId IN (${Prisma.join(clientIds)})
                   AND
+                    actives.type = 'DEBIT'
+                  AND
                     actives.status <> 'GMU' 
                   AND
                     actives.isVisible = 1
@@ -236,7 +238,7 @@ export class MainService {
             )!;
             const interaction = interactionsData.find(
                 (item): boolean => item.clientId === client.id,
-            )!;
+            );
 
             client['amounts'] = {
                 resolutionAmount: resolution._sum.amount,
@@ -247,20 +249,17 @@ export class MainService {
 
             client['statusIP'] = getStatusIP(resolution._count);
 
-            /*
-            if (interaction._count.submissionDate + interaction._count.originalFilename_1 > 0)
-                client['interactionWithGMU'] =
-                    role === Role.limitedAdminGMU
-                        ? 'Получено сообщение от МИУДОЛ'
-                        : 'Получен ответ от ГМУ';
-            else if (
-                interaction._count.reviewDate +
-                interaction._count.result +
-                interaction._count.originalFilename_2 > 0
-            )
-                client['interactionWithGMU'] = 'Отправлено';
-            else client['interactionWithGMU'] = '';
-             */
+            if (interaction) {
+                const count = interaction._count;
+                if (count.submissionDate + count.originalFilename_1 > 0)
+                    client['interactionWithGMU'] =
+                        role === UsersRole.LIMITED_ADMIN_GMU
+                            ? 'Получено сообщение от МИУДОЛ'
+                            : 'Получен ответ от ГМУ';
+                else if (count.reviewDate + count.result + count.originalFilename_2 > 0)
+                    client['interactionWithGMU'] = 'Отправлено';
+            }
+            client['interactionWithGMU'] = client['interactionWithGMU'] || '';
 
             // resolution._min.WritExecutionBeginDate
             // client[indicators] = ''

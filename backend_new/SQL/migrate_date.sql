@@ -92,7 +92,7 @@ FROM coordination.debt_type
 ORDER BY coordination.debt_type.debt_type;
 
 
-INSERT INTO coordination_new.users (role, login, passwordHash, firstName, lastName, secondName, regoinId)
+INSERT INTO coordination_new.users (role, login, passwordHash, firstName, lastName, secondName, regionId)
 SELECT
     CASE
         WHEN coordination.users.role = 'user'  THEN 'USER'
@@ -117,7 +117,7 @@ SELECT
     coordination.meta.name,
     1,
     cat.newId,
-    regoinTNO.id,
+    regionTNO.id,
     coordination_new.sosp.id
 FROM coordination.meta
          LEFT JOIN (
@@ -134,7 +134,7 @@ FROM coordination.meta
         coordination_new.regions.regionCode AS regionCode
     FROM coordination_new.tno
              LEFT JOIN coordination_new.regions ON coordination_new.tno.regionId = coordination_new.regions.id
-) AS regoinTNO ON ((coordination.meta.region COLLATE utf8mb4_general_ci = regoinTNO.regionCode) AND (coordination.meta.kno COLLATE utf8mb4_general_ci = regoinTNO.CodeTNO))
+) AS regionTNO ON ((coordination.meta.region COLLATE utf8mb4_general_ci = regionTNO.regionCode) AND (coordination.meta.kno COLLATE utf8mb4_general_ci = regionTNO.CodeTNO))
          LEFT JOIN coordination_new.sosp ON coordination.meta.sosp_code COLLATE utf8mb4_general_ci = coordination_new.sosp.CodeSOSP
 UNION ALL
 SELECT
