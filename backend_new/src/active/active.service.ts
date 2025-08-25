@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Actives } from 'src/generated/prisma/client';
-import {ActivesType, DataStatus, InteractionType, WantedResults} from '../generated/prisma/enums';
+import { ActivesType, DataStatus, WantedResults } from '../generated/prisma/enums';
 
 @Injectable()
 export class ActiveService {
@@ -23,7 +22,7 @@ export class ActiveService {
         });
     }
 
-    getActives(clientId: number, type: ActivesType): Promise<Actives> {
+    getActives(clientId: number, type: ActivesType): Promise<any[]> {
         return this.prisma.actives.findMany({
             where: {
                 clientId,
@@ -45,9 +44,7 @@ export class ActiveService {
         });
     }
 
-    createActive(clientId: number, type: ActivesType) {
-
-    }
+    createActive(clientId: number, type: ActivesType) {}
 
     async updateActive(activeId: number, sourse: string) {
         const [entity, field] = sourse.split('.');

@@ -165,7 +165,6 @@ export class MainService {
                                0,
                                actives.cost
                            )
-                               
                        )                                             AS totalSum,
                        SUM(arrests.amount)                           AS arrest,
                        SUM(

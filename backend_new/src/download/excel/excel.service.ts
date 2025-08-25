@@ -1,0 +1,82 @@
+import { Injectable } from '@nestjs/common';
+import * as ExcelJS from 'exceljs';
+import { ExcelColumnOptions, ExcelOptions, ExcelSheetOptions } from './excel.interface';
+
+@Injectable()
+export class ExcelService {
+    createExcelWorkbook(options: ExcelOptions): Promise<ExcelJS.Buffer> {
+        const workbook = new ExcelJS.Workbook();
+        options.sheets.forEach((sheet: ExcelSheetOptions) => {
+            this.addSheet(workbook, sheet);
+        });
+        return workbook.xlsx.writeBuffer();
+    }
+
+    private addSheet(workbook: ExcelJS.Workbook, options: ExcelSheetOptions) {
+        const worksheet = workbook.addWorksheet(options.name);
+        worksheet.columns = options.columns;
+        if (options.data && options.data.length > 0) {
+            options.data.forEach((rowData) => {
+                const rowValues = this.extractRowValues(rowData, options.columns);
+                worksheet.addRow(rowValues);
+            });
+        }
+        this.applySheetStyles(worksheet);
+    }
+
+    private extractRowValues(rowData, columns: ExcelColumnOptions[]) {
+        const extract = (current, key: string) => {
+            return current && current[key] ? current[key] : null;
+        };
+        return columns.map((column) => {
+            if (!column.key) return undefined;
+            return column.key.split('.').reduce(extract, rowData);
+        });
+    }
+
+    private applySheetStyles(worksheet: ExcelJS.Worksheet): void {
+        // Стиль для заголовков
+        const headerRow = worksheet.getRow(1);
+        headerRow.font = {
+            bold: true,
+            color: { argb: 'FFFFFF' },
+            size: 12,
+        };
+        headerRow.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FF4F81BD' },
+        };
+        headerRow.alignment = {
+            vertical: 'middle',
+            horizontal: 'center',
+        };
+        headerRow.height = 25;
+
+        /*
+        // Автоподбор ширины столбцов
+        worksheet.columns.forEach((column) => {
+            let maxLength = 0;
+            column.eachCell({ includeEmpty: true }, (cell) => {
+                const columnLength = cell.value ? cell.value.toString().length : 10;
+                if (columnLength > maxLength) {
+                    maxLength = columnLength;
+                }
+            });
+            column.width = Math.min(maxLength + 2, 50);
+        });
+
+        // Границы для всех ячеек
+        worksheet.eachRow((row, rowNumber) => {
+            row.eachCell((cell) => {
+                cell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' },
+                };
+            });
+        });
+         */
+    }
+}
