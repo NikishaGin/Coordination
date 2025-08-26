@@ -1,14 +1,24 @@
-type CountDate = {
-    WritExecutionEndDate: number;
-    WritExecutionStopDate: number;
-    WritExecutionPostponementDate: number;
-    WritExecutionTerminateDate: number;
+type DateOrCount = number | Date | null;
+
+type WritExecutionDateType = {
+    WritExecutionEndDate: DateOrCount;
+    WritExecutionStopDate: DateOrCount;
+    WritExecutionPostponementDate: DateOrCount;
+    WritExecutionTerminateDate: DateOrCount;
 };
 
-export function getStatusIP(count: CountDate): string {
-    if (count.WritExecutionEndDate > 0) return 'Окончено';
-    else if (count.WritExecutionStopDate > 0) return 'Приостановлено';
-    else if (count.WritExecutionPostponementDate > 0) return 'Отложено';
-    else if (count.WritExecutionTerminateDate > 0) return 'Прекращено';
-    else return 'На исполнении';
+const StatusMap = {
+    WritExecutionEndDate: 'Окончено',
+    WritExecutionStopDate: 'Приостановлено',
+    WritExecutionPostponementDate: 'Отложено',
+    WritExecutionTerminateDate: 'Прекращено',
+    Else: 'На исполнении',
+};
+
+export function getStatusIP(writExecutionDate: WritExecutionDateType): string {
+    const check = ([_, value]): boolean => {
+        return typeof value === 'number' ? value > 0 : value !== null;
+    };
+    const [field] = Object.entries(writExecutionDate).find(check) || ['Else'];
+    return StatusMap[field];
 }

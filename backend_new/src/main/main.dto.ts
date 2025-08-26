@@ -16,7 +16,7 @@ export class GetMainParamsDto {
 
     @Type(() => Number)
     @IsOptional()
-    regionId: number;
+    regionId?: number;
 }
 
 export type RegionType = Prisma.RegionsGetPayload<{ omit: { sonoName: true } }>;
