@@ -21,15 +21,14 @@ export class MainService {
                 { WritExecutionTerminateDate: isExistsDate },
             ],
         };
+
         return {
             some: {
                 isVisible: true,
                 isDerived: data.isDerived,
                 ...(!data.isArchived ? filterIsArchived : {}),
             },
-            every: {
-                ...(data.isArchived ? filterIsArchived : {}),
-            },
+            ...(data.isArchived ? { every: filterIsArchived } : {}),
         };
     }
 

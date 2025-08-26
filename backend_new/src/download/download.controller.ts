@@ -1,17 +1,18 @@
-import { Controller, Get, Res, Header } from '@nestjs/common';
+import { Controller, Get, Res, Header, Query } from '@nestjs/common';
 import { FastifyReply } from 'fastify';
 import { DownloadService } from './download.service';
+import { GetDownloadParamsDto } from './download.dto';
 
 @Controller('download')
 export class DownloadController {
     constructor(private readonly downloadService: DownloadService) {}
 
-    @Get('statistics')
-    getStatistics() {}
+    @Get('common-statistics')
+    getCommonStatistics(@Query() query: GetDownloadParamsDto) {}
 
     @Get('resolutions-statistics')
-    getResolutionsStatistics() {}
+    getResolutionsStatistics(@Query() query: GetDownloadParamsDto) {}
 
     @Get('actives-statistics')
-    getActivesStatistics() {}
+    getActivesStatistics(@Query() query: GetDownloadParamsDto) {}
 }

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { MainService } from '../main/main.service';
 import { ExcelService } from './excel/excel.service';
+import { GetDownloadParamsDto } from './download.dto';
 import * as ExcelJS from 'exceljs';
 
 @Injectable()
@@ -12,7 +13,7 @@ export class DownloadService {
         private main: MainService,
     ) {}
 
-    async getStatistics(): Promise<ExcelJS.Workbook> {
+    async getCommonStatistics(data: GetDownloadParamsDto): Promise<ExcelJS.Workbook> {
         // this.main.getClients()
         return this.excel.createExcelWorkbook({
             sheets: [
@@ -35,11 +36,29 @@ export class DownloadService {
         });
     }
 
-    async getStatisticsIP(): Promise<ExcelJS.Workbook> {
+    async getResolutionsStatistics(data: GetDownloadParamsDto): Promise<ExcelJS.Workbook> {
+        const filter = {
+            id,
+            resolution: this.main.createClientFilter(),
+        };
         this.prisma.clients.findMany({
-            where: {},
+            where: {
+                isVisible: true,
+                ...filter,
+            },
+            omit: {
+                isVisible: true,
+                id: true,
+                categoryId: true,
+                tnoId: true,
+                sospId: true,
+            },
+            include: {
+                tno: { include: { region: true } },
+                resolution: true,
+            },
         });
     }
 
-    async getActiveStatistics(): Promise<ExcelJS.Workbook> {}
+    async getActivesStatistics(data: GetDownloadParamsDto): Promise<ExcelJS.Workbook> {}
 }

@@ -17,6 +17,8 @@ export class ExcelService {
         worksheet.columns = options.columns;
         if (options.data && options.data.length > 0) {
             options.data.forEach((rowData) => {
+                // доп обработка
+
                 const rowValues = this.extractRowValues(rowData, options.columns);
                 worksheet.addRow(rowValues);
             });
