@@ -36,7 +36,6 @@ export class DownloadService {
     }
 
     async getCommonStatistics(data: GetDownloadParamsDto): Promise<ExcelJS.Buffer> {
-        /////////////////////// id !!!!!!!!!
         const params: GetMainParamsDto = {
             isDerived: data.isDerived,
             isArchived: data.isArchived,
@@ -46,7 +45,9 @@ export class DownloadService {
             sheets: [
                 {
                     name: 'Статистика',
-                    data: await this.main.getClients(params, undefined, true, {
+                    data: await this.main.getClients(params, true, {
+                        statistics: true,
+                        selectedClientId: data.clientIds,
                         includeActives: true,
                         includeDebit: true,
                     }),
@@ -54,7 +55,9 @@ export class DownloadService {
                 },
                 {
                     name: 'Статистика по активам',
-                    data: await this.main.getClients(params, undefined, true, {
+                    data: await this.main.getClients(params, true, {
+                        statistics: true,
+                        selectedClientId: data.clientIds,
                         includeActives: true,
                         includeDebit: false,
                     }),
@@ -62,7 +65,9 @@ export class DownloadService {
                 },
                 {
                     name: 'Статистика по дебиторской задолженности',
-                    data: await this.main.getClients(params, undefined, true, {
+                    data: await this.main.getClients(params, true, {
+                        statistics: true,
+                        selectedClientId: data.clientIds,
                         includeActives: false,
                         includeDebit: true,
                     }),

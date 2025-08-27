@@ -199,20 +199,31 @@ export class MainService {
 
     async getClients(
         data: GetMainParamsDto,
-        isGMU: boolean,
+        isGMU?: boolean,
         {
             statistics = false,
+            selectedClientId = [],
             includeActives = true,
             includeDebit = true,
-        }: { statistics?: boolean; includeActives?: boolean; includeDebit?: boolean } = {},
+        }: {
+            statistics?: boolean;
+            selectedClientId?: number[];
+            includeActives?: boolean;
+            includeDebit?: boolean;
+        } = {},
     ): Promise<any> {
-        const regionFilter: Prisma.ClientsWhereInput = data.regionId
-            ? { tno: { regionId: data.regionId } }
-            : {};
+        const regionFilter: Prisma.ClientsWhereInput =
+            data.regionId && selectedClientId.length === 0
+                ? { tno: { regionId: data.regionId } }
+                : {};
+
+        const clientByIdsFilter: Prisma.ClientsWhereInput =
+            selectedClientId.length > 0 ? { id: { in: selectedClientId } } : {};
 
         const derivedFilter: Prisma.ResolutionsWhereInput = getDerivedFilter(data.isDerived);
         const archivedFilter: Prisma.ResolutionsWhereInput = getArchivedFilter(data.isArchived);
         const clientFilter: Prisma.ClientsWhereInput = {
+            ...clientByIdsFilter,
             ...regionFilter,
             resolution: this.createClientFilter(data.isArchived, derivedFilter, archivedFilter),
         };
@@ -291,7 +302,6 @@ export class MainService {
                 resolutionAmount: resolution._sum.amount,
                 resolutionBalance: resolution._sum.balance,
                 ...amounts,
-                clientId: undefined,
             };
 
             client['statusIP'] = getStatusIP(resolution._count);
