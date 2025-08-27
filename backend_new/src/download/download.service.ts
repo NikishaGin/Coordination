@@ -5,10 +5,14 @@ import { ExcelService } from './excel/excel.service';
 import { GetDownloadParamsDto } from './download.dto';
 import * as ExcelJS from 'exceljs';
 import { getStatusIP } from '../common/utils/getStatusIP';
-import { GetMainParamsDto } from '../main/main.dto';
 import { Prisma } from '../generated/prisma/client';
 import { getArchivedFilter, getDerivedFilter } from '../common/utils/ResolutionsFilter';
-import { HEADERS_COMMON_STATISTICS, HEADERS_RESOLUTIONS_STATISTICS } from './download.headers';
+import {
+    HEADERS_ACTIVES_STATISTICS,
+    HEADERS_COMMON_STATISTICS,
+    HEADERS_RESOLUTIONS_STATISTICS
+} from './download.headers';
+import { ActivesType, LeasStatus } from '../generated/prisma/enums';
 
 @Injectable()
 export class DownloadService {
@@ -18,59 +22,49 @@ export class DownloadService {
         private main: MainService,
     ) {}
 
-    private createStatisticsFilter(data: GetDownloadParamsDto): Prisma.ClientsWhereInput {
-        const derivedFilter: Prisma.ResolutionsWhereInput = getDerivedFilter(data.isDerived);
-        const archivedFilter: Prisma.ResolutionsWhereInput = getArchivedFilter(data.isArchived);
+    private createStatisticsFilter(
+        data: GetDownloadParamsDto,
+        derivedFilter: Prisma.ResolutionsWhereInput,
+        archivedFilter: Prisma.ResolutionsWhereInput,
+    ): Prisma.ClientsWhereInput {
         return {
             ...(data.clientIds ? { id: { in: data.clientIds } } : {}),
-            ...(!data.clientIds
-                ? {
-                      resolution: this.main.createClientFilter(
-                          data.isArchived,
-                          derivedFilter,
-                          archivedFilter,
-                      ),
-                  }
-                : {}),
+            resolution: this.main.createClientFilter(
+                data.isArchived,
+                derivedFilter,
+                archivedFilter,
+            ),
         };
     }
 
     async getCommonStatistics(data: GetDownloadParamsDto): Promise<ExcelJS.Buffer> {
-        const params: GetMainParamsDto = {
-            isDerived: data.isDerived,
-            isArchived: data.isArchived,
-        };
+        const statistics = await this.main.getClients(
+            {
+                isDerived: data.isDerived,
+                isArchived: data.isArchived,
+            },
+            true,
+            {
+                statistics: true,
+                selectedClientId: data.clientIds,
+            },
+        );
 
         return this.excel.createExcelWorkbook({
             sheets: [
                 {
                     name: 'Статистика',
-                    data: await this.main.getClients(params, true, {
-                        statistics: true,
-                        selectedClientId: data.clientIds,
-                        includeActives: true,
-                        includeDebit: true,
-                    }),
+                    data: statistics,
                     columns: HEADERS_COMMON_STATISTICS.COMMON,
                 },
                 {
                     name: 'Статистика по активам',
-                    data: await this.main.getClients(params, true, {
-                        statistics: true,
-                        selectedClientId: data.clientIds,
-                        includeActives: true,
-                        includeDebit: false,
-                    }),
+                    data: statistics,
                     columns: HEADERS_COMMON_STATISTICS.ACTIVE,
                 },
                 {
                     name: 'Статистика по дебиторской задолженности',
-                    data: await this.main.getClients(params, true, {
-                        statistics: true,
-                        selectedClientId: data.clientIds,
-                        includeActives: false,
-                        includeDebit: true,
-                    }),
+                    data: statistics,
                     columns: HEADERS_COMMON_STATISTICS.DEBIT,
                 },
             ],
@@ -78,7 +72,9 @@ export class DownloadService {
     }
 
     async getResolutionsStatistics(data: GetDownloadParamsDto): Promise<ExcelJS.Buffer> {
-        const filter = this.createStatisticsFilter(data);
+        const derivedFilter: Prisma.ResolutionsWhereInput = getDerivedFilter(data.isDerived);
+        const archivedFilter: Prisma.ResolutionsWhereInput = getArchivedFilter(data.isArchived);
+        const filter = this.createStatisticsFilter(data, derivedFilter, archivedFilter);
         const clients = await this.prisma.clients.findMany({
             where: {
                 isVisible: true,
@@ -103,12 +99,12 @@ export class DownloadService {
             },
         });
         for (const client of clients) {
-            for (const recolution of client.resolution) {
-                recolution['statusIP'] = getStatusIP({
-                    WritExecutionEndDate: recolution.WritExecutionEndDate,
-                    WritExecutionStopDate: recolution.WritExecutionStopDate,
-                    WritExecutionPostponementDate: recolution.WritExecutionPostponementDate,
-                    WritExecutionTerminateDate: recolution.WritExecutionTerminateDate,
+            for (const resolution of client.resolution) {
+                resolution['statusIP'] = getStatusIP({
+                    WritExecutionEndDate: resolution.WritExecutionEndDate,
+                    WritExecutionStopDate: resolution.WritExecutionStopDate,
+                    WritExecutionPostponementDate: resolution.WritExecutionPostponementDate,
+                    WritExecutionTerminateDate: resolution.WritExecutionTerminateDate,
                 });
             }
         }
@@ -124,44 +120,102 @@ export class DownloadService {
     }
 
     async getActivesStatistics(data: GetDownloadParamsDto): Promise<ExcelJS.Buffer> {
-        const filter = this.createStatisticsFilter(data);
-        const clients = await this.prisma.clients.findMany({
-            where: {
-                isVisible: true,
-                ...filter,
-            },
-            omit: {
-                isVisible: true,
-                id: true,
-                categoryId: true,
-                tnoId: true,
-                sospId: true,
-            },
-            include: {
-                tno: { include: { region: true } },
-                active: {
-                    include: {
-                        description: true,
-                        arrest: true,
-                        wanted: true,
-                        evaluation: true,
-                        encumbrance: true,
-                        realization: true,
-                        refundProperty: true,
-                        debitForeclosure: true,
-                        registration: true,
-                        complaint: true,
+        const derivedFilter: Prisma.ResolutionsWhereInput = getDerivedFilter(data.isDerived);
+        const archivedFilter: Prisma.ResolutionsWhereInput = getArchivedFilter(data.isArchived);
+        const filter = this.createStatisticsFilter(data, derivedFilter, archivedFilter);
+
+        const getActives = (
+            type: ActivesType,
+            isLeasing: LeasStatus | null = null,
+        ): Promise<any> =>
+            this.prisma.clients.findMany({
+                where: {
+                    isVisible: true,
+                    ...filter,
+                },
+                omit: {
+                    isVisible: true,
+                    id: true,
+                    categoryId: true,
+                    tnoId: true,
+                    sospId: true,
+                },
+                include: {
+                    tno: { include: { region: true } },
+                    active: {
+                        where: { type, ...(isLeasing ? { isLeasing } : {}) },
+                        include: {
+                            description: true,
+                            arrest: true,
+                            wanted: true,
+                            evaluation: true,
+                            encumbrance: true,
+                            realization: true,
+                            refundProperty: true,
+                            debitForeclosure: true,
+                            registration: true,
+                            complaint: true,
+                        },
                     },
                 },
-            },
-        });
+            });
+
+        /*
         for (const client of clients) {
             for (const active of client.active) {
                 // active
             }
         }
+         */
+
         return this.excel.createExcelWorkbook({
-            sheets: [{}],
+            sheets: [
+                {
+                    name: 'Транспорт',
+                    data: await getActives(ActivesType.TRANSPORT),
+                    columns: HEADERS_ACTIVES_STATISTICS.TRANSPORT,
+                },
+                {
+                    name: 'Транспорт (залогодержатель не ФНС)',
+                    data: await getActives(ActivesType.TRANSPORT, LeasStatus.IS_NOT_PLEDGE_HOLDER),
+                    columns: HEADERS_ACTIVES_STATISTICS.TRANSPORT,
+                },
+                {
+                    name: 'Недвижимость',
+                    data: [],
+                    columns: HEADERS_ACTIVES_STATISTICS.PROPERTY,
+                },
+                {
+                    name: 'Недвижимость (залогодержатель не ФНС)',
+                    data: [],
+                    columns: HEADERS_ACTIVES_STATISTICS.PROPERTY,
+                },
+                {
+                    name: 'Земельные участки',
+                    data: [],
+                    columns: HEADERS_ACTIVES_STATISTICS.GROUND,
+                },
+                {
+                    name: 'Земельные участки (залогодержатель не ФНС)',
+                    data: [],
+                    columns: HEADERS_ACTIVES_STATISTICS.GROUND,
+                },
+                {
+                    name: 'Дебиторская задолженность',
+                    data: [],
+                    columns: HEADERS_ACTIVES_STATISTICS.DEBIT,
+                },
+                {
+                    name: 'Иные активы',
+                    data: [],
+                    columns: HEADERS_ACTIVES_STATISTICS.OTHER,
+                },
+                {
+                    name: 'Иные активы (залогодержатель не ФНС)',
+                    data: [],
+                    columns: HEADERS_ACTIVES_STATISTICS.OTHER,
+                },
+            ],
         });
     }
 }

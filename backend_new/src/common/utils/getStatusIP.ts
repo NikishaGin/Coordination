@@ -7,7 +7,7 @@ type WritExecutionDateType = {
     WritExecutionTerminateDate: DateOrCount;
 };
 
-const StatusMap = {
+export const StatusMap = {
     WritExecutionEndDate: 'Окончено',
     WritExecutionStopDate: 'Приостановлено',
     WritExecutionPostponementDate: 'Отложено',

@@ -1,9 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { ClientCategories, Prisma } from 'src/generated/prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { GetMainParamsDto, AggregatedActivesType, RegionsType } from './main.dto';
+import {
+    GetMainParamsDto,
+    AggregatedActivesType,
+    RegionsType,
+    ClientsType,
+    ActiveAmountsType,
+} from './main.dto';
 import { getArchivedFilter, getDerivedFilter } from '../common/utils/ResolutionsFilter';
-import { getStatusIP } from '../common/utils/getStatusIP';
+import { getStatusIP, StatusMap } from '../common/utils/getStatusIP';
 import { ActivesType } from '../generated/prisma/enums';
 
 @Injectable()
@@ -42,6 +48,7 @@ export class MainService {
             AND actives.type = ${ActivesType.DEBIT}
             `;
         else additionalCondition = Prisma.sql``;
+
         return this.prisma.$queryRaw<AggregatedActivesType[]>(
             Prisma.sql`
                 SELECT
@@ -96,23 +103,6 @@ export class MainService {
         );
     }
 
-    getInteractions(clientIds: number[]) {
-        return this.prisma.interactions.groupBy({
-            by: ['clientId'],
-            where: {
-                clientId: { in: clientIds },
-                type: 'GMU',
-            },
-            _count: {
-                submissionDate: true,
-                reviewDate: true,
-                result: true,
-                originalFilename_1: true,
-                originalFilename_2: true,
-            },
-        });
-    }
-
     getRegions(data: GetMainParamsDto, userRegionId: number | null): Promise<RegionsType[]> {
         const regionFilter: Prisma.RegionsWhereInput =
             userRegionId !== null ? { id: userRegionId } : {};
@@ -142,23 +132,30 @@ export class MainService {
     }
 
     getClientCategories(data: GetMainParamsDto): Promise<ClientCategories[]> {
+        /*
         const derivedFilter: Prisma.ResolutionsWhereInput = getDerivedFilter(data.isDerived);
         const archivedFilter: Prisma.ResolutionsWhereInput = getArchivedFilter(data.isArchived);
+
         const filter: Prisma.ClientsWhereInput = {
             resolution: this.createClientFilter(data.isArchived, derivedFilter, archivedFilter),
             ...(data?.regionId ? { tno: { regionId: data.regionId } } : {}),
         };
-        return this.prisma.clientCategories.findMany({
+         */
+        /*
+        {
             where: {
                 client: {
                     some: filter,
                     every: { isVisible: true },
                 },
             },
-        });
+        }
+        */
+        return this.prisma.clientCategories.findMany();
     }
 
-    async getStatusesIP(data: GetMainParamsDto): Promise<string[]> {
+    getStatusesIP(data: GetMainParamsDto): string[] {
+        /*
         const derivedFilter: Prisma.ResolutionsWhereInput = getDerivedFilter(data.isDerived);
         const archivedFilter: Prisma.ResolutionsWhereInput = getArchivedFilter(data.isArchived);
         const filter: Prisma.ClientsWhereInput = {
@@ -195,6 +192,8 @@ export class MainService {
             const status: string = getStatusIP(item._count);
             return result.includes(status) ? result : [...result, status];
         }, []);
+         */
+        return Object.values(StatusMap);
     }
 
     async getClients(
@@ -203,15 +202,11 @@ export class MainService {
         {
             statistics = false,
             selectedClientId = [],
-            includeActives = true,
-            includeDebit = true,
         }: {
             statistics?: boolean;
             selectedClientId?: number[];
-            includeActives?: boolean;
-            includeDebit?: boolean;
         } = {},
-    ): Promise<any> {
+    ): Promise<ClientsType[]> {
         const regionFilter: Prisma.ClientsWhereInput =
             data.regionId && selectedClientId.length === 0
                 ? { tno: { regionId: data.regionId } }
@@ -228,7 +223,7 @@ export class MainService {
             resolution: this.createClientFilter(data.isArchived, derivedFilter, archivedFilter),
         };
 
-        const clients = await this.prisma.clients.findMany({
+        const clients = (await this.prisma.clients.findMany({
             where: {
                 isVisible: true,
                 ...clientFilter,
@@ -245,7 +240,7 @@ export class MainService {
                 category: true,
             },
             orderBy: [{ inn: 'asc' }],
-        });
+        })) as ClientsType[];
 
         const clientIds: number[] = clients.map(({ id }: { id: number }): number => id);
 
@@ -272,14 +267,48 @@ export class MainService {
             },
         });
 
-        const activeAmountsPromise = await this.getSqlAggregatedActives(clientIds, {
-            includeActives,
-            includeDebit,
-        });
+        const activeAmountsPromise = statistics
+            ? Promise.all([
+                  this.getSqlAggregatedActives(clientIds, {
+                      includeActives: true,
+                      includeDebit: true,
+                  }),
+                  this.getSqlAggregatedActives(clientIds, {
+                      includeActives: true,
+                      includeDebit: false,
+                  }),
+                  this.getSqlAggregatedActives(clientIds, {
+                      includeActives: false,
+                      includeDebit: true,
+                  }),
+              ]).then(([common, active, debit]) => ({
+                  COMMON: common,
+                  ACTIVE: active,
+                  DEBIT: debit,
+              }))
+            : this.getSqlAggregatedActives(clientIds);
 
         const interactionsPromise = statistics
-            ? this.getInteractions(clientIds)
-            : Promise.resolve([]);
+            ? Promise.resolve<
+                  {
+                      clientId: number;
+                      _count: any;
+                  }[]
+              >([])
+            : this.prisma.interactions.groupBy({
+                  by: ['clientId'],
+                  where: {
+                      clientId: { in: clientIds },
+                      type: 'GMU',
+                  },
+                  _count: {
+                      submissionDate: true,
+                      reviewDate: true,
+                      result: true,
+                      originalFilename_1: true,
+                      originalFilename_2: true,
+                  },
+              });
 
         const [resolutionsData, activeAmounts, interactionsData] = await Promise.all([
             resolutionPromise,
@@ -291,23 +320,39 @@ export class MainService {
             const resolution = resolutionsData.find(
                 (item): boolean => item.clientId === client.id,
             )!;
-            const amounts = activeAmounts.find(
-                (item: AggregatedActivesType): boolean => item.clientId === client.id,
-            )!;
+
+            const amounts: ActiveAmountsType = !statistics
+                ? (activeAmounts as AggregatedActivesType[]).find(
+                      (item: AggregatedActivesType): boolean => item.clientId === client.id,
+                  )!
+                : {
+                      COMMON: (activeAmounts as { COMMON: AggregatedActivesType[] }).COMMON.find(
+                          (item: AggregatedActivesType): boolean => item.clientId === client.id,
+                      )!,
+                      ACTIVE: (activeAmounts as { ACTIVE: AggregatedActivesType[] }).ACTIVE.find(
+                          (item: AggregatedActivesType): boolean => item.clientId === client.id,
+                      )!,
+                      DEBIT: (activeAmounts as { DEBIT: AggregatedActivesType[] }).DEBIT.find(
+                          (item: AggregatedActivesType): boolean => item.clientId === client.id,
+                      )!,
+                  };
+
             const interaction = interactionsData.find(
                 (item): boolean => item?.clientId === client.id,
             );
 
-            client['amounts'] = {
-                resolutionAmount: resolution._sum.amount,
-                resolutionBalance: resolution._sum.balance,
-                ...amounts,
+            client.amounts = {
+                resolution: {
+                    amount: resolution._sum.amount,
+                    balance: resolution._sum.balance,
+                },
+                actives: amounts,
             };
 
-            client['statusIP'] = getStatusIP(resolution._count);
+            client.statusIP = getStatusIP(resolution._count);
 
             if (interaction) {
-                const count = interaction._count;
+                const count = interaction._count!;
                 if (count.submissionDate + count.originalFilename_1 > 0)
                     client['interactionWithGMU'] = isGMU
                         ? 'Получено сообщение от МИУДОЛ'
