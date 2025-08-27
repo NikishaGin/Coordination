@@ -155,5 +155,8 @@ export class DownloadService {
                 // active
             }
         }
+        return this.excel.createExcelWorkbook({
+            sheets: [{}],
+        });
     }
 }

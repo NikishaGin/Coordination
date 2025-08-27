@@ -2,8 +2,7 @@ import { IsNotEmpty, IsOptional } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 import { Prisma } from 'src/generated/prisma/client';
 
-const transformToBoolean = ({ value }) =>
-    ['true', '1'].includes(`${value}`.toLowerCase());
+const transformToBoolean = ({ value }) => ['true', '1'].includes(`${value}`.toLowerCase());
 
 export class GetMainParamsDto {
     @Transform(transformToBoolean)
@@ -19,8 +18,17 @@ export class GetMainParamsDto {
     regionId?: number;
 }
 
-export type RegionType = Prisma.RegionsGetPayload<{ omit: { sonoName: true } }>;
+export type RegionsType = Prisma.RegionsGetPayload<{ omit: { sonoName: true } }>;
 
-export type AmountsType = {
+export type AggregatedActivesType = {
     clientId: number;
+    totalSum: number;
+    arrest: number;
+    wanted: number;
+    evaluation: number;
+    realizationFirst: number;
+    realizationSecond: number;
+    realizationResult: number;
+    refundProperty: number;
+    debitForeclosure: number;
 };

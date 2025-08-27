@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ClientCategories, Prisma } from 'src/generated/prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { AmountsType, GetMainParamsDto, RegionType } from './main.dto';
+import { GetMainParamsDto, AggregatedActivesType, RegionsType } from './main.dto';
 import { getArchivedFilter, getDerivedFilter } from '../common/utils/ResolutionsFilter';
 import { getStatusIP } from '../common/utils/getStatusIP';
-import { ActivesType, UsersRole } from '../generated/prisma/enums';
+import { ActivesType } from '../generated/prisma/enums';
 
 @Injectable()
 export class MainService {
@@ -31,7 +31,7 @@ export class MainService {
             includeActives = true,
             includeDebit = true,
         }: { includeActives?: boolean; includeDebit?: boolean } = {},
-    ): Promise<AmountsType[]> {
+    ): Promise<AggregatedActivesType[]> {
         let additionalCondition: Prisma.Sql;
         if (includeActives && !includeDebit)
             additionalCondition = Prisma.sql`
@@ -42,7 +42,7 @@ export class MainService {
             AND actives.type = ${ActivesType.DEBIT}
             `;
         else additionalCondition = Prisma.sql``;
-        return this.prisma.$queryRaw<AmountsType[]>(
+        return this.prisma.$queryRaw<AggregatedActivesType[]>(
             Prisma.sql`
                 SELECT
                    actives.clientId,
@@ -113,19 +113,26 @@ export class MainService {
         });
     }
 
-    getRegions(data: GetMainParamsDto): Promise<RegionType[]> {
-        const derivedFilter: Prisma.ResolutionsWhereInput = getDerivedFilter(data.isDerived);
-        const archivedFilter: Prisma.ResolutionsWhereInput = getArchivedFilter(data.isArchived);
-        const filter: Prisma.ClientsWhereInput = {
-            resolution: this.createClientFilter(data.isArchived, derivedFilter, archivedFilter),
+    getRegions(data: GetMainParamsDto, userRegionId: number | null): Promise<RegionsType[]> {
+        const regionFilter: Prisma.RegionsWhereInput =
+            userRegionId !== null ? { id: userRegionId } : {};
+
+        const clientFilter: Prisma.ClientsWhereInput = {
+            resolution: this.createClientFilter(
+                data.isArchived,
+                getDerivedFilter(data.isDerived),
+                getArchivedFilter(data.isArchived),
+            ),
         };
+
         return this.prisma.regions.findMany({
             omit: { sonoName: true },
             where: {
+                ...regionFilter,
                 tno: {
                     some: {
                         client: {
-                            some: filter,
+                            some: clientFilter,
                             every: { isVisible: true },
                         },
                     },
@@ -158,7 +165,7 @@ export class MainService {
             resolution: this.createClientFilter(data.isArchived, derivedFilter, archivedFilter),
             ...(data?.regionId ? { tno: { regionId: data.regionId } } : {}),
         };
-        const clients = await this.prisma.clients.findMany({
+        const clients: { id: number }[] = await this.prisma.clients.findMany({
             where: {
                 isVisible: true,
                 ...filter,
@@ -192,24 +199,28 @@ export class MainService {
 
     async getClients(
         data: GetMainParamsDto,
-        role?: UsersRole,
-        statistics: boolean = false,
+        isGMU: boolean,
         {
+            statistics = false,
             includeActives = true,
             includeDebit = true,
-        }: { includeActives?: boolean; includeDebit?: boolean } = {},
+        }: { statistics?: boolean; includeActives?: boolean; includeDebit?: boolean } = {},
     ): Promise<any> {
+        const regionFilter: Prisma.ClientsWhereInput = data.regionId
+            ? { tno: { regionId: data.regionId } }
+            : {};
+
         const derivedFilter: Prisma.ResolutionsWhereInput = getDerivedFilter(data.isDerived);
         const archivedFilter: Prisma.ResolutionsWhereInput = getArchivedFilter(data.isArchived);
-        const filter: Prisma.ClientsWhereInput = {
+        const clientFilter: Prisma.ClientsWhereInput = {
+            ...regionFilter,
             resolution: this.createClientFilter(data.isArchived, derivedFilter, archivedFilter),
-            ...(data?.regionId ? { tno: { regionId: data.regionId } } : {}),
         };
 
         const clients = await this.prisma.clients.findMany({
             where: {
                 isVisible: true,
-                ...filter,
+                ...clientFilter,
             },
             omit: {
                 tnoId: true,
@@ -270,10 +281,10 @@ export class MainService {
                 (item): boolean => item.clientId === client.id,
             )!;
             const amounts = activeAmounts.find(
-                (item: AmountsType): boolean => item.clientId === client.id,
+                (item: AggregatedActivesType): boolean => item.clientId === client.id,
             )!;
             const interaction = interactionsData.find(
-                (item): boolean => item.clientId === client.id,
+                (item): boolean => item?.clientId === client.id,
             );
 
             client['amounts'] = {
@@ -288,10 +299,9 @@ export class MainService {
             if (interaction) {
                 const count = interaction._count;
                 if (count.submissionDate + count.originalFilename_1 > 0)
-                    client['interactionWithGMU'] =
-                        role === UsersRole.LIMITED_ADMIN_GMU
-                            ? 'Получено сообщение от МИУДОЛ'
-                            : 'Получен ответ от ГМУ';
+                    client['interactionWithGMU'] = isGMU
+                        ? 'Получено сообщение от МИУДОЛ'
+                        : 'Получен ответ от ГМУ';
                 else if (count.reviewDate + count.result + count.originalFilename_2 > 0)
                     client['interactionWithGMU'] = 'Отправлено';
             }
