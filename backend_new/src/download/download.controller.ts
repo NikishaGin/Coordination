@@ -7,12 +7,22 @@ import { GetDownloadParamsDto } from './download.dto';
 export class DownloadController {
     constructor(private readonly downloadService: DownloadService) {}
 
+    @Header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     @Get('common-statistics')
-    getCommonStatistics(@Query() query: GetDownloadParamsDto) {}
+    async getCommonStatistics(
+        @Query() query: GetDownloadParamsDto,
+        @Res() reply: FastifyReply,
+    ) {
+        const buffer = await this.downloadService.getCommonStatistics(query);
+        reply
+            .header('Content-Disposition', 'attachment; filename="report.xlsx"')
+            .send(buffer);
+
+    }
 
     @Get('resolutions-statistics')
-    getResolutionsStatistics(@Query() query: GetDownloadParamsDto) {}
+    async getResolutionsStatistics(@Query() query: GetDownloadParamsDto) {}
 
     @Get('actives-statistics')
-    getActivesStatistics(@Query() query: GetDownloadParamsDto) {}
+    async getActivesStatistics(@Query() query: GetDownloadParamsDto) {}
 }

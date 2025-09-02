@@ -287,32 +287,34 @@ model Resolutions {
 
 /// Таблица "Активы должника"
 model Actives {
-  id                Int           @id @default(autoincrement())
-  cost              Decimal?      @db.Decimal(15, 2)
-  type              ActivesType
-  status            DataStatus?
-  objectStatus      ObjectStatus?
-  otherObjectStatus String?       @db.VarChar(50)
-  isVerified        Boolean?      @default(false)
-  nameLessor        String?       @db.VarChar(255)
-  isLeasing         LeasStatus?
-  comment           String?       @db.Text
-  uploadDate        DateTime?     @db.Date
-  isVisible         Boolean       @default(true)
+  id                    Int           @id @default(autoincrement())
+  cost                  Decimal?      @db.Decimal(15, 2)
+  type                  ActivesType
+  status                DataStatus?
+  objectStatus          ObjectStatus?
+  otherObjectStatus     String?       @db.VarChar(50)
+  isVerified            Boolean?      @default(false)
+  encumbranceType       String?       @db.VarChar(250)
+  encumbranceDate       DateTime?     @db.Date
+  nameLessor            String?       @db.VarChar(255)
+  isLeasing             LeasStatus?
+  registrationBeginDate DateTime?     @db.Date
+  registrationEndDate   DateTime?     @db.Date
+  comment               String?       @db.Text
+  uploadDate            DateTime?     @db.Date
+  isVisible             Boolean       @default(true)
 
   clientId Int
   client   Clients @relation(fields: [clientId], references: [id])
 
-  description      DescriptionActives?  @relation("Actives_Description")
-  arrest           Arrests?             @relation("Actives_Arrests")
-  wanted           Wanteds?             @relation("Actives_Wanteds")
-  evaluation       Evaluations?         @relation("Actives_Evaluations")
-  encumbrance      Encumbrances?        @relation("Actives_Encumbrances")
-  realization      Realizations[]       @relation("Actives_Realizations")
-  refundProperty   RefundProperty?      @relation("Actives_RefundProperty")
-  debitForeclosure DebitForeclosure?    @relation("Actives_DebitForeclosure")
-  registration     ActiveRegistrations? @relation("Actives_Registrations")
-  complaint        Complaints?          @relation("Actives_Complaints")
+  description      DescriptionActives? @relation("Actives_Description")
+  arrest           Arrests?            @relation("Actives_Arrests")
+  wanted           Wanteds?            @relation("Actives_Wanteds")
+  evaluation       Evaluations?        @relation("Actives_Evaluations")
+  realization      Realizations[]      @relation("Actives_Realizations")
+  refundProperty   RefundProperty?     @relation("Actives_RefundProperty")
+  debitForeclosure DebitForeclosure?   @relation("Actives_DebitForeclosure")
+  complaint        Complaints?         @relation("Actives_Complaints")
 
   @@map("actives")
 }
@@ -330,13 +332,13 @@ model DescriptionActives {
   // Характеристики недвижимости/земельного участка:
   landArea        Float?  @db.Float
   cadastralNumber String? @db.VarChar(60)
-  adress          String? @db.Text
+  address         String? @db.Text
   shareSize       Float?
 
   // Характеристики дебиторской задолжености:
-  debitorInn    String?   @db.VarChar(12)
-  debitorAdress String?   @db.Text
-  debitorDate   DateTime? @db.Date
+  debitorInn     String?   @db.VarChar(12)
+  debitorAddress String?   @db.Text
+  debitorDate    DateTime? @db.Date
 
   active Actives @relation("Actives_Description", fields: [id], references: [id])
 
@@ -383,18 +385,6 @@ model Evaluations {
   @@map("evaluations")
 }
 
-/// Таблица "Обременений имущества"
-model Encumbrances {
-  id   Int       @id @default(autoincrement())
-  type String?   @db.VarChar(250)
-  date DateTime? @db.Date
-
-  activeId Int     @unique
-  active   Actives @relation("Actives_Encumbrances", fields: [activeId], references: [id])
-
-  @@map("encumbrances")
-}
-
 /// Таблица "Реализаций имущества"
 model Realizations {
   id                             Int              @id @default(autoincrement())
@@ -410,6 +400,7 @@ model Realizations {
   activeId Int
   active   Actives @relation("Actives_Realizations", fields: [activeId], references: [id])
 
+  @@unique([activeId, stage])
   @@map("realizations")
 }
 
@@ -437,18 +428,6 @@ model DebitForeclosure {
   active   Actives @relation("Actives_DebitForeclosure", fields: [activeId], references: [id])
 
   @@map("debit_foreclosure")
-}
-
-/// Таблица "Регистраций активов"
-model ActiveRegistrations {
-  id        Int       @id @default(autoincrement())
-  beginDate DateTime? @db.Date
-  endDate   DateTime? @db.Date
-
-  activeId Int     @unique
-  active   Actives @relation("Actives_Registrations", fields: [activeId], references: [id])
-
-  @@map("active_registrations")
 }
 
 /// Таблица "Жалоб"

@@ -1,9 +1,7 @@
 DELETE FROM coordination_new.complaints WHERE id >= 0;
-DELETE FROM coordination_new.active_registrations WHERE id >= 0;
 DELETE FROM coordination_new.debit_foreclosure WHERE id >= 0;
 DELETE FROM coordination_new.refund_property WHERE id >= 0;
 DELETE FROM coordination_new.realizations WHERE id >= 0;
-DELETE FROM coordination_new.encumbrances WHERE id >= 0;
 DELETE FROM coordination_new.evaluations WHERE id >= 0;
 DELETE FROM coordination_new.wanteds WHERE id >= 0;
 DELETE FROM coordination_new.arrests WHERE id >= 0;
@@ -38,11 +36,9 @@ ALTER TABLE coordination_new.description_actives AUTO_INCREMENT = 1;
 ALTER TABLE coordination_new.arrests AUTO_INCREMENT = 1;
 ALTER TABLE coordination_new.wanteds AUTO_INCREMENT = 1;
 ALTER TABLE coordination_new.evaluations AUTO_INCREMENT = 1;
-ALTER TABLE coordination_new.encumbrances AUTO_INCREMENT = 1;
 ALTER TABLE coordination_new.realizations AUTO_INCREMENT = 1;
 ALTER TABLE coordination_new.refund_property AUTO_INCREMENT = 1;
 ALTER TABLE coordination_new.debit_foreclosure AUTO_INCREMENT = 1;
-ALTER TABLE coordination_new.active_registrations AUTO_INCREMENT = 1;
 ALTER TABLE coordination_new.complaints AUTO_INCREMENT = 1;
 
 
@@ -281,8 +277,12 @@ INSERT INTO coordination_new.actives (
     objectStatus,
     otherObjectStatus,
     isVerified,
+    encumbranceType,
+    encumbranceDate,
     nameLessor,
     isLeasing,
+    registrationBeginDate,
+    registrationEndDate,
     comment,
     uploadDate,
     clientId
@@ -300,34 +300,54 @@ SELECT
     IF(result.obj_status = 'other', 'OTHER', NULL),
     result.obj_status_manual,
     result.is_verified,
+    NULLIF(result.encumbrance_type, ''),
+    result.encumbrance_date,
     result.lizing_name,
     CASE
         WHEN result.is_fns_lizing = 0 THEN 'NO_PLEDGE'
         WHEN result.is_fns_lizing = 1 THEN 'IS_PLEDGE_HOLDER'
         WHEN result.is_fns_lizing = 2 THEN 'IS_NOT_PLEDGE_HOLDER'
-        END,
+    END,
+    result.registrationBeginDate,
+    result.registrationEndDate,
     result.comment,
     NULLIF(result.load_date, '0000-00-00'),
     temp.clientId
 FROM (
          SELECT
              t.id, 'TRANSPORT' AS type,
-             t.cost, t.status, t.obj_status, t.obj_status_manual, t.is_verified, t.lizing_name, t.is_fns_lizing, t.comment, t.load_date
+             t.cost, t.status, t.obj_status, t.obj_status_manual, t.is_verified,
+             t.encumbrance_type, t.encumbrance_date, t.lizing_name, t.is_fns_lizing,
+             IF(MONTH(t.registration_start_date) > 0, t.registration_start_date, NULL) AS registrationBeginDate,
+             IF(MONTH(t.registration_end_date) > 0, t.registration_end_date, NULL) AS registrationEndDate,
+             t.comment, t.load_date
          FROM coordination.transport t
          UNION ALL
          SELECT
              t.id, IF(t.type_id = 2, 'PROPERTY', 'GROUND') AS type,
-             t.cost, t.status, t.obj_status, t.obj_status_manual, t.is_verified, t.lizing_name, t.is_fns_lizing, t.comment, t.load_date
+             t.cost, t.status, t.obj_status, t.obj_status_manual, t.is_verified,
+             t.encumbrance_type, t.encumbrance_date, t.lizing_name, t.is_fns_lizing,
+             IF(MONTH(t.registration_start_date) > 0, t.registration_start_date, NULL) AS registrationBeginDate,
+             IF(MONTH(t.registration_end_date) > 0, t.registration_end_date, NULL) AS registrationEndDate,
+             t.comment, t.load_date
          FROM coordination.property t
          UNION ALL
          SELECT
              t.id, 'DEBIT' AS type,
-             t.total_sum AS cost, t.status, t.obj_status, t.obj_status_manual, t.is_verified, t.lizing_name, t.is_fns_lizing, t.comment, t.load_date
+             t.total_sum AS cost, t.status, t.obj_status, t.obj_status_manual, t.is_verified,
+             NULL, NULL, NULL, NULL,
+             NULL AS registrationBeginDate,
+             NULL AS registrationEndDate,
+             t.comment, t.load_date
          FROM coordination.debit t
          UNION ALL
          SELECT
              t.id, 'OTHER' AS type,
-             t.cost, t.status, t.obj_status, t.obj_status_manual, t.is_verified, t.lizing_name, t.is_fns_lizing, t.comment, t.load_date
+             t.cost, t.status, t.obj_status, t.obj_status_manual, t.is_verified,
+             t.encumbrance_type, t.encumbrance_date, t.lizing_name, t.is_fns_lizing,
+             NULL AS registrationBeginDate,
+             NULL AS registrationEndDate,
+             t.comment, t.load_date
          FROM coordination.another t
      ) AS result
          LEFT JOIN coordination_new.temp_active_mapping temp ON ((result.type = temp.type) AND (result.id = temp.oldActiveId))
@@ -491,40 +511,6 @@ HAVING
 ORDER BY temp.activeId, beginDate;
 
 
-INSERT INTO coordination_new.encumbrances (type, date, activeId)
-SELECT
-    NULLIF(result.encumbrance_type, '') AS type,
-    result.encumbrance_date AS date,
-    temp.activeId
-FROM (
-    SELECT
-    t.id, 'TRANSPORT' AS type,
-    t.encumbrance_type, t.encumbrance_date
-    FROM coordination.transport t
-    UNION ALL
-    SELECT
-    t.id, IF(t.type_id = 2, 'PROPERTY', 'GROUND') AS type,
-    t.encumbrance_type, t.encumbrance_date
-    FROM coordination.property t
-    UNION ALL
-    SELECT
-    t.id, 'DEBIT' AS type,
-    t.encumbrance_type, t.encumbrance_date
-    FROM coordination.debit t
-    UNION ALL
-    SELECT
-    t.id, 'OTHER' AS type,
-    t.encumbrance_type, t.encumbrance_date
-    FROM coordination.another t
-    ) AS result
-    LEFT JOIN coordination_new.temp_active_mapping temp ON ((result.type = temp.type) AND (result.id = temp.oldActiveId))
-HAVING
-    type IS NOT NULL
-    OR
-    date IS NOT NULL
-ORDER BY temp.activeId, date;
-
-
 DROP TABLE IF EXISTS coordination_new.temp_realizations;
 CREATE TABLE coordination_new.temp_realizations LIKE coordination_new.realizations;
 
@@ -674,32 +660,6 @@ HAVING
     OR
     cancelReason IS NOT NULL
 ORDER BY temp.activeId, requestDate;
-
-
-INSERT INTO coordination_new.active_registrations (beginDate, endDate, activeId)
-SELECT
-    result.beginDate,
-    result.endDate,
-    temp.activeId
-FROM (
-         SELECT
-             t.id, 'TRANSPORT' AS type,
-             IF(MONTH(t.registration_start_date) > 0, t.registration_start_date, NULL) AS beginDate,
-             IF(MONTH(t.registration_end_date) > 0, t.registration_end_date, NULL) AS endDate
-         FROM coordination.transport t
-         UNION ALL
-         SELECT
-             t.id, IF(t.type_id = 2, 'PROPERTY', 'GROUND') AS type,
-             IF(MONTH(t.registration_start_date) > 0, t.registration_start_date, NULL) AS beginDate,
-             IF(MONTH(t.registration_end_date) > 0, t.registration_end_date, NULL) AS endDate
-         FROM coordination.property t
-     ) AS result
-         LEFT JOIN coordination_new.temp_active_mapping temp ON ((result.type = temp.type) AND (result.id = temp.oldActiveId))
-HAVING
-    beginDate IS NOT NULL
-    OR
-    endDate IS NOT NULL
-ORDER BY temp.activeId, beginDate, endDate;
 
 
 INSERT INTO coordination_new.complaints (personWhoFiled, date, subject, source, result, activeId)

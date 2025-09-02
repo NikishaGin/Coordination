@@ -443,6 +443,7 @@ const getActivesDownloadingData = async ({
                     },
                     _: ""
                 }, { newField: "objectStatus" })
+                
                 .mapStatusToTextField(table, "wanted_result", {
                     0: "В связи с выполнением всех мероприятий по розыску",
                     1: "В связи с розыском имущества должника",

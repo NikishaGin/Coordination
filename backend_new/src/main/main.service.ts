@@ -61,6 +61,7 @@ export class MainService {
                        )
                    )                                             AS totalSum,
                    SUM(arrests.amount)                           AS arrest,
+                   
                    SUM(
                         IF(
                            (wanteds.beginDate IS NOT NULL) AND (wanteds.endDate IS NULL), 

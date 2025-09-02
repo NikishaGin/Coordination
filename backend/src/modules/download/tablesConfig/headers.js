@@ -117,16 +117,23 @@ const enforcementHeaders = {
     evaluation_accept:             "Принятие результатов оценки имущества",
     evaluation_sum:                "Сумма оценки (руб.)",
     evaluationStatus:              "Статус оценки",
+
+
     realization_submit:            "Передано на реализацию",
     realization_property_sum:      "Сумма переданного имущества на реализацию",
+
     submitRealizationFirstStageStatus:  "Статус передачи на реализацию",
+
     realization_date_1:            "Дата первых торгов",
     realization_result_1:          "Отчет о реализации (1 этап)",
     realization_sum_1:             "Сумма реализованного имущества (руб.) (1 этап)",
     not_realization_notification:  "Уведомление о не реализации",
     auction1_failure_reason:       "Причина признания  1 торгов не состоявшимися",
+
     auction1_status:               "Текущий статус 1 торгов",
     realizationFirstStageStatus:   "Статус реализации 1 этап",
+
+
     price_reduction_resolution:    "Постановление о снижении цены",
     price_reduction_sum:           "Сумма снижения цены (руб.)",
     submitRealizationSecondStageStatus: "Статус передачи на реализацию 2 этап",
@@ -135,8 +142,11 @@ const enforcementHeaders = {
     realization_sum_2:             "Сумма реализованного имущества (руб.) (2 этап)",
     not_realization_notification_2:"Уведомление о нереализации (2 этап)",
     auction2_failure_reason:       "Причина признания  2 торгов не состоявшимися",
+    
     auction2_status:               "Текущий статус 2 торгов",
     realizationSecondStageStatus:  "Статус реализации 2 этап",
+
+
     property_to_debtor_act:        "Акт передачи имущества должнику",
     property_to_debtor_sum:        "Сумма возврата имущества должнику",
     // realisationSumTotal:           "Взыскано всего в ходе исполнительного производства (руб.)",
@@ -155,6 +165,9 @@ const transportHeaders = {
     state_number:    "Государственный номер",
     year:            "Год выпуска",
     cost:            "Стоимость",
+
+
+
     objectStatus:    "Статус объекта",
     registration_start_date: "Дата регистрации владения",
     registration_end_date: "Дата прекращения владения",
@@ -175,6 +188,7 @@ const realEstateHeaders = {
     address:          "Адрес",
     cost:             "Стоимость",
     share_size:       "Размер доли в праве",
+
     objectStatus:    "Статус объекта",
     registration_start_date: "Дата регистрации владения",
     registration_end_date: "Дата прекращения владения",

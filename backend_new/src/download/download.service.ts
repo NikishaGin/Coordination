@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { MainService } from '../main/main.service';
 import { ExcelService } from './excel/excel.service';
+import {ExcelColumnOptions, ExcelSheetOptions} from "./excel/excel.interface";
 import { GetDownloadParamsDto } from './download.dto';
 import * as ExcelJS from 'exceljs';
 import { getStatusIP } from '../common/utils/getStatusIP';
@@ -10,9 +11,11 @@ import { getArchivedFilter, getDerivedFilter } from '../common/utils/Resolutions
 import {
     HEADERS_ACTIVES_STATISTICS,
     HEADERS_COMMON_STATISTICS,
-    HEADERS_RESOLUTIONS_STATISTICS
+    HEADERS_RESOLUTIONS_STATISTICS,
 } from './download.headers';
-import { ActivesType, LeasStatus } from '../generated/prisma/enums';
+import {ActivesType, LeasStatus, ObjectStatus, RealizationStage} from '../generated/prisma/enums';
+import {StatusObjectType, StatusType, WantedType} from "./download.type";
+import {getActionRealizationStatus} from "../common/utils/getActionRealizationStatus";
 
 @Injectable()
 export class DownloadService {
@@ -55,7 +58,7 @@ export class DownloadService {
                 {
                     name: 'Статистика',
                     data: statistics,
-                    columns: HEADERS_COMMON_STATISTICS.COMMON,
+                    columns: HEADERS_COMMON_STATISTICS.COMMON(data.isDerived),
                 },
                 {
                     name: 'Статистика по активам',
@@ -74,46 +77,48 @@ export class DownloadService {
     async getResolutionsStatistics(data: GetDownloadParamsDto): Promise<ExcelJS.Buffer> {
         const derivedFilter: Prisma.ResolutionsWhereInput = getDerivedFilter(data.isDerived);
         const archivedFilter: Prisma.ResolutionsWhereInput = getArchivedFilter(data.isArchived);
-        const filter = this.createStatisticsFilter(data, derivedFilter, archivedFilter);
-        const clients = await this.prisma.clients.findMany({
+        const resolutions = await this.prisma.resolutions.findMany({
             where: {
-                isVisible: true,
-                ...filter,
-            },
-            omit: {
-                isVisible: true,
-                id: true,
-                categoryId: true,
-                tnoId: true,
-                sospId: true,
+                ...this.main.createClientFilter(
+                    data.isArchived,
+                    derivedFilter,
+                    archivedFilter,
+                ),
+                client: {
+                    isVisible: true,
+                    ...(data.clientIds ? { id: { in: data.clientIds } } : {}),
+                },
             },
             include: {
-                tno: { include: { region: true } },
-                resolution: {
-                    where: {
+                client: {
+                    omit: {
                         isVisible: true,
-                        ...archivedFilter,
-                        ...derivedFilter,
+                        id: true,
+                        categoryId: true,
+                        tnoId: true,
+                        sospId: true,
+                    },
+                    include: {
+                        tno: { include: { region: true } },
                     },
                 },
             },
         });
-        for (const client of clients) {
-            for (const resolution of client.resolution) {
-                resolution['statusIP'] = getStatusIP({
-                    WritExecutionEndDate: resolution.WritExecutionEndDate,
-                    WritExecutionStopDate: resolution.WritExecutionStopDate,
-                    WritExecutionPostponementDate: resolution.WritExecutionPostponementDate,
-                    WritExecutionTerminateDate: resolution.WritExecutionTerminateDate,
-                });
-            }
+
+        for (const resolution of resolutions) {
+            resolution['statusIP'] = getStatusIP({
+                WritExecutionEndDate: resolution.WritExecutionEndDate,
+                WritExecutionStopDate: resolution.WritExecutionStopDate,
+                WritExecutionPostponementDate: resolution.WritExecutionPostponementDate,
+                WritExecutionTerminateDate: resolution.WritExecutionTerminateDate,
+            });
         }
         return this.excel.createExcelWorkbook({
             sheets: [
                 {
                     name: 'Статистика',
-                    data: clients,
-                    columns: HEADERS_RESOLUTIONS_STATISTICS,
+                    data: resolutions,
+                    columns: HEADERS_RESOLUTIONS_STATISTICS(data.isDerived),
                 },
             ],
         });
@@ -124,98 +129,103 @@ export class DownloadService {
         const archivedFilter: Prisma.ResolutionsWhereInput = getArchivedFilter(data.isArchived);
         const filter = this.createStatisticsFilter(data, derivedFilter, archivedFilter);
 
-        const getActives = (
+        const resolutions = await this.prisma.resolutions.groupBy({
+            by: ['clientId'],
+            where: { client: filter },
+            _sum: { amount: true, balance: true },
+        });
+
+        const getSheet = async (
+            name: string,
             type: ActivesType,
-            isLeasing: LeasStatus | null = null,
-        ): Promise<any> =>
-            this.prisma.clients.findMany({
+            additionalActiveFilter: Prisma.ActivesWhereInput | undefined = undefined,
+        ): Promise<ExcelSheetOptions> => {
+            const headerKey: string = type === ActivesType.GROUND ? ActivesType.PROPERTY : type;
+            const columns: ExcelColumnOptions[] = HEADERS_ACTIVES_STATISTICS[headerKey];
+
+            const actives = await this.prisma.actives.findMany({
                 where: {
+                    client: {
+                        isVisible: true,
+                        resolution: this.main.createClientFilter(
+                            data.isArchived,
+                            derivedFilter,
+                            archivedFilter,
+                        ),
+                    },
                     isVisible: true,
-                    ...filter,
-                },
-                omit: {
-                    isVisible: true,
-                    id: true,
-                    categoryId: true,
-                    tnoId: true,
-                    sospId: true,
+                    type,
+                    ...(additionalActiveFilter ?? {})
                 },
                 include: {
-                    tno: { include: { region: true } },
-                    active: {
-                        where: { type, ...(isLeasing ? { isLeasing } : {}) },
+                    client: {
+                        omit: {
+                            isVisible: true,
+                            categoryId: true,
+                            tnoId: true,
+                            sospId: true,
+                        },
                         include: {
-                            description: true,
-                            arrest: true,
-                            wanted: true,
-                            evaluation: true,
-                            encumbrance: true,
-                            realization: true,
-                            refundProperty: true,
-                            debitForeclosure: true,
-                            registration: true,
-                            complaint: true,
+                            tno: {include: {region: true}},
+                            category: {select: {category: true}},
                         },
                     },
+                    description: true,
+                    arrest: true,
+                    wanted: true,
+                    evaluation: true,
+                    realization: true,
+
+
+                    refundProperty: true,
+                    debitForeclosure: true,
+                    complaint: true,
                 },
             });
 
-        /*
-        for (const client of clients) {
-            for (const active of client.active) {
-                // active
-            }
-        }
-         */
+            for (const active of actives) {
+                active['resolution'] = resolutions.find(
+                    (item): boolean => item.clientId === active.clientId
+                );
 
-        return this.excel.createExcelWorkbook({
-            sheets: [
-                {
-                    name: 'Транспорт',
-                    data: await getActives(ActivesType.TRANSPORT),
-                    columns: HEADERS_ACTIVES_STATISTICS.TRANSPORT,
-                },
-                {
-                    name: 'Транспорт (залогодержатель не ФНС)',
-                    data: await getActives(ActivesType.TRANSPORT, LeasStatus.IS_NOT_PLEDGE_HOLDER),
-                    columns: HEADERS_ACTIVES_STATISTICS.TRANSPORT,
-                },
-                {
-                    name: 'Недвижимость',
-                    data: [],
-                    columns: HEADERS_ACTIVES_STATISTICS.PROPERTY,
-                },
-                {
-                    name: 'Недвижимость (залогодержатель не ФНС)',
-                    data: [],
-                    columns: HEADERS_ACTIVES_STATISTICS.PROPERTY,
-                },
-                {
-                    name: 'Земельные участки',
-                    data: [],
-                    columns: HEADERS_ACTIVES_STATISTICS.GROUND,
-                },
-                {
-                    name: 'Земельные участки (залогодержатель не ФНС)',
-                    data: [],
-                    columns: HEADERS_ACTIVES_STATISTICS.GROUND,
-                },
-                {
-                    name: 'Дебиторская задолженность',
-                    data: [],
-                    columns: HEADERS_ACTIVES_STATISTICS.DEBIT,
-                },
-                {
-                    name: 'Иные активы',
-                    data: [],
-                    columns: HEADERS_ACTIVES_STATISTICS.OTHER,
-                },
-                {
-                    name: 'Иные активы (залогодержатель не ФНС)',
-                    data: [],
-                    columns: HEADERS_ACTIVES_STATISTICS.OTHER,
-                },
-            ],
-        });
+                active['statusText'] = active.status ? StatusType[active.status] : null;
+
+                const objectStatus = active.objectStatus === ObjectStatus.OTHER ? (active.otherObjectStatus ?? '') : '';
+                active['objectStatusText'] = active.objectStatus ? StatusObjectType[active.objectStatus] + objectStatus : null;
+
+                active['isVerifiedText'] = active.isVerified !== null ? (active.isVerified ? 'Да' : 'Нет') : '';
+
+                if (active.wanted)
+                    active.wanted['resultText'] = active.wanted.result ? WantedType[active.wanted.result] : null;
+
+                if (active.realization) {
+                    active.realization['first'] = active.realization.find(
+                        ({ stage }) => stage === RealizationStage.FIRST
+                    ) || {};
+                    active.realization['first']['actionStatus'] = getActionRealizationStatus(active.realization['first']);
+
+                    active.realization['second'] = active.realization.find(
+                        ({ stage }) => stage === RealizationStage.SECOND
+                    ) || {};
+                    active.realization['second']['actionStatus'] = getActionRealizationStatus(active.realization['second']);
+                }
+            }
+
+            return { name, columns, data: actives }
+        };
+
+        const sheets = await Promise.all([
+            getSheet('Транспорт', ActivesType.TRANSPORT),
+            getSheet('Транспорт (залогодержатель не ФНС)', ActivesType.TRANSPORT, { isLeasing: LeasStatus.IS_NOT_PLEDGE_HOLDER }),
+            getSheet('Недвижимость', ActivesType.PROPERTY),
+            getSheet('Недвижимость (залогодержатель не ФНС)', ActivesType.PROPERTY, { isLeasing: LeasStatus.IS_NOT_PLEDGE_HOLDER }),
+            getSheet('Земельные участки', ActivesType.GROUND),
+            getSheet('Земельные участки (залогодержатель не ФНС)', ActivesType.GROUND, { isLeasing: LeasStatus.IS_NOT_PLEDGE_HOLDER }),
+            getSheet('Дебиторская задолженность', ActivesType.DEBIT),
+            getSheet('Иные активы', ActivesType.OTHER),
+            getSheet('Иные активы (залогодержатель не ФНС)', ActivesType.OTHER, { isLeasing: LeasStatus.IS_NOT_PLEDGE_HOLDER }),
+        ]);
+
+        return this.excel.createExcelWorkbook({ sheets });
     }
 }
