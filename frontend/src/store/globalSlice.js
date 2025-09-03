@@ -1,6 +1,7 @@
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 import {serviceAPI, userAPI} from "../api/index.js";
 import { useState } from 'react';
+import {MainAPI} from "./API.js";
 
 
 
@@ -8,7 +9,7 @@ export const fetchGetRegions = createAsyncThunk(
     "global/fetchGetRegions",
     async (page, {rejectWithValue}) => {
         try {
-            const response = await serviceAPI.getRegions(page);
+            const response = await MainAPI.getRegions(page);
             return response.data
         } catch (error) {
             console.error('Ошибка при загрузке данных:', error);
@@ -64,8 +65,10 @@ export const fetchToggleServiceMode = createAsyncThunk(
 
 // Начальное состояние
 const initialState = {
-    serviceMode: false,
-    pageKey: "default",
+    isDerived: false,
+    isArchived: false,
+    regionId: null,
+
     regions: [],
     debitTypes: [],
     selectedRegionByPage: {}, // добавили
@@ -78,6 +81,10 @@ const initialState = {
         sum: ""
     }
 };
+
+
+
+
 
 // Создаем slice
 const globalSlice = createSlice({

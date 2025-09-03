@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import styled from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
-import { setUserInfo } from "../store/userSlice.js";
+import { fetchLoginUser } from "../store/userSlice.js";
 import { userAPI } from '../api';
 import {ROLES} from "../types.js";
 
@@ -111,6 +111,9 @@ export const Login = () => {
   const serviceMode = useSelector(state => state.global.serviceMode)
   const { register, handleSubmit } = useForm()
 
+
+
+
   // Обработка формы авторизации
   const onSubmitLogin = async formData => {
     if (formData.username && formData.password) {
@@ -118,7 +121,7 @@ export const Login = () => {
       if (serviceMode && (result.data.userInfo.role !== ROLES.Admin))
         setMessageError("Сервис временно недоступен")
       else if (result.data.code === 0) {
-        dispatch(setUserInfo(result.data.userInfo));
+        dispatch(fetchLoginUser(result.data.userInfo));
         navigate("/coordination", { replace: true });
       }
       else if (result.data.code === 1)

@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@fastify/compress": "^8.1.0",
     "@fastify/multipart": "^9.0.3",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
@@ -36,7 +37,6 @@
     "class-validator": "^0.14.2",
     "dotenv": "^17.2.1",
     "exceljs": "^4.4.0",
-    "fastify-compress": "^4.0.1",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"

@@ -35,11 +35,9 @@ export class ActiveService {
                 arrest: true,
                 wanted: true,
                 evaluation: true,
-                encumbrance: true,
                 realization: true,
                 refundProperty: true,
                 debitForeclosure: true,
-                registration: true,
                 complaint: true,
             },
         });

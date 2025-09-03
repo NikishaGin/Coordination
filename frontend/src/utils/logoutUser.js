@@ -33,6 +33,7 @@ export const useLogoutUser = (isAuth) => {
     const role = useSelector((state) => state.user.role)
     const serviceMode = useSelector((state) => state.global.serviceMode)
 
+    /*
     useEffect(() => {
         if (!isAuth) return
         dispatch(fetchGetServiceMode())
@@ -50,4 +51,5 @@ export const useLogoutUser = (isAuth) => {
             if (timeoutId) clearTimeout(timeoutId)
         }
     }, [token, serviceMode, location])
+     */
 }

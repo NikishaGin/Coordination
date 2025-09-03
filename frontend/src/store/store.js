@@ -11,7 +11,7 @@ import {
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import globalReducer, { resetGlobal } from "./globalSlice";
-import userReducer, { resetUser } from "./userSlice";
+import userReducer, { clearUser } from "./userSlice";
 import tableDataReducer from "./tableDataSlice.js";
 import fileStorageReducer from "./fileStorageSlice.js";
 import activesReducer from "./activesSlice.js";
@@ -55,5 +55,5 @@ export const persistor = persistStore(store)
 
 export default function resetStore() {
     store.dispatch(resetGlobal());
-    store.dispatch(resetUser());
+    store.dispatch(clearUser());
 }

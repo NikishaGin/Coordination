@@ -44,9 +44,9 @@ export const ActiveAPI = {
 }
 
 export const DownloadAPI = {
-    getCommonStatistics: () => instance.get(''),
-    getResolutionsStatistics: () => instance.get(''),
-    getActivesStatistics: () => instance.get(''),
+    getCommonStatistics: (data) => instance.get('download/common-statistics', data),
+    getResolutionsStatistics: (data) => instance.get('download/resolutions-statistics', data),
+    getActivesStatistics: (data) => instance.get('download/actives-statistics', data),
 }
 
 export const LibraryAPI = {

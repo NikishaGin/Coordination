@@ -1,8 +1,8 @@
+import { ValidationPipe } from '@nestjs/common';
+import compress from '@fastify/compress';
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
-import { ValidationPipe } from '@nestjs/common';
-import fastifyCompress from 'fastify-compress';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -28,7 +28,7 @@ async function bootstrap() {
         }),
     );
 
-    await app.register(fastifyCompress);
+    await app.register(compress);
 
     await app.listen({ port, host }, () => {
         console.log(`Сервер запущен на http://${host}:${port}/ ...`);

@@ -1,12 +1,20 @@
-import { createSlice } from "@reduxjs/toolkit";
+import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 import { useSelector } from "react-redux";
 
 
+export const fetchLoginUser = createAsyncThunk(
+    'user/fetchLoginUser',
+    async ({ login, password }) => {
+
+    }
+)
+
 // Начальное состояние
 const initialState = {
+    messageAuth: '',
     regionId: null,
-    role: "",
-    token: ""
+    role: null,
+    token: null
 };
 
 
