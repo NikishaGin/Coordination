@@ -258,7 +258,7 @@ export const Footer = () => {
   }
 
   const logout = () => {
-    resetStore()
+    // resetStore()
     navigate("/login", { replace: true });
   }
 

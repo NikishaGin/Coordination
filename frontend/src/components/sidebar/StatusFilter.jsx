@@ -6,10 +6,10 @@ import {CustomIcon, FilterGroup, Select, SelectWrapper} from "../select/Select.j
 export const StatusFilter = (props) => {
     const dispatch = useDispatch();
     const categories = useSelector((state) => state.global.debitTypes);
-
-    useEffect(() => {
-        dispatch(fetchGetDebitTypes());
-    }, []);
+    //
+    // useEffect(() => {
+    //     dispatch(fetchGetDebitTypes());
+    // }, []);
 
     return (
         <FilterGroup>

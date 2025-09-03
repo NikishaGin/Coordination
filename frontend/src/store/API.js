@@ -1,5 +1,6 @@
 import axios from "axios";
 import { store } from "./store.js";
+import { logout } from "./userSlice.js";
 
 
 
@@ -15,6 +16,31 @@ instance.interceptors.request.use(config => {
         config.headers.Authorization = `Bearer ${token}`
     return config
 })
+
+
+instance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response) {
+            const { status } = error.response;
+
+            if ([401, 503].includes(status))
+                store.dispatch(logout());
+
+            /*
+            if (status === 403)
+                store.dispatch(showForbidden());
+
+            if (status === 404)
+                store.dispatch(showNotFound());
+
+            if (status === 429)
+                store.dispatch(showTooManyRequests())
+            */
+        }
+        return Promise.reject(error);
+    }
+);
 
 
 export const AuthAPI = {

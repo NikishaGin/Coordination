@@ -1,12 +1,12 @@
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
-import {serviceAPI, userAPI} from "../api/index.js";
-import { useState } from 'react';
+import { activesAPI, serviceAPI, userAPI } from "../api/index.js";
 import {MainAPI} from "./API.js";
+import axios from "axios";
 
 
-
+/*
 export const fetchGetRegions = createAsyncThunk(
-    "global/fetchGetRegions",
+    "main/fetchGetRegions",
     async (page, {rejectWithValue}) => {
         try {
             const response = await MainAPI.getRegions(page);
@@ -20,7 +20,7 @@ export const fetchGetRegions = createAsyncThunk(
 
 
 export const fetchGetDebitTypes = createAsyncThunk(
-    "global/fetchGetDebitTypes",
+    "main/fetchGetDebitTypes",
     async (_, {rejectWithValue}) => {
         try {
             const response = await serviceAPI.getTypesDebtorCategory();
@@ -34,7 +34,7 @@ export const fetchGetDebitTypes = createAsyncThunk(
 
 
 export const fetchGetServiceMode = createAsyncThunk(
-    "global/fetchGetServiceMode",
+    "main/fetchGetServiceMode",
     async (_, {rejectWithValue}) => {
         try {
             const response = await userAPI.getServiceMode();
@@ -49,7 +49,7 @@ export const fetchGetServiceMode = createAsyncThunk(
 
 
 export const fetchToggleServiceMode = createAsyncThunk(
-    "global/fetchToggleServiceMode",
+    "main/fetchToggleServiceMode",
     async (_, {rejectWithValue, dispatch}) => {
         try {
             await userAPI.toggleServiceMode();
@@ -60,6 +60,62 @@ export const fetchToggleServiceMode = createAsyncThunk(
         }
     }
 )
+*/
+
+
+
+let currentAbortController = null; // глобальная переменная для хранения текущего контроллера
+
+
+export const fetchGetRegions = createAsyncThunk(
+    'main/fetchGetRegions',
+    async (_, { rejectWithValue, getState }) => {
+        const { isDerived, isArchived } = getState().main
+        try {
+            const response = await MainAPI.getRegions({ isDerived, isArchived });
+            return response.data;
+        } catch (error) {
+            console.error('Ошибка при загрузке данных:', error);
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+export const fetchGetClientCategories = createAsyncThunk(
+    'main/fetchGetClientCategories',
+    async () => {}
+);
+
+export const fetchGetStatusesIP = createAsyncThunk(
+    'main/fetchGetStatusesIP',
+    async () => {}
+);
+
+export const fetchGetClients = createAsyncThunk(
+    'main/fetchGetClients',
+    async (_, { dispatch, rejectWithValue, getState }) => {
+        if (currentAbortController) {
+            currentAbortController.abort(); // отменяем предыдущий
+        }
+        currentAbortController = new AbortController();
+        const { signal } = currentAbortController;
+        try {
+            dispatch(setLoading(true));
+            const { isDerived, isArchived, selectedRegionByPage } = getState().main
+            const regionId = ;
+            const response = await MainAPI.getClients({ isDerived, isArchived, regionId }, signal);
+            return response.data;
+        } catch (error) {
+            if (axios.isCancel?.(error) || error.name === 'CanceledError' || error.name === 'AbortError') {
+                console.warn("Запрос был отменен");
+                return rejectWithValue("Request cancelled");
+            }
+            return rejectWithValue(error.response?.data || error.message);
+        } finally {
+            dispatch(setLoading(false));
+        }
+    }
+);
 
 
 
@@ -67,15 +123,15 @@ export const fetchToggleServiceMode = createAsyncThunk(
 const initialState = {
     isDerived: false,
     isArchived: false,
-    regionId: null,
-
-    regions: [],
-    debitTypes: [],
-    selectedRegionByPage: {}, // добавили
-    // selectedRegion: null,
+    allRegions: [],
+    allClientCategories: [],
+    allStatusesIP: [],
+    selectedRegionByPage: {},
+    clients: [],
+    isLoading: false,
     filters: {
         inputValueInn: "",
-        status_ip: "",
+        statusIP: "",
         category: "",
         name_filtered_field: "",
         sum: ""
@@ -87,10 +143,25 @@ const initialState = {
 
 
 // Создаем slice
-const globalSlice = createSlice({
-    name: "global",
+const mainSlice = createSlice({
+    name: "main",
     initialState,
     reducers: {
+        recognitionPage(state, { payload }) {
+            state.isArchived = ["/coordination-archive", "/coordination"].includes(payload);
+            state.isDerived = ["/derivative-archive", "/derivative"].includes(payload);
+        },
+
+
+
+
+
+
+
+
+
+
+
         setPageKey(state, action) {
             state.pageKey = action.payload;
         },
@@ -116,6 +187,10 @@ const globalSlice = createSlice({
                 state[key] = initialState[key];
             });
         }
+
+
+
+
     },
     extraReducers: builder => {
         builder
@@ -134,6 +209,7 @@ const globalSlice = createSlice({
 
 // Экспортируем действия и редьюсер
 export const {
+    recognitionPage,
     setPageKey,
     setSelectedRegionForPage,
     setInputValueInn,
@@ -141,6 +217,6 @@ export const {
     setFilterCategory,
     setFilterSum,
     resetGlobal
-} = globalSlice.actions;
+} = mainSlice.actions;
 
-export default globalSlice.reducer;
+export default mainSlice.reducer;

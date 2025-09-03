@@ -94,29 +94,29 @@ export const HEADERS_RESOLUTIONS_STATISTICS: ResolutionStatistics = (
 
 const ID_ACTIVES_HEADERS: ExcelColumnOptions[] = [
     ...ID_HEADERS('client'),
-    { header: 'Статус верификации выгрузки',                             key: 'statusText' },
-    { header: 'Дата добавления/обновления данных',                       key: 'uploadDate' },
-    { header: 'Категория должника',                                      key: 'client.category.category' },
-    { header: 'Сумма всего по постановлениям по статье 47 НК РФ, ₽',     key: 'resolution._sum.amount' },
-    { header: 'Текущий остаток по постановлениям по статье 47 НК РФ, ₽', key: 'resolution._sum.balance' },
+    { header: 'Статус верификации выгрузки',                                 key: 'statusText' },
+    { header: 'Дата добавления/обновления данных',                           key: 'uploadDate' },
+    { header: 'Категория должника',                                          key: 'client.category.category' },
+    { header: 'Сумма всего по постановлениям по статье 47 НК РФ, ₽',         key: 'resolution._sum.amount' },
+    { header: 'Текущий остаток по постановлениям по статье 47 НК РФ, ₽',     key: 'resolution._sum.balance' },
 ];
 
 const REGISTRATION_HEADERS: ExcelColumnOptions[] = [
-    { header: 'Дата регистрации владения',                               key: 'registrationBeginDate' },
-    { header: 'Дата прекращения владения',                               key: 'registrationEndDate' },
+    { header: 'Дата регистрации владения',                                   key: 'registrationBeginDate' },
+    { header: 'Дата прекращения владения',                                   key: 'registrationEndDate' },
 ];
 
 const ENCUMBRANCE_HEADERS: ExcelColumnOptions[] = [
-    { header: 'Вид обременения',                                         key: 'encumbranceType' },
-    { header: 'Дата обременения',                                        key: 'encumbranceDate' },
-    { header: 'Наименование залогодержателя / лизингодателя',            key: 'nameLessor' },
+    { header: 'Вид обременения',                                             key: 'encumbranceType' },
+    { header: 'Дата обременения',                                            key: 'encumbranceDate' },
+    { header: 'Наименование залогодержателя / лизингодателя',                key: 'nameLessor' },
 ];
 
 const DEBIT_FORECLOSURE_HEADERS: ExcelColumnOptions[] = [
-    { header: 'Обращение на взыскание ДЗ',                               key: 'debitForeclosure.requestDate' },
-    { header: 'Сумма обращения на взыскание ДЗ, ₽',                      key: 'debitForeclosure.requestAmount' },
-    { header: 'Постановление об отмене обращения на взыскания ДЗ',       key: 'debitForeclosure.cancelDate' },
-    { header: 'Основание отмены обращения на ДЗ',                        key: 'debitForeclosure.cancelReason' },
+    { header: 'Обращение на взыскание ДЗ',                                   key: 'debitForeclosure.requestDate' },
+    { header: 'Сумма обращения на взыскание ДЗ, ₽',                          key: 'debitForeclosure.requestAmount' },
+    { header: 'Постановление об отмене обращения на взыскания ДЗ',           key: 'debitForeclosure.cancelDate' },
+    { header: 'Основание отмены обращения на ДЗ',                            key: 'debitForeclosure.cancelReason' },
 ];
 
 const COMMON_ACTIVE_HEADERS: (type: ActivesType) => ExcelColumnOptions[] = (
@@ -134,7 +134,7 @@ const COMMON_ACTIVE_HEADERS: (type: ActivesType) => ExcelColumnOptions[] = (
         { header: 'Заведено розыскное дело',                                 key: 'wanted.beginDate' },
         { header: 'Прекращено розыскное дело',                               key: 'wanted.endDate' },
         { header: 'Результат розыска',                                       key: 'wanted.result' },
-        { header: 'Статус Разыскного дела',                                  key: 'wanted.status' },
+        { header: 'Статус розыскного дела',                                  key: 'wanted.status' },
         { header: 'Передано на оценку',                                      key: 'evaluation.beginDate' },
         { header: 'Принятие результатов оценки имущества',                   key: 'evaluation.endDate' },
         { header: 'Сумма оценки, ₽',                                         key: 'evaluation.amount' },
@@ -155,7 +155,7 @@ const COMMON_ACTIVE_HEADERS: (type: ActivesType) => ExcelColumnOptions[] = (
         { header: 'Дата вторых торгов',                                      key: 'realization.second.realizationDate' },
         { header: 'Отчет о реализации (2 этап)',                             key: 'realization.second.realizationResultDate' },
         { header: 'Сумма реализованного имущества (2 этап), ₽',              key: 'realization.second.realizedPropertyAmount' },
-        { header: 'Уведомление о нереализации (2 этап)',                     key: 'realization.second.notificationNotRealizationDate' },
+        { header: 'Уведомление о не реализации (2 этап)',                    key: 'realization.second.notificationNotRealizationDate' },
         { header: 'Причина признания  2 торгов не состоявшимися',            key: 'realization.second.notRealizationReason' },
         { header: 'Текущий статус 2 торгов',                                 key: 'realization.second.actionStatus' },
         { header: 'Статус реализации 2 этап',                                key: 'realization.second.realizationStatus' },
@@ -176,36 +176,36 @@ const COMMON_ACTIVE_HEADERS: (type: ActivesType) => ExcelColumnOptions[] = (
 export const HEADERS_ACTIVES_STATISTICS: ActivesStatistics = {
     TRANSPORT: [
         ...ID_ACTIVES_HEADERS,
-        { header: 'Марка',                                               key: 'description.name' },
-        { header: 'VIN-номер',                                           key: 'description.vin' },
-        { header: 'Государственный номер',                               key: 'description.stateNumber' },
-        { header: 'Год выпуска',                                         key: 'description.yearRelease' },
-        { header: 'Стоимость, ₽',                                        key: 'cost' },
+        { header: 'Марка',                                                   key: 'description.name' },
+        { header: 'VIN-номер',                                               key: 'description.vin' },
+        { header: 'Государственный номер',                                   key: 'description.stateNumber' },
+        { header: 'Год выпуска',                                             key: 'description.yearRelease' },
+        { header: 'Стоимость, ₽',                                            key: 'cost' },
         ...COMMON_ACTIVE_HEADERS(ActivesType.TRANSPORT),
     ],
     PROPERTY: [
         ...ID_ACTIVES_HEADERS,
-        { header: 'Наименование',                                        key: 'description.name' },
-        { header: 'Площадь',                                             key: 'description.landArea' },
-        { header: 'Кадастровый номер',                                   key: 'description.cadastralNumber' },
-        { header: 'Адрес',                                               key: 'description.address' },
-        { header: 'Стоимость, ₽',                                        key: 'cost' },
-        { header: 'Размер доли в праве',                                 key: 'description.shareSize' },
+        { header: 'Наименование',                                            key: 'description.name' },
+        { header: 'Площадь',                                                 key: 'description.landArea' },
+        { header: 'Кадастровый номер',                                       key: 'description.cadastralNumber' },
+        { header: 'Адрес',                                                   key: 'description.address' },
+        { header: 'Стоимость, ₽',                                            key: 'cost' },
+        { header: 'Размер доли в праве',                                     key: 'description.shareSize' },
         ...COMMON_ACTIVE_HEADERS(ActivesType.PROPERTY),
     ],
     DEBIT: [
         ...ID_ACTIVES_HEADERS,
-        { header: 'ИНН дебитора',                                        key: 'description.debitorInn' },
-        { header: 'Наименование дебитора',                               key: 'description.name' },
-        { header: 'Адрес дебитора',                                      key: 'description.debitorAddress' },
-        { header: 'Дата ходатайства',                                    key: 'description.debitorDate' },
-        { header: 'Сумма по ходатайству, ₽',                             key: 'cost' },
+        { header: 'ИНН дебитора',                                            key: 'description.debitorInn' },
+        { header: 'Наименование дебитора',                                   key: 'description.name' },
+        { header: 'Адрес дебитора',                                          key: 'description.debitorAddress' },
+        { header: 'Дата ходатайства',                                        key: 'description.debitorDate' },
+        { header: 'Сумма по ходатайству, ₽',                                 key: 'cost' },
         ...COMMON_ACTIVE_HEADERS(ActivesType.DEBIT),
     ],
     OTHER: [
         ...ID_ACTIVES_HEADERS,
-        { header: 'Наименование',                                        key: 'description.name' },
-        { header: 'Стоимость, ₽',                                        key: 'cost' },
+        { header: 'Наименование',                                            key: 'description.name' },
+        { header: 'Стоимость, ₽',                                            key: 'cost' },
         ...COMMON_ACTIVE_HEADERS(ActivesType.OTHER),
     ],
 };

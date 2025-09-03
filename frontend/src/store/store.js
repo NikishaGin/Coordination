@@ -10,13 +10,11 @@ import {
     REGISTER,
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-import globalReducer, { resetGlobal } from "./globalSlice";
 import userReducer, { clearUser } from "./userSlice";
-import tableDataReducer from "./tableDataSlice.js";
-import fileStorageReducer from "./fileStorageSlice.js";
-import activesReducer from "./activesSlice.js";
-import appStatusReducer from "./appStatusSlice.js";
-import interactionsReducer from "./interactionsSlice.js";
+import mainReducer, { resetGlobal } from "./mainSlice";
+import activesReducer from "./activesSlice";
+import interactionsReducer from "./interactionsSlice";
+import fileStorageReducer from "./fileStorageSlice";
 
 
 const persistConfig = {
@@ -26,17 +24,14 @@ const persistConfig = {
 }
 
 const rootReducer = combineReducers({
-    global: globalReducer,
     user: userReducer,
-    tableData: tableDataReducer,
-    fileStorage: fileStorageReducer,
+    main: mainReducer,
     actives: activesReducer,
-    appStatus: appStatusReducer,
     interactions: interactionsReducer,
+    fileStorage: fileStorageReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
-
 
 // Создаем хранилище
 export const store = configureStore({
@@ -49,9 +44,7 @@ export const store = configureStore({
         }),
 });
 
-
 export const persistor = persistStore(store)
-
 
 export default function resetStore() {
     store.dispatch(resetGlobal());

@@ -28,12 +28,12 @@ const userSlice = createSlice({
             state.role = payload.role
             state.token = payload.token
         },
-        clearUser: () => initialState,
+        logout: () => initialState,
     }
 });
 
 
-export const { setUser, clearUser } = userSlice.actions;
+export const { setUser, logout } = userSlice.actions;
 
 export default userSlice.reducer;
 

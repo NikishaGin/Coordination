@@ -10,6 +10,7 @@ import {formatNumber } from "../../utils/formatData.js"
 import { useDispatch, useSelector } from "react-redux";
 import { fetchTableData } from "../../store/tableDataSlice.js";
 import { DownloadCloud } from 'lucide-react';
+import { fetchGetClients, recognitionPage } from "../../store/mainSlice.js";
 
 const Container = styled.div`
     background-color: ${props => props.theme.colors.background};
@@ -140,7 +141,6 @@ const MainContent = styled.div`
     display: flex;
     flex-direction: column;
     gap: 11.5px; /* Расстояние между индикаторами и таблицей */
-
 `;
 
 
@@ -204,34 +204,42 @@ const codeIndicators = {
 
 
 export const Main = () => {
-    const location = useLocation();
-
-    const navigate = useNavigate()
-    const dispatch = useDispatch()
-
     const [selectedInn, setSelectedInn] = useState([]);
 
-    const filters = useSelector((state) => state.global.filters);
-    const tableData = useSelector((state) => state.tableData.tableData);
+    const location = useLocation();
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    const isDerived = useSelector((state) => state.main.isDerived);
+    const filters = useSelector((state) => state.main.filters);
+    const tableData = useSelector((state) => state.main.clients);
+
+
 
     const pageKey = useSelector((state) => state.global.pageKey);
-    const headings = useMemo(() => {
-        if (["/coordination-archive", "/coordination"].includes(location.pathname)) {
-            return headingsCoordination;
-        } else if (["/derivative-archive", "/derivative"].includes(location.pathname)) {
-            return headingsDerivative;
-        } else {
-            return { headings: [] };
-        }
-    }, [location.pathname]);
-
     const selectedRegionByPage = useSelector((state) => state.global.selectedRegionByPage);
     const selectedRegion = selectedRegionByPage?.[pageKey] || null;
 
 
+
     useEffect(() => {
-        dispatch(fetchTableData({pageKey, region: selectedRegion}));
-    }, [dispatch, pageKey, selectedRegion]);
+        dispatch(recognitionPage(location.pathname));
+    }, [dispatch, location.pathname]);
+
+    useEffect(() => {
+        dispatch(fetchGetClients());
+    }, [dispatch, location.pathname, selectedRegion]);
+
+
+    const headings = useMemo(
+        () => !isDerived ? headingsCoordination : headingsDerivative,
+        [isDerived]
+    );
+
+
+
+
+
 
     const filteredData = useMemo(() => {
         let data = [...tableData];
