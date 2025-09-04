@@ -8,9 +8,8 @@ import { downloadAPI } from "../../api/index.js";
 import { downloadExcel } from "../../utils/downloadExcel.js"
 import {formatNumber } from "../../utils/formatData.js"
 import { useDispatch, useSelector } from "react-redux";
-import { fetchTableData } from "../../store/tableDataSlice.js";
 import { DownloadCloud } from 'lucide-react';
-import { fetchGetClients, recognitionPage } from "../../store/mainSlice.js";
+import { fetchGetClients, recognitionPage } from "../../store/main/mainSlice.js";
 
 const Container = styled.div`
     background-color: ${props => props.theme.colors.background};

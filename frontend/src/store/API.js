@@ -1,6 +1,6 @@
 import axios from "axios";
 import { store } from "./store.js";
-import { logout } from "./userSlice.js";
+import { logout } from "./user/userSlice.js";
 
 
 
@@ -17,26 +17,14 @@ instance.interceptors.request.use(config => {
     return config
 })
 
-
+// Перехват ошибок связанных с истечением срока действия JWT-токена и включением сервисного режима
 instance.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response) {
             const { status } = error.response;
-
             if ([401, 503].includes(status))
                 store.dispatch(logout());
-
-            /*
-            if (status === 403)
-                store.dispatch(showForbidden());
-
-            if (status === 404)
-                store.dispatch(showNotFound());
-
-            if (status === 429)
-                store.dispatch(showTooManyRequests())
-            */
         }
         return Promise.reject(error);
     }

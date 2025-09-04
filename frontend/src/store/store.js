@@ -10,8 +10,8 @@ import {
     REGISTER,
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-import userReducer, { clearUser } from "./userSlice";
-import mainReducer, { resetGlobal } from "./mainSlice";
+import userReducer, { clearUser } from "./user/userSlice.js";
+import mainReducer, { resetGlobal } from "./main/mainSlice.js";
 import activesReducer from "./activesSlice";
 import interactionsReducer from "./interactionsSlice";
 import fileStorageReducer from "./fileStorageSlice";

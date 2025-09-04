@@ -1,5 +1,5 @@
-import { ExcelColumnOptions } from "./excel/excel.interface";
-import { ActivesType } from "../generated/prisma/enums";
+import { ExcelColumnOptions } from './excel/excel.interface';
+import { ActivesType } from '../generated/prisma/enums';
 
 export enum TypeCommonStatistics {
     COMMON = 'COMMON',

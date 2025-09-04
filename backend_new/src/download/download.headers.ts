@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { ExcelColumnOptions } from './excel/excel.interface';
 import { ActivesType } from "../generated/prisma/enums";
 import {

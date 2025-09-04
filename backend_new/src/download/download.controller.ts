@@ -9,15 +9,9 @@ export class DownloadController {
 
     @Header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     @Get('common-statistics')
-    async getCommonStatistics(
-        @Query() query: GetDownloadParamsDto,
-        @Res() reply: FastifyReply,
-    ) {
+    async getCommonStatistics(@Query() query: GetDownloadParamsDto, @Res() reply: FastifyReply) {
         const buffer = await this.downloadService.getCommonStatistics(query);
-        reply
-            .header('Content-Disposition', 'attachment; filename="report.xlsx"')
-            .send(buffer);
-
+        reply.header('Content-Disposition', 'attachment; filename="report.xlsx"').send(buffer);
     }
 
     @Get('resolutions-statistics')

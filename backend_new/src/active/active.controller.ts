@@ -12,10 +12,7 @@ export class ActiveController {
     }
 
     @Get(':clientId/:typeActive')
-    getActives(
-        @Param('clientId') clientId: number,
-        @Param('typeActive') typeActive: ActivesType,
-    ) {
+    getActives(@Param('clientId') clientId: number, @Param('typeActive') typeActive: ActivesType) {
         return this.activeService.getActives(clientId, typeActive);
     }
 

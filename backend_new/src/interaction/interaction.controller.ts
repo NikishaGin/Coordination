@@ -3,5 +3,5 @@ import { InteractionService } from './interaction.service';
 
 @Controller('interaction')
 export class InteractionController {
-  constructor(private readonly interactionService: InteractionService) {}
+    constructor(private readonly interactionService: InteractionService) {}
 }

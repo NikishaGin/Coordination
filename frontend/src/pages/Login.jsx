@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import styled from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchLoginUser } from "../store/userSlice.js";
+import { fetchLoginUser } from "../store/user/userSlice.js";
 import { userAPI } from '../api';
 import {ROLES} from "../types.js";
 
