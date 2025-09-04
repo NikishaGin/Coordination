@@ -11,7 +11,7 @@ import {
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import userReducer, { clearUser } from "./user/userSlice.js";
-import mainReducer, { resetGlobal } from "./main/mainSlice.js";
+import mainReducer, { clearMain } from "./main/mainSlice.js";
 import activesReducer from "./activesSlice";
 import interactionsReducer from "./interactionsSlice";
 import fileStorageReducer from "./fileStorageSlice";
@@ -46,7 +46,7 @@ export const store = configureStore({
 
 export const persistor = persistStore(store)
 
-export default function resetStore() {
-    store.dispatch(resetGlobal());
+export default function logout() {
+    store.dispatch(clearMain());
     store.dispatch(clearUser());
 }

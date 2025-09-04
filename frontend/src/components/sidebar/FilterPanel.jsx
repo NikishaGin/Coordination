@@ -1,13 +1,10 @@
 import React, {useState} from 'react';
-import {ButtonsSwitches} from "./ButtonsSwitches.jsx";
 import styled from "styled-components";
 import {StatusFilter} from "./StatusFilter.jsx";
 import {SumFilter} from "./SumFilter.jsx";
 import {parseNumber} from "../../utils/formatData.js";
 import {useDispatch, useSelector} from "react-redux";
-import {setFilterCategory, setFilterStatusIp, setFilterSum} from "../../store/globalSlice.js";
-import {IconButton} from "../IconButton.jsx";
-import {ResetButton} from "../ResetButton.jsx";
+
 
 const WrapperFilter = styled.div`
   padding: 10px;
@@ -61,10 +58,10 @@ const ActionButton = styled.button`
 
 export const FilterPanel = () => {
     const dispatch = useDispatch();
-    const [statusIP, setStatusIP] = useState(useSelector((state) => state.global.filters.status_ip));
-    const [category, setCategory] = useState(useSelector((state) => state.global.filters.category));
-    const [nameFilteredField, setNameFilteredField] = useState(useSelector((state) => state.global.filters.name_filtered_field));
-    const [sum, setSum] = useState(useSelector((state) => state.global.filters.sum));
+    const [statusIP, setStatusIP] = useState(useSelector((state) => state.main.filters.statusIP));
+    const [category, setCategory] = useState(useSelector((state) => state.main.filters.category));
+    const [nameFilteredField, setNameFilteredField] = useState(useSelector((state) => state.main.filters.name_filtered_field));
+    const [sum, setSum] = useState(useSelector((state) => state.main.filters.sum));
 
     const handleApply = () => {
         if (statusIP.length > 0)

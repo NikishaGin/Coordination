@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchLoginUser } from "../store/user/userSlice.js";
 import { userAPI } from '../api';
-import {ROLES} from "../types.js";
+import { UsersRole } from "../constants.js";
 
 
 
@@ -118,7 +118,7 @@ export const Login = () => {
   const onSubmitLogin = async formData => {
     if (formData.username && formData.password) {
       const result = await userAPI.loginUser(formData.username, formData.password);
-      if (serviceMode && (result.data.userInfo.role !== ROLES.Admin))
+      if (serviceMode && (result.data.userInfo.role !== UsersRole.ADMIN))
         setMessageError("Сервис временно недоступен")
       else if (result.data.code === 0) {
         dispatch(fetchLoginUser(result.data.userInfo));

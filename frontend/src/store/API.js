@@ -1,6 +1,5 @@
 import axios from "axios";
-import { store } from "./store.js";
-import { logout } from "./user/userSlice.js";
+import logout, { store } from "./store.js";
 
 
 

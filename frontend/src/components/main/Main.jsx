@@ -9,7 +9,9 @@ import { downloadExcel } from "../../utils/downloadExcel.js"
 import {formatNumber } from "../../utils/formatData.js"
 import { useDispatch, useSelector } from "react-redux";
 import { DownloadCloud } from 'lucide-react';
-import { fetchGetClients, recognitionPage } from "../../store/main/mainSlice.js";
+import { recognitionPage } from "../../store/main/mainSlice.js";
+import { extractValuesFromObject } from "../../utils/extractValuesFromObject.js";
+import { fetchGetClients } from "../../store/main/mainThunks.js";
 
 const Container = styled.div`
     background-color: ${props => props.theme.colors.background};
@@ -91,7 +93,7 @@ const StatsButton = styled.button`
     }
 `;
 
-export const StatusIndicators = styled.div`
+const StatusIndicators = styled.div`
     font-family: 'Inter', sans-serif;
     display: flex;
     flex-wrap: wrap;
@@ -136,6 +138,7 @@ export const StatusIndicators = styled.div`
         color: #fff;
     }
 `;
+
 const MainContent = styled.div`
     display: flex;
     flex-direction: column;
@@ -158,6 +161,7 @@ const headingsCoordination = [
     "Взаимодействие с ТНО",
     "Арест имущества, ₽",
     "Обеспечение арестом",
+    "Розыск имущества, ₽",
     "Оценка имущества, ₽",
     "Принудительная реализация, ₽",
     "Торги 2 этап, ₽",
@@ -182,6 +186,7 @@ const headingsDerivative = [
     "Взаимодействие с ТНО",
     "Арест имущества, ₽",
     "Обеспечение арестом",
+    "Розыск имущества, ₽",
     "Оценка имущества, ₽",
     "Принудительная реализация, ₽",
     "Торги 2 этап, ₽",
@@ -210,34 +215,25 @@ export const Main = () => {
     const dispatch = useDispatch();
 
     const isDerived = useSelector((state) => state.main.isDerived);
+    const isArchived = useSelector((state) => state.main.isArchived);
+    const selectedRegionId = useSelector((state) => state.main.selectedRegionId)
     const filters = useSelector((state) => state.main.filters);
-    const tableData = useSelector((state) => state.main.clients);
-
-
-
-    const pageKey = useSelector((state) => state.global.pageKey);
-    const selectedRegionByPage = useSelector((state) => state.global.selectedRegionByPage);
-    const selectedRegion = selectedRegionByPage?.[pageKey] || null;
-
-
+    const tableData = useSelector((state) => state.main.clients.data);
 
     useEffect(() => {
         dispatch(recognitionPage(location.pathname));
     }, [dispatch, location.pathname]);
 
     useEffect(() => {
-        dispatch(fetchGetClients());
-    }, [dispatch, location.pathname, selectedRegion]);
+        if (selectedRegionId)
+            dispatch(fetchGetClients());
+    }, [dispatch, isDerived, isArchived, selectedRegionId]);
 
 
     const headings = useMemo(
         () => !isDerived ? headingsCoordination : headingsDerivative,
         [isDerived]
     );
-
-
-
-
 
 
     const filteredData = useMemo(() => {
@@ -247,13 +243,14 @@ export const Main = () => {
             data = data.filter((row) => row.inn.startsWith(filters.inputValueInn));
 
         if (filters.category)
-            data = data.filter((row) => row.category === filters.category);
+            data = data.filter((row) => row.category?.category === filters.category);
 
-        if (filters.status_ip)
-            data = data.filter((row) => row.status_ip === filters.status_ip);
+        if (filters.statusIP)
+            data = data.filter((row) => row.statusIP === filters.statusIP);
 
-        if (filters.name_filtered_field && filters.sum)
-            data = data.filter((row) => row[filters.name_filtered_field] >= filters.sum);
+        if (filters.name_filtered_field && filters.sum) {
+            data = data.filter((row) => extractValuesFromObject(row, filters.name_filtered_field) >= filters.sum);
+        }
 
         return data;
     }, [tableData, filters]);
@@ -271,7 +268,7 @@ export const Main = () => {
         if (event.target.checked)
             setSelectedInn([...selectedInn, inn]);
         else
-            setSelectedInn(selectedInn.filter(value => value != inn));
+            setSelectedInn(selectedInn.filter(value => value !== inn));
     };
 
 
@@ -288,10 +285,8 @@ export const Main = () => {
         }
         const target = flagButton ? downloadAPI.getStatistics : downloadAPI.getStatisticsIP;
         try {
-            enqueueSnackbar("Начало загрузки...", { variant: "info" });
-            const isDerived = ["DerivativeDebt", "DerivativeDebtArchive"].includes(pageKey)
-            const isArchive = ["IndexArchive", "DerivativeDebtArchive"].includes(pageKey)
-            const response = await target(selectedInn, isDerived, isArchive);
+            enqueueSnackbar("Начало загрузки...", { variant: "info" })
+            const response = await target(selectedInn, isDerived, isArchived);
             downloadExcel(response);
             enqueueSnackbar("Загружено", { variant: "info" });
         } catch (error) {
@@ -300,60 +295,60 @@ export const Main = () => {
         }
     };
 
-    const renderTableCells = (row, rowIndex, pageKey) => {
-        if (pageKey === "Index" || pageKey === "IndexArchive") {
+    const renderTableCells = (row, rowIndex, isDerived) => {
+        if (!isDerived)
             return (
                 <>
                     <td>{rowIndex + 1}</td>
-                    <td>{row.kno}</td>
+                    <td>{row.tno?.CodeTNO}</td>
                     <td>{row.inn}</td>
-                    <td className={(row.indicators.isUpdated) ?? codeIndicators.isUpdated}>{row.name}</td>
-                    <td>{formatNumber(row.post_sum)}</td>
-                    <td>{formatNumber(row.cur_debt)}</td>
-                    <td>{row.category}</td>
-                    <td className={(row.indicators.isLizingFNS) && codeIndicators.isLizingFNS}>{formatNumber(row.total_sum)}</td>
-                    <td>{row.interaction_gmu}</td>
-                    <td>{row.interaction_tno}</td>
-                    <td className={codeIndicators[row.indicators.arrest]}>{formatNumber(row.arrest_sum)}</td>
+
+                    <td className={(row.indicators?.isUpdated) ?? codeIndicators.isUpdated}>{row.name}</td>
+                    <td>{formatNumber(row.resolution?.amount)}</td>
+                    <td>{formatNumber(row.resolution?.balance)}</td>
+                    <td>{row.category.category}</td>
+                    <td className={(row.indicators?.isLizingFNS) && codeIndicators.isLizingFNS}>{formatNumber(row.actives.totalSum)}</td>
+                    <td>{row.interactionWithGMU}</td>
+                    <td>{row.interactionWithTNO}</td>
+                    <td className={codeIndicators[row.indicators?.arrest]}>{formatNumber(row.actives.arrest)}</td>
                     <td>{row.securingArrest}</td>
-                    <td className={codeIndicators[row.indicators.evaluation]}>{formatNumber(row.evaluation_sum)}</td>
-                    <td className={codeIndicators[row.indicators.submitRealizationFirstStage]}>{formatNumber(row.realization_property_sum)}</td>
-                    <td className={codeIndicators[row.indicators.submitRealizationSecondStage]}>{formatNumber(row.price_reduction_sum)}</td>
-                    <td className={codeIndicators[row.indicators.realizationSecondStage]}>{formatNumber(row.realization_sum_2)}</td>
-                    <td>{formatNumber(row.return_sum)}</td>
-                    <td className={codeIndicators[row.indicators.collectionAccountsReceivable]}>{formatNumber(row.debitor)}</td>
-                    <td>{row.status_ip}</td>
-                    <td>{row.sosp_code}</td>
+                    <td className={codeIndicators[row.indicators?.evaluation]}>{formatNumber(row.actives.wanted)}</td>
+                    <td className={codeIndicators[row.indicators?.evaluation]}>{formatNumber(row.actives.evaluation)}</td>
+                    <td className={codeIndicators[row.indicators?.submitRealizationFirstStage]}>{formatNumber(row.actives.realizationFirst)}</td>
+                    <td className={codeIndicators[row.indicators?.submitRealizationSecondStage]}>{formatNumber(row.actives.realizationSecond)}</td>
+                    <td className={codeIndicators[row.indicators?.realizationSecondStage]}>{formatNumber(row.actives.realizationResult)}</td>
+                    <td>{formatNumber(row.actives.refundProperty)}</td>
+                    <td className={codeIndicators[row.indicators?.collectionAccountsReceivable]}>{formatNumber(row.actives.debitForeclosure)}</td>
+                    <td>{row.statusIP}</td>
+                    <td>{row.sosp?.CodeSOSP}</td>
                 </>
             );
-        } else if (pageKey === "DerivativeDebt" || pageKey === 'DerivativeDebtArchive') {
+        else
             return (
                 <>
                     <td>{rowIndex + 1}</td>
-                    <td>{row.kno}</td>
+                    <td>{row.tno?.CodeTNO}</td>
                     <td>{row.inn}</td>
-                    <td className={(row.indicators.isUpdated) ?? codeIndicators.isUpdated}>{row.name}</td>
-                    <td>{formatNumber(row.cur_debt)}</td>
-                    <td>{formatNumber(row.post_sum)}</td>
-                    <td>{row.category}</td>
-                    <td className={(row.indicators.isLizingFNS) && codeIndicators.isLizingFNS}>{formatNumber(row.total_sum)}</td>
+                    <td className={(row.indicators?.isUpdated) ?? codeIndicators.isUpdated}>{row.name}</td>
+                    <td>{formatNumber(row.resolution?.amount)}</td>
+                    <td>{formatNumber(row.resolution?.balance)}</td>
+                    <td>{row.category.category}</td>
+                    <td className={(row.indicators?.isLizingFNS) && codeIndicators.isLizingFNS}>{formatNumber(row.actives.totalSum)}</td>
                     <td>{row.interaction_gmu}</td>
                     <td>{row.interaction_tno}</td>
-                    <td className={codeIndicators[row.indicators.arrest]}>{formatNumber(row.arrest_sum)}</td>
+                    <td className={codeIndicators[row.indicators?.arrest]}>{formatNumber(row.actives.arrest)}</td>
                     <td>{row.securingArrest}</td>
-                    <td className={codeIndicators[row.indicators.evaluation]}>{formatNumber(row.evaluation_sum)}</td>
-                    <td className={codeIndicators[row.indicators.submitRealizationFirstStage]}>{formatNumber(row.realization_property_sum)}</td>
-                    <td className={codeIndicators[row.indicators.submitRealizationSecondStage]}>{formatNumber(row.price_reduction_sum)}</td>
-                    <td className={codeIndicators[row.indicators.realizationSecondStage]}>{formatNumber(row.realization_sum_2)}</td>
-                    <td>{formatNumber(row.return_sum)}</td>
-                    <td className={codeIndicators[row.indicators.collectionAccountsReceivable]}>{formatNumber(row.debitor)}</td>
-                    <td>{row.status_ip}</td>
-                    <td>{row.sosp_code}</td>
+                    <td className={codeIndicators[row.indicators?.evaluation]}>{formatNumber(row.actives.wanted)}</td>
+                    <td className={codeIndicators[row.indicators?.evaluation]}>{formatNumber(row.actives.evaluation)}</td>
+                    <td className={codeIndicators[row.indicators?.submitRealizationFirstStage]}>{formatNumber(row.actives.realizationFirst)}</td>
+                    <td className={codeIndicators[row.indicators?.submitRealizationSecondStage]}>{formatNumber(row.actives.realizationSecond)}</td>
+                    <td className={codeIndicators[row.indicators?.realizationSecondStage]}>{formatNumber(row.actives.realizationResult)}</td>
+                    <td>{formatNumber(row.actives.refundProperty)}</td>
+                    <td className={codeIndicators[row.indicators?.collectionAccountsReceivable]}>{formatNumber(row.actives.debitForeclosure)}</td>
+                    <td>{row.statusIP}</td>
+                    <td>{row.sosp?.CodeSOSP}</td>
                 </>
             );
-        } else {
-            return null;
-        }
     };
 
 
@@ -397,7 +392,7 @@ export const Main = () => {
                                 handleInnSelect={handleInnSelect}
                                 handleLink={handleLink}
                                 renderTableCells={renderTableCells}
-                                pageKey={pageKey}
+                                isDerived={isDerived}
                             />
                         ))}
                         </tbody>
@@ -424,7 +419,7 @@ export const Main = () => {
     );
 };
 
-const MemoizedRow = React.memo(({ row, rowIndex, selectedInn, handleInnSelect, handleLink, renderTableCells, pageKey }) => {
+const MemoizedRow = React.memo(({ row, rowIndex, selectedInn, handleInnSelect, handleLink, renderTableCells, isDerived }) => {
     return (
         <Tr key={rowIndex} isSelected={selectedInn.includes(row.inn)} cursor={true}
             onClick={event => handleLink(event, row.inn)}>
@@ -438,7 +433,7 @@ const MemoizedRow = React.memo(({ row, rowIndex, selectedInn, handleInnSelect, h
                     <span></span>
                 </CustomCheckbox>
             </td>
-            {renderTableCells(row, rowIndex, pageKey)}
+            {renderTableCells(row, rowIndex, isDerived)}
         </Tr>
     );
 });

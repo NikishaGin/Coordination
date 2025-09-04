@@ -1,11 +1,10 @@
 import React, {useEffect} from 'react';
 import {useDispatch, useSelector} from "react-redux";
-import {fetchGetDebitTypes} from "../../store/globalSlice.js";
 import {CustomIcon, FilterGroup, Select, SelectWrapper} from "../select/Select.jsx";
 
 export const StatusFilter = (props) => {
     const dispatch = useDispatch();
-    const categories = useSelector((state) => state.global.debitTypes);
+    const categories = useSelector((state) => state.main.allClientCategories);
     //
     // useEffect(() => {
     //     dispatch(fetchGetDebitTypes());
@@ -48,7 +47,3 @@ export const StatusFilter = (props) => {
         </FilterGroup>
     );
 };
-
-
-
-

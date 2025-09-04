@@ -36,15 +36,17 @@ export const SumFilter = (props) => {
                         <option value="" disabled hidden>
                             Все категории
                         </option>
-                        <option value="post_sum">Сумма по постановлениям</option>
-                        <option value="cur_debt">Остаток по постановлениям</option>
-                        <option value="arrest_sum">Арест имущества</option>
-                        <option value="evaluation_sum">Оценка имущества</option>
-                        <option value="realization_property_sum">Принудительная реализация</option>
-                        <option value="price_reduction_sum">Торги 2 этап</option>
-                        <option value="realization_sum_2">Результат принудительной реализации</option>
-                        <option value="return_sum">Сумма возврата имущества плательщику</option>
-                        <option value="debitor">Обращение взыскания на дебиторскую задолженность</option>
+                        <option value="resolution.amount">Сумма по постановлениям</option>
+                        <option value="resolution.balance">Остаток по постановлениям</option>
+                        <option value="actives.totalSum">Сумма активов и дебиторской задолженности</option>
+                        <option value="actives.arrest">Арест имущества</option>
+                        <option value="actives.wanted">Розыск имущества</option>
+                        <option value="actives.evaluation">Оценка имущества</option>
+                        <option value="actives.realizationFirst">Принудительная реализация</option>
+                        <option value="actives.realizationSecond">Торги 2 этап</option>
+                        <option value="actives.realizationResult">Результат принудительной реализации</option>
+                        <option value="actives.refundProperty">Сумма возврата имущества плательщику</option>
+                        <option value="actives.debitForeclosure">Обращение взыскания на дебиторскую задолженность</option>
                     </Select>
                     <CustomIcon/>
             </SelectWrapper>

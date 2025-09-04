@@ -1,6 +1,5 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {activesAPI} from "../api/index.js";
-import {setLoading} from "./appStatusSlice.js";
 
 function  cleanTotalSum(value){
     if (typeof value === 'number') return value;

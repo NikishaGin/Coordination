@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import {useNavigate} from "react-router";
 import styled from 'styled-components';
 import {useDispatch, useSelector} from "react-redux";
-import resetStore from "../../store/store"
-import {fetchToggleServiceMode} from "../../store/globalSlice.js";
+// import resetStore from "../../store/store"
+// import {fetchToggleServiceMode} from "../../store/globalSlice.js";
 import {ButtonContainer, Button} from "../buttons/Button.jsx";
-import { ROLES } from "../../types.js";
+import { UsersRole } from "../../constants.js";
 
 
 // Стиль для футера
@@ -235,7 +235,7 @@ export const Footer = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
-  const serviceMode = useSelector(state => state.global.serviceMode)
+  const serviceMode = useSelector(state => state.main.serviceMode)
 
   const role = useSelector((state) => state.user.role)
 
@@ -253,7 +253,7 @@ export const Footer = () => {
   }
 
   const handleSubmit = () => {
-    dispatch(fetchToggleServiceMode())
+    // dispatch(fetchToggleServiceMode())
     setIsModalVisible(false)
   }
 
@@ -287,7 +287,7 @@ export const Footer = () => {
             <Arrow />
             <ul>
               {
-                (role === ROLES.Admin) &&
+                (role === UsersRole.ADMIN) &&
                 <li>
                 <MenuButton onClick={toggleServiceMode}>
                   <svg
