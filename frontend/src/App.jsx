@@ -1,11 +1,11 @@
-import {useSelector} from "react-redux";
-import { AppRoutes } from "./routes/AppRoutes.jsx";
 import "./App.css";
+import { AppRoutes } from "./routes/AppRoutes.jsx";
+import { getToken } from "./store/user/userSlice.js";
 
 
 export default function App() {
-  const token = useSelector((state) => state.user.token)
-  const isAuth = token && (token.length > 0)
+  const token = getToken();
+  const isAuth = token && (token.length > 0);
 
-  return <AppRoutes isAuth={isAuth}  />
+  return <AppRoutes isAuth={isAuth}  />;
 }

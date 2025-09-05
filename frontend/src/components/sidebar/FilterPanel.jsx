@@ -73,7 +73,7 @@ export const FilterPanel = () => {
             dispatch(setFilterStatusIp(statusIP));
         if (categoryId.length > 0)
             dispatch(setFilterCategory(categoryId));
-        if ((amount.field.length > 0) && amount.value)
+        if (amount.field.length > 0)
             dispatch(setFilterAmount({
                 field: amount.field,
                 value: parseNumber(amount.value),

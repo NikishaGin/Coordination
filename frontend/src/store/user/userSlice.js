@@ -1,16 +1,9 @@
-import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import { useSelector } from "react-redux";
-import {UsersRole} from "../../constants.js";
+import { UsersRole } from "../../constants.js";
+import { fetchLoginUser } from "./userThunks.js";
 
 
-export const fetchLoginUser = createAsyncThunk(
-    'user/fetchLoginUser',
-    async ({ login, password }) => {
-
-    }
-)
-
-// Начальное состояние
 const initialState = {
     messageAuth: '',
     regionId: null,
@@ -18,27 +11,29 @@ const initialState = {
     token: null
 };
 
-
-// Создаем slice
 const userSlice = createSlice({
     name: "user",
     initialState,
     reducers: {
-        setUser: (state, { payload }) => {
-            state.regionId = payload.regionId
-            state.role = payload.role
-            state.token = payload.token
-        },
         clearUser: () => initialState,
+    },
+    extraReducers: builder => {
+        builder
+            .addCase(fetchLoginUser.pending, (state, { payload }) => {})
+            .addCase(fetchLoginUser.fulfilled, (state, { payload }) => {})
+            .addCase(fetchLoginUser.rejected, (state, { payload }) => {})
     }
 });
 
 
-export const { setUser, clearUser } = userSlice.actions;
+export const { clearUser } = userSlice.actions;
 
-export const getToken = () => useSelector(state => state.user.token ?? null);
+
+export const getToken = () => useSelector(state => state.user.token) || null;
+
 export const getUserRole = () => useSelector(state => state.user.role);
-export const getUserRegion = () => useSelector(state => state.user.regionId);
+
+export const getMessageAuth = () => useSelector(state => state.user.messageAuth);
 
 export const roleDetection = () => {
     const role = getUserRole();

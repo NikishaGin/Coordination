@@ -5,16 +5,16 @@ import logout, { store } from "./store.js";
 
 const instance = axios.create({
     baseURL: "http://127.0.0.1:3033/api/"
-})
+});
 
 // Добавление JWT-токена в заголовок каждого запроса
 instance.interceptors.request.use(config => {
-    const state = store.getState()
-    const token = state.user?.token
+    const state = store.getState();
+    const token = state.user?.token || "";
     if (token)
-        config.headers.Authorization = `Bearer ${token}`
-    return config
-})
+        config.headers.Authorization = `Bearer ${token}`;
+    return config;
+});
 
 // Перехват ошибок связанных с истечением срока действия JWT-токена и включением сервисного режима
 instance.interceptors.response.use(
@@ -31,7 +31,7 @@ instance.interceptors.response.use(
 
 
 export const AuthAPI = {
-    login: (data) => instance.post('auth/login', { params: data }),
+    login: (data) => instance.post('auth/login', data),
     toggleServiceMode: () => instance.post('auth/toggle-service-mode'),
 }
 

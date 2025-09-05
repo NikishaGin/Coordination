@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+import { useSelector } from "react-redux";
 import { createSlice } from "@reduxjs/toolkit";
 import {
     fetchGetRegions,
@@ -5,7 +7,7 @@ import {
     fetchGetClientCategories,
     fetchGetClients,
 } from './mainThunks.js'
-import { useSelector } from "react-redux";
+import { extractValuesFromObject } from "../../utils/extractValuesFromObject.js";
 
 
 
@@ -31,7 +33,7 @@ const initialState = {
             field: "",
             value: null
         },
-    }
+    },
 };
 
 
@@ -61,11 +63,7 @@ const mainSlice = createSlice({
         setFilterAmount(state, { payload }) {
             state.filters.amount = payload;
         },
-        clearMain(state) {
-            Object.keys(state).forEach(key => {
-                state[key] = initialState[key];
-            });
-        },
+        clearMain: () => initialState,
     },
     extraReducers: builder => {
         builder
@@ -105,13 +103,40 @@ export const {
     clearMain
 } = mainSlice.actions;
 
+export const getPageMeta = () => {
+    const isDerived = useSelector((state) => state.main.isDerived);
+    const isArchived = useSelector((state) => state.main.isArchived);
+    return { isDerived, isArchived };
+}
+
 export const getAllRegions = () => useSelector((state) => state.main.allRegions);
+
 export const getAllClientCategories = () => useSelector((state) => state.main.allClientCategories);
+
 export const getAllStatusesIP = () => useSelector((state) => state.main.allStatusesIP);
+
 export const getSelectedRegionId = () => useSelector((state) => state.main.selectedRegionId);
+
 export const getFilters = () => useSelector((state) => state.main.filters);
 
-export const getFilteredClients = () => useSelector((state) => state.main.clients.data);
+export const getFilteredClients = () => {
+    const filters = getFilters();
+    const data = useSelector((state) => state.main.clients.data);
+    return useMemo(() => {
+        return data.filter((row) => {
+            let isFiltered = true;
+            if (filters.inputValueInn.length > 0)
+                isFiltered &&= row.inn.startsWith(filters.inputValueInn);
+            if (filters.statusIP.length > 0)
+                isFiltered &&= row.statusIP === filters.statusIP;
+            if (filters.categoryId)
+                isFiltered &&= row.category?.id === filters.categoryId;
+            if ((filters.amount.field.length > 0) && filters.amount.value)
+                isFiltered &&= extractValuesFromObject(row, filters.amount.field) >= filters.amount.value;
+            return isFiltered;
+        });
+    }, [data, filters]);
+}
 
 
 export default mainSlice.reducer;

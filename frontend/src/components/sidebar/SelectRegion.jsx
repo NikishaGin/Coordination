@@ -22,8 +22,10 @@ export const SelectRegion = () => {
     }, [dispatch, location.pathname]);
 
     useEffect(() => {
-        if (limitOnUse)
-            dispatch(setSelectedRegion())
+        if (limitOnUse) {
+            const regionId = regions[0].id;
+            dispatch(setSelectedRegion(regionId));
+        }
     }, [regions])
 
     const handleChange = (event) => {

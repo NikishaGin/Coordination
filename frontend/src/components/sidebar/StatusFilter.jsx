@@ -16,13 +16,13 @@ export const StatusFilter = (props) => {
     }, [dispatch]);
 
     const handleSelectStatuses = event => props.setStatusIP(event.target.value);
-    const handleSelectCategories = event => props.setCategory(event.target.value);
+    const handleSelectCategories = event => props.setCategoryId(event.target.value);
 
     return (
         <FilterGroup>
             <SelectWrapper style={{marginBottom: '16px'}}>
                     <Select
-                        value={props.statusIP}
+                        value={props.statusIP || ""}
                         onChange={handleSelectStatuses}
                     >
                         <option value="">Все статусы</option>
@@ -35,7 +35,7 @@ export const StatusFilter = (props) => {
 
             <SelectWrapper>
                     <Select
-                        value={props.category}
+                        value={props.categoryId || ""}
                         onChange={handleSelectCategories}
                     >
                         <option value="">Все категории</option>

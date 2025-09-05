@@ -4,6 +4,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { UserPayload } from '../common/interfaces/user-payload.interface';
+import { UsersRole } from "../generated/prisma/enums";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -19,11 +20,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     async validate(payload: UserPayload): Promise<UserPayload> {
-        const serviceMode = await this.prisma.settings.findFirst({
-            select: { serviceMode: true },
-        });
-        if (serviceMode)
-            throw new ServiceUnavailableException('Сервис недоступен: включён сервисный режим');
+        if (payload.role !== UsersRole.ADMIN) {
+            const serviceMode = await this.prisma.settings.findFirst({
+                select: {serviceMode: true},
+            });
+            if (serviceMode)
+                throw new ServiceUnavailableException('Сервис недоступен: включён сервисный режим');
+        }
         return payload;
     }
 }

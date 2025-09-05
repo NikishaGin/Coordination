@@ -1,16 +1,15 @@
 import React, {useState, useEffect, useMemo} from "react";
 import {useLocation, useNavigate} from "react-router";
-import styled from "styled-components";
+import { useDispatch } from "react-redux";
 import { SnackbarProvider, enqueueSnackbar } from 'notistack'
+import { DownloadCloud } from 'lucide-react';
+import styled from "styled-components";
 import { TableContainer, Tr } from "../tables/Table.jsx";
 import { ButtonContainer } from "../buttons/Button.jsx";
 import { downloadAPI } from "../../api/index.js";
 import { downloadExcel } from "../../utils/downloadExcel.js"
 import {formatNumber } from "../../utils/formatData.js"
-import { useDispatch, useSelector } from "react-redux";
-import { DownloadCloud } from 'lucide-react';
-import { pageDetection } from "../../store/main/mainSlice.js";
-import { extractValuesFromObject } from "../../utils/extractValuesFromObject.js";
+import { getFilteredClients, getPageMeta, getSelectedRegionId, pageDetection } from "../../store/main/mainSlice.js";
 import { fetchGetClients } from "../../store/main/mainThunks.js";
 
 const Container = styled.div`
@@ -208,17 +207,16 @@ const codeIndicators = {
 
 
 export const Main = () => {
-    const [selectedInn, setSelectedInn] = useState([]);
-
     const location = useLocation();
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const isDerived = useSelector((state) => state.main.isDerived);
-    const isArchived = useSelector((state) => state.main.isArchived);
-    const selectedRegionId = useSelector((state) => state.main.selectedRegionId)
-    const filters = useSelector((state) => state.main.filters);
-    const tableData = useSelector((state) => state.main.clients.data);
+    const [selectedInn, setSelectedInn] = useState([]);
+
+    const { isDerived, isArchived } = getPageMeta();
+    const selectedRegionId = getSelectedRegionId();
+    const filteredData = getFilteredClients();
+
 
     useEffect(() => {
         dispatch(pageDetection(location.pathname));
@@ -234,27 +232,6 @@ export const Main = () => {
         () => !isDerived ? headingsCoordination : headingsDerivative,
         [isDerived]
     );
-
-
-    const filteredData = useMemo(() => {
-        let data = [...tableData];
-
-        if (filters.inputValueInn)
-            data = data.filter((row) => row.inn.startsWith(filters.inputValueInn));
-
-        if (filters.category)
-            data = data.filter((row) => row.category?.category === filters.category);
-
-        if (filters.statusIP)
-            data = data.filter((row) => row.statusIP === filters.statusIP);
-
-        if (filters.name_filtered_field && filters.sum) {
-            data = data.filter((row) => extractValuesFromObject(row, filters.name_filtered_field) >= filters.sum);
-        }
-
-        return data;
-    }, [tableData, filters]);
-
 
     const handleSelectAll = event => {
         if (event.target.checked)
