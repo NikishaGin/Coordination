@@ -9,7 +9,7 @@ import { downloadExcel } from "../../utils/downloadExcel.js"
 import {formatNumber } from "../../utils/formatData.js"
 import { useDispatch, useSelector } from "react-redux";
 import { DownloadCloud } from 'lucide-react';
-import { recognitionPage } from "../../store/main/mainSlice.js";
+import { pageDetection } from "../../store/main/mainSlice.js";
 import { extractValuesFromObject } from "../../utils/extractValuesFromObject.js";
 import { fetchGetClients } from "../../store/main/mainThunks.js";
 
@@ -221,7 +221,7 @@ export const Main = () => {
     const tableData = useSelector((state) => state.main.clients.data);
 
     useEffect(() => {
-        dispatch(recognitionPage(location.pathname));
+        dispatch(pageDetection(location.pathname));
     }, [dispatch, location.pathname]);
 
     useEffect(() => {

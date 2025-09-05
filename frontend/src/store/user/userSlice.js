@@ -1,5 +1,6 @@
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 import { useSelector } from "react-redux";
+import {UsersRole} from "../../constants.js";
 
 
 export const fetchLoginUser = createAsyncThunk(
@@ -35,8 +36,17 @@ const userSlice = createSlice({
 
 export const { setUser, clearUser } = userSlice.actions;
 
-export const useToken = () => useSelector(state => state.user?.token ?? null);
+export const getToken = () => useSelector(state => state.user.token ?? null);
+export const getUserRole = () => useSelector(state => state.user.role);
+export const getUserRegion = () => useSelector(state => state.user.regionId);
 
-export const useUser = () => useSelector(state => state.user.profile);
+export const roleDetection = () => {
+    const role = getUserRole();
+    return {
+        isUser: role === UsersRole.USER,
+        isAdmin: role === UsersRole.ADMIN,
+        isGMU: role === UsersRole.LIMITED_ADMIN_GMU,
+    }
+}
 
 export default userSlice.reducer;

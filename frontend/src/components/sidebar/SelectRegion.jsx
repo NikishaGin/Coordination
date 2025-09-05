@@ -1,42 +1,41 @@
 import React, { useEffect } from 'react';
 import { useLocation } from "react-router";
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { CustomIcon, FilterGroup, Select, SelectWrapper } from "../select/Select.jsx";
-import { UsersRole } from "../../constants.js";
 import { fetchGetRegions } from "../../store/main/mainThunks.js";
+import { getAllRegions, getSelectedRegionId, setSelectedRegion } from "../../store/main/mainSlice.js";
+import { roleDetection} from "../../store/user/userSlice.js";
+
+
 
 export const SelectRegion = () => {
     const location = useLocation();
     const dispatch = useDispatch();
 
-    const regions = useSelector((state) => state.main.allRegions);
-    const selectedRegionId = useSelector((state) => state.main.selectedRegionId)
-    const role = useSelector((state) => state.user.role)
-    const isUser = role === UsersRole.USER;
+    const regions = getAllRegions();
+    const selectedRegionId = getSelectedRegionId();
+    const { isUser } = roleDetection();
+    const limitOnUse = isUser && (regions.length === 1);
 
     useEffect(() => {
         dispatch(fetchGetRegions());
     }, [dispatch, location.pathname]);
 
-
-    // useEffect(() => {
-    //     if (isUser && isExistsRegion) {
-    //         dispatch(setSelectedRegionForPage({ pageKey, regionCode }));
-    //         document.getElementById("region").value = regionCode;
-    //     }
-    // }, [regions])
-
+    useEffect(() => {
+        if (limitOnUse)
+            dispatch(setSelectedRegion())
+    }, [regions])
 
     const handleChange = (event) => {
         const selectedValue = event.target.value;
-        dispatch(setSelectedRegionForPage({ pageKey, regionCode: selectedValue }));
+        dispatch(setSelectedRegion(selectedValue));
     };
 
 
     return (
         <FilterGroup>
             <SelectWrapper>
-                <Select value={selectedRegionId || ""} onChange={handleChange} disabled={isUser}>
+                <Select value={selectedRegionId || ""} onChange={handleChange} disabled={limitOnUse}>
                     <option value="" disabled hidden>
                         Выберите регион
                     </option>

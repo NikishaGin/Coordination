@@ -26,9 +26,11 @@ const initialState = {
     filters: {
         inputValueInn: "",
         statusIP: "",
-        category: "",
-        name_filtered_field: "",
-        sum: null,
+        categoryId: null,
+        amount: {
+            field: "",
+            value: null
+        },
     }
 };
 
@@ -37,7 +39,7 @@ const mainSlice = createSlice({
     name: "main",
     initialState,
     reducers: {
-        recognitionPage(state, { payload }) {
+        pageDetection(state, { payload }) {
             state.pathname = payload;
             state.isArchived = ["/coordination-archive", "/coordination"].includes(payload);
             state.isDerived = ["/derivative-archive", "/derivative"].includes(payload);
@@ -47,18 +49,17 @@ const mainSlice = createSlice({
             state.selectedRegionId = payload;
             state.selectedRegionIdByPage[state.pathname] = payload;
         },
-        setInputValueInn(state, action) {
-            state.filters.inputValueInn = action.payload;
+        setInputValueInn(state, { payload }) {
+            state.filters.inputValueInn = payload;
         },
-        setFilterStatusIp(state, action) {
-            state.filters.statusIP = action.payload;
+        setFilterStatusIp(state, { payload }) {
+            state.filters.statusIP = payload;
         },
-        setFilterCategory(state, action) {
-            state.filters.category = action.payload;
+        setFilterCategory(state, { payload }) {
+            state.filters.categoryId = payload;
         },
-        setFilterSum(state, action) {
-            state.filters.sum = action.payload.sum;
-            state.filters.name_filtered_field = action.payload.name_filtered_field;
+        setFilterAmount(state, { payload }) {
+            state.filters.amount = payload;
         },
         clearMain(state) {
             Object.keys(state).forEach(key => {
@@ -95,23 +96,22 @@ const mainSlice = createSlice({
 
 
 export const {
-    recognitionPage,
+    pageDetection,
     setSelectedRegion,
     setInputValueInn,
     setFilterStatusIp,
     setFilterCategory,
-    setFilterSum,
+    setFilterAmount,
     clearMain
 } = mainSlice.actions;
 
+export const getAllRegions = () => useSelector((state) => state.main.allRegions);
+export const getAllClientCategories = () => useSelector((state) => state.main.allClientCategories);
+export const getAllStatusesIP = () => useSelector((state) => state.main.allStatusesIP);
+export const getSelectedRegionId = () => useSelector((state) => state.main.selectedRegionId);
+export const getFilters = () => useSelector((state) => state.main.filters);
 
-
-export const useAllRegions = useSelector((state) => state.main.allRegions);
-export const useAllClientCategories = useSelector((state) => state.main.allClientCategories);
-export const useAllStatusesIP = useSelector((state) => state.main.allStatusesIP);
-export const useSelectedRegionId = useSelector((state) => state.main.selectedRegionId);
-export const useClients = useSelector((state) => state.main.clients.data);
-export const useFilters = useSelector((state) => state.main.filters);
+export const getFilteredClients = () => useSelector((state) => state.main.clients.data);
 
 
 export default mainSlice.reducer;

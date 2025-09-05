@@ -1,9 +1,10 @@
 import React, {useState} from 'react';
+import { useDispatch } from "react-redux";
 import styled from "styled-components";
-import {StatusFilter} from "./StatusFilter.jsx";
-import {SumFilter} from "./SumFilter.jsx";
-import {parseNumber} from "../../utils/formatData.js";
-import {useDispatch, useSelector} from "react-redux";
+import { StatusFilter } from "./StatusFilter.jsx";
+import { AmountFilter } from "./AmountFilter.jsx";
+import { parseNumber } from "../../utils/formatData.js";
+import { getFilters, setFilterCategory, setFilterStatusIp, setFilterAmount } from "../../store/main/mainSlice.js";
 
 
 const WrapperFilter = styled.div`
@@ -58,34 +59,35 @@ const ActionButton = styled.button`
 
 export const FilterPanel = () => {
     const dispatch = useDispatch();
-    const [statusIP, setStatusIP] = useState(useSelector((state) => state.main.filters.statusIP));
-    const [category, setCategory] = useState(useSelector((state) => state.main.filters.category));
-    const [nameFilteredField, setNameFilteredField] = useState(useSelector((state) => state.main.filters.name_filtered_field));
-    const [sum, setSum] = useState(useSelector((state) => state.main.filters.sum));
+
+    const filters = getFilters();
+    const [statusIP, setStatusIP] = useState(filters.statusIP);
+    const [categoryId, setCategoryId] = useState(filters.categoryId);
+    const [amount, setAmount] = useState(filters.amount);
+
+    const [activeFilter, setActiveFilter] = useState('status');
+
 
     const handleApply = () => {
         if (statusIP.length > 0)
             dispatch(setFilterStatusIp(statusIP));
-        if (category.length > 0)
-            dispatch(setFilterCategory(category));
-        if ((nameFilteredField.length > 0) && sum.length > 0) {
-            const valueSum = parseNumber(sum);
-            dispatch(setFilterSum({sum: valueSum, name_filtered_field: nameFilteredField}));
-        }
+        if (categoryId.length > 0)
+            dispatch(setFilterCategory(categoryId));
+        if ((amount.field.length > 0) && amount.value)
+            dispatch(setFilterAmount({
+                field: amount.field,
+                value: parseNumber(amount.value),
+            }));
     };
 
     const handleReset = () => {
         dispatch(setFilterStatusIp(""))
         dispatch(setFilterCategory(""))
-        dispatch(setFilterSum({sum: "", name_filtered_field: ""}))
-        setStatusIP('');
-        setCategory('');
-        setNameFilteredField("");
-        setSum("");
+        dispatch(setFilterAmount({ field: "", value: null }))
+        setStatusIP("");
+        setCategoryId(null);
+        setAmount({ field: "", value: null });
     };
-
-
-    const [activeFilter, setActiveFilter] = useState('status');
 
     const handleFilterToggle = (filter) => {
         setActiveFilter(filter);
@@ -107,11 +109,8 @@ export const FilterPanel = () => {
             </FilterToggleButton>
         </FilterToggle>
 
-        {activeFilter === 'status' &&
-            <StatusFilter statusIP={statusIP} setStatusIP={setStatusIP} category={category} setCategory={setCategory}/>}
-        {activeFilter === 'sum' &&
-            <SumFilter nameFilteredField={nameFilteredField} setNameFilteredField={setNameFilteredField} sum={sum}
-                       setSum={setSum}/>}
+        { activeFilter === 'status' && <StatusFilter statusIP={statusIP} setStatusIP={setStatusIP} categoryId={categoryId} setCategoryId={setCategoryId}/> }
+        { activeFilter === 'sum'    && <AmountFilter amount={amount} setAmount={setAmount} /> }
 
         <ButtonsContainer>
             <ActionButton type="primary" onClick={handleApply}>Применить</ActionButton>

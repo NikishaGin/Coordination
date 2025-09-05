@@ -1,7 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
-import {handlesInputNumber} from "../../utils/handleInput.js"
-import {CustomIcon, FilterGroup, Select, SelectWrapper} from "../select/Select.jsx";
+import { CustomIcon, FilterGroup, Select, SelectWrapper } from "../select/Select.jsx";
+import { handlesInputNumber } from "../../utils/handleInput.js"
+import { formatNumber, parseNumber } from "../../utils/formatData.js";
 
 const FilterInput = styled.div`
   margin-bottom: 16px;
@@ -22,20 +23,20 @@ const FilterInput = styled.div`
   }
 `;
 
-const Input = styled.input``;
 
-export const SumFilter = (props) => {
+
+export const AmountFilter = (props) => {
+    const { amount, setAmount } = props;
+    const amountValue = amount.value ? formatNumber(amount.value) : '';
+
+    const handleSelect = event => setAmount(prevValue => ({ ...prevValue, field: event.target.value }));
+    const handleInput = event => setAmount(prevValue => ({ ...prevValue, value: parseNumber(event.target.value) }));
+
     return (
         <FilterGroup>
             <SelectWrapper style={{marginBottom: '16px'}}>
-                    <Select
-                        id="column"
-                        value={props.nameFilteredField || ''}
-                        onChange={event => props.setNameFilteredField(event.target.value)}
-                    >
-                        <option value="" disabled hidden>
-                            Все категории
-                        </option>
+                    <Select value={amount.field} onChange={handleSelect}>
+                        <option value="" disabled hidden>Все категории</option>
                         <option value="resolution.amount">Сумма по постановлениям</option>
                         <option value="resolution.balance">Остаток по постановлениям</option>
                         <option value="actives.totalSum">Сумма активов и дебиторской задолженности</option>
@@ -52,12 +53,11 @@ export const SumFilter = (props) => {
             </SelectWrapper>
 
             <FilterInput>
-                <Input
-                    id="amount"
+                <input
                     type="text"
                     placeholder="Сумма от (руб.)"
-                    value={props.sum}
-                    onChange={event => props.setSum(event.target.value)}
+                    value={amountValue}
+                    onChange={handleInput}
                     onKeyPress={handlesInputNumber.handleKeyPress}
                     onKeyDown={handlesInputNumber.handleKeyDown}
                     onInput={handlesInputNumber.handleInput}
