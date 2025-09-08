@@ -1,12 +1,24 @@
-import { createSlice } from "@reduxjs/toolkit";
+import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 import { useSelector } from "react-redux";
 import { UsersRole } from "../../constants.js";
-import { fetchLoginUser } from "./userThunks.js";
+import { thunkLoginUser, thunkToggleServiceMode } from "./userThunks.js";
+
+
+export const fetchLoginUser = createAsyncThunk(
+    'user/fetchLoginUser',
+    thunkLoginUser
+);
+
+export const fetchToggleServiceMode = createAsyncThunk(
+    'user/fetchToggleServiceMode',
+    thunkToggleServiceMode
+);
 
 
 const initialState = {
     messageAuth: '',
-    regionId: null,
+    serviceMode: false,
+    userId: null,
     role: null,
     token: null
 };
@@ -15,28 +27,41 @@ const userSlice = createSlice({
     name: "user",
     initialState,
     reducers: {
+        updateServiceMode(state, { payload }) {
+            state.serviceMode = payload;
+        },
         clearUser: () => initialState,
     },
     extraReducers: builder => {
         builder
-            .addCase(fetchLoginUser.pending, (state, { payload }) => {})
-            .addCase(fetchLoginUser.fulfilled, (state, { payload }) => {})
-            .addCase(fetchLoginUser.rejected, (state, { payload }) => {})
+            .addCase(fetchLoginUser.fulfilled, (state, { payload }) => {
+                state.userId = payload.user.userId;
+                state.role = payload.user.role;
+                state.token = payload.token;
+                state.messageAuth = '';
+            })
+            .addCase(fetchLoginUser.rejected, (state, { error }) => {
+                if (state.serviceMode)
+                    state.messageAuth = error.message;
+            })
+            .addCase(fetchToggleServiceMode.fulfilled, (state) => {
+                state.serviceMode = !state.serviceMode;
+            })
     }
 });
 
 
-export const { clearUser } = userSlice.actions;
+export const { clearUser, updateServiceMode } = userSlice.actions;
 
 
-export const getToken = () => useSelector(state => state.user.token) || null;
+export const useToken = () => useSelector(state => state.user.token) || null;
 
-export const getUserRole = () => useSelector(state => state.user.role);
+export const useMessageAuth = () => useSelector(state => state.user.messageAuth);
 
-export const getMessageAuth = () => useSelector(state => state.user.messageAuth);
+export const useServiceMode = () => useSelector(state => state.user.serviceMode);
 
-export const roleDetection = () => {
-    const role = getUserRole();
+export const useRoleDetection = () => {
+    const role = useSelector(state => state.user.role);
     return {
         isUser: role === UsersRole.USER,
         isAdmin: role === UsersRole.ADMIN,

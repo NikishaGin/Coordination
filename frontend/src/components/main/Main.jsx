@@ -9,8 +9,15 @@ import { ButtonContainer } from "../buttons/Button.jsx";
 import { downloadAPI } from "../../api/index.js";
 import { downloadExcel } from "../../utils/downloadExcel.js"
 import {formatNumber } from "../../utils/formatData.js"
-import { getFilteredClients, getPageMeta, getSelectedRegionId, pageDetection } from "../../store/main/mainSlice.js";
-import { fetchGetClients } from "../../store/main/mainThunks.js";
+import {
+    getFilteredClients,
+    getPageMeta,
+    getSelectedRegionId,
+    pageDetection,
+    fetchGetClients,
+} from "../../store/main/mainSlice.js";
+
+
 
 const Container = styled.div`
     background-color: ${props => props.theme.colors.background};

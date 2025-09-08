@@ -89,21 +89,18 @@ export const FilterPanel = () => {
         setAmount({ field: "", value: null });
     };
 
-    const handleFilterToggle = (filter) => {
-        setActiveFilter(filter);
-    };
 
     return <WrapperFilter>
         <FilterToggle>
             <FilterToggleButton
                 active={activeFilter === 'status'}
-                onClick={() => handleFilterToggle('status')}
+                onClick={() => setActiveFilter('status')}
             >
                 По статусу
             </FilterToggleButton>
             <FilterToggleButton
                 active={activeFilter === 'sum'}
-                onClick={() => handleFilterToggle('sum')}
+                onClick={() => setActiveFilter('sum')}
             >
                 По сумме
             </FilterToggleButton>

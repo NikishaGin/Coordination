@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserPayload } from '../common/interfaces/user-payload.interface';
 import { LoginDto } from './auth.dto';
@@ -13,7 +13,12 @@ export class AuthController {
 
     @Post('login')
     async login(@Body() loginData: LoginDto): Promise<{ user: UserPayload; token: string }> {
-        return this.authService.login(loginData);
+        const { error, data } = await this.authService.login(loginData);
+
+        if (error || !data)
+            throw new UnauthorizedException(error || 'Ошибка авторизации');
+
+        return data;
     }
 
     @UseGuards(JwtAuthGuard, RolesGuard)

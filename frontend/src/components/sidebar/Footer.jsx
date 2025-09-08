@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import {useNavigate} from "react-router";
+import { useNavigate } from "react-router";
+import { useDispatch } from "react-redux";
 import styled from 'styled-components';
-import {useDispatch, useSelector} from "react-redux";
-// import resetStore from "../../store/store"
-// import {fetchToggleServiceMode} from "../../store/globalSlice.js";
-import {ButtonContainer, Button} from "../buttons/Button.jsx";
-import { UsersRole } from "../../constants.js";
+import { ButtonContainer, Button } from "../buttons/Button.jsx";
+import { useServiceMode, useRoleDetection, fetchToggleServiceMode } from "../../store/user/userSlice.js";
+import logout from "../../store/store.js";
 
 
 // Стиль для футера
@@ -77,7 +76,6 @@ const Icon = styled.svg`
   width: 1.5rem; // Размер иконки
   height: 1.5rem; // Размер иконки
   fill: currentColor; // Наследует цвет из свойства color
-  
 `;
 
 // Стиль для выпадающего меню
@@ -228,22 +226,24 @@ const ModalContent = styled.div`
 `
 
 
+
 export const Footer = () => {
-  const [isMenuVisible, setIsMenuVisible] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [timer, setTimer] = useState(undefined);
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
-  const serviceMode = useSelector(state => state.main.serviceMode)
+  const serviceMode = useServiceMode();
+  const { isAdmin } = useRoleDetection();
 
-  const role = useSelector((state) => state.user.role)
+  const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [timer, setTimer] = useState(undefined);
+
 
   const handleOpenMenu = () => {
     setIsMenuVisible(prevValue => !prevValue)
   }
 
-  const toggleServiceMode = () => {
+  const handleToggleServiceMode = () => {
     setIsMenuVisible(false)
     setIsModalVisible(true)
   }
@@ -253,12 +253,12 @@ export const Footer = () => {
   }
 
   const handleSubmit = () => {
-    // dispatch(fetchToggleServiceMode())
+    dispatch(fetchToggleServiceMode())
     setIsModalVisible(false)
   }
 
-  const logout = () => {
-    // resetStore()
+  const handleLogout = () => {
+    logout();
     navigate("/login", { replace: true });
   }
 
@@ -287,9 +287,9 @@ export const Footer = () => {
             <Arrow />
             <ul>
               {
-                (role === UsersRole.ADMIN) &&
+                isAdmin &&
                 <li>
-                <MenuButton onClick={toggleServiceMode}>
+                <MenuButton onClick={handleToggleServiceMode}>
                   <svg
                       className="MuiSvgIcon-root"
                       focusable="false"
@@ -316,7 +316,7 @@ export const Footer = () => {
             </ul>
             <Divider />
             <div style={{ padding: '8px', display: 'flex', justifyContent: 'flex-end' }}>
-              <MenuButton onClick={logout}>
+              <MenuButton onClick={handleLogout}>
                 <svg
                   className="MuiSvgIcon-root"
                   focusable="false"

@@ -1,11 +1,7 @@
-import React, { useState } from 'react';
-import { useNavigate } from "react-router";
+import { useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
 import styled from "styled-components";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchLoginUser } from "../store/user/userSlice.js";
-import { userAPI } from '../api';
-import { UsersRole } from "../constants.js";
+import { useMessageAuth, fetchLoginUser } from "../store/user/userSlice.js";
 
 
 
@@ -97,7 +93,6 @@ const Button = styled.button`
   }
 `;
 
-// Ошибка в форме в случае неверных данных
 const ErrorText = styled.div`
   height: 2rem;
   color: red;
@@ -105,31 +100,13 @@ const ErrorText = styled.div`
 
 
 export const Login = () => {
-  const [messageError, setMessageError] = useState("");
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const serviceMode = useSelector(state => state.global.serviceMode)
   const { register, handleSubmit } = useForm()
 
+  const messageError = useMessageAuth();
 
-
-
-  // Обработка формы авторизации
-  const onSubmitLogin = async formData => {
-    if (formData.username && formData.password) {
-      const result = await userAPI.loginUser(formData.username, formData.password);
-      if (serviceMode && (result.data.userInfo.role !== UsersRole.ADMIN))
-        setMessageError("Сервис временно недоступен")
-      else if (result.data.code === 0) {
-        dispatch(fetchLoginUser(result.data.userInfo));
-        navigate("/coordination", { replace: true });
-      }
-      else if (result.data.code === 1)
-        setMessageError("Пользователя с таким логином не существует");
-      else if (result.data.code === 2)
-        setMessageError("Неверный пароль");
-    } else
-      setMessageError("Заполните логин и пароль");
+  const onSubmitLogin = (formData) => {
+    dispatch(fetchLoginUser(formData))
   }
 
   return (
@@ -137,8 +114,8 @@ export const Login = () => {
       <form onSubmit={handleSubmit(onSubmitLogin)}>
         <Container>
           <FieldGroup>
-            <Label htmlFor="username">Имя пользователя *</Label>
-            <Input id="username" {...register("username")} />
+            <Label htmlFor="login">Имя пользователя *</Label>
+            <Input id="login" {...register("login")} />
           </FieldGroup>
           <FieldGroup>
             <Label htmlFor="password">Пароль *</Label>

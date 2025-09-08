@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
@@ -18,9 +18,15 @@ export class AuthService {
         return bcrypt.compare(password, hash);
     }
 
-    async login(loginData: LoginDto): Promise<{ user: UserPayload; token: string }> {
+    async login(loginData: LoginDto): Promise<{
+        error?: string;
+        data?: {
+            user: UserPayload;
+            token: string;
+        };
+    }> {
         const userData = await this.prisma.users.findUnique({
-            where: { login: loginData.username },
+            where: { login: loginData.login },
             select: {
                 id: true,
                 passwordHash: true,
@@ -28,21 +34,28 @@ export class AuthService {
                 regionId: true,
             },
         });
-        if (!userData) throw new UnauthorizedException('Пользователь не найден');
+        if (!userData) return { error: 'Пользователя с таким логином не существует' };
+
         const isValidPassword: boolean = await this.validatePassword(
             loginData.password,
             userData.passwordHash,
         );
-        if (!isValidPassword) throw new UnauthorizedException('');
+        if (!isValidPassword) return { error: 'Неверный пароль' };
+
         const payload: UserPayload = {
             userId: userData.id,
             role: userData.role,
             regionId: userData.regionId,
         };
         const token = this.jwtService.sign(payload);
+        if (!token)
+            return { error: 'Не удалось сгенерировать JWT токен' };
+
         return {
-            user: payload,
-            token,
+            data: {
+                user: payload,
+                token,
+            },
         };
     }
 

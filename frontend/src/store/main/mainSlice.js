@@ -1,14 +1,19 @@
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
-import { createSlice } from "@reduxjs/toolkit";
+import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 import {
-    fetchGetRegions,
-    fetchGetStatusesIP,
-    fetchGetClientCategories,
-    fetchGetClients,
+    thunkGetRegions,
+    thunkGetStatusesIP,
+    thunkGetClientCategories,
+    thunkGetClients,
 } from './mainThunks.js'
 import { extractValuesFromObject } from "../../utils/extractValuesFromObject.js";
 
+
+export const fetchGetRegions = createAsyncThunk('main/fetchGetRegions', thunkGetRegions)
+export const fetchGetStatusesIP = createAsyncThunk('main/fetchGetStatusesIP', thunkGetStatusesIP)
+export const fetchGetClientCategories = createAsyncThunk('main/fetchGetClientCategories', thunkGetClientCategories)
+export const fetchGetClients = createAsyncThunk('main/fetchGetClients', thunkGetClients)
 
 
 const initialState = {
@@ -19,7 +24,6 @@ const initialState = {
     allClientCategories: [],
     allStatusesIP: [],
     selectedRegionIdByPage: {},
-    selectedRegionId: null,
     clients: {
         data: [],
         isLoading: false,
@@ -42,13 +46,14 @@ const mainSlice = createSlice({
     initialState,
     reducers: {
         pageDetection(state, { payload }) {
-            state.pathname = payload;
-            state.isArchived = ["/coordination-archive", "/coordination"].includes(payload);
-            state.isDerived = ["/derivative-archive", "/derivative"].includes(payload);
-            state.selectedRegionId = state.selectedRegionIdByPage[payload];
+            if (state.pathname !== payload) {
+                state.pathname = payload;
+                state.isArchived = ["/coordination-archive", "/coordination"].includes(payload);
+                state.isDerived = ["/derivative-archive", "/derivative"].includes(payload);
+                state.filters = initialState.filters; // либо очищать фильтры, либо для каждой страницы свой фильтр? (!!!)
+            }
         },
         setSelectedRegion(state, { payload }) {
-            state.selectedRegionId = payload;
             state.selectedRegionIdByPage[state.pathname] = payload;
         },
         setInputValueInn(state, { payload }) {
@@ -115,7 +120,7 @@ export const getAllClientCategories = () => useSelector((state) => state.main.al
 
 export const getAllStatusesIP = () => useSelector((state) => state.main.allStatusesIP);
 
-export const getSelectedRegionId = () => useSelector((state) => state.main.selectedRegionId);
+export const getSelectedRegionId = () => useSelector((state) => state.selectedRegionIdByPage[state.pathname]);
 
 export const getFilters = () => useSelector((state) => state.main.filters);
 

@@ -1,8 +1,14 @@
 import React, { useEffect } from 'react';
 import { useDispatch } from "react-redux";
 import { CustomIcon, FilterGroup, Select, SelectWrapper } from "../select/Select.jsx";
-import { getAllClientCategories, getAllStatusesIP } from "../../store/main/mainSlice.js";
-import { fetchGetClientCategories, fetchGetStatusesIP } from "../../store/main/mainThunks.js";
+import {
+    getAllClientCategories,
+    getAllStatusesIP,
+    fetchGetClientCategories,
+    fetchGetStatusesIP
+} from "../../store/main/mainSlice.js";
+
+
 
 export const StatusFilter = (props) => {
     const dispatch = useDispatch();

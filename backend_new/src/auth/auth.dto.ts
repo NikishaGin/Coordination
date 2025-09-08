@@ -5,7 +5,7 @@ export class LoginDto {
     @IsNotEmpty({ message: 'Обязательное поле' })
     @IsString()
     @Transform(({ value }) => value?.replace(/\s+/g, ' ').trim())
-    username: string;
+    login: string;
 
     @IsNotEmpty({ message: 'Обязательное поле' })
     @IsString()

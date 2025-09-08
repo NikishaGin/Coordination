@@ -1,5 +1,6 @@
 import axios from "axios";
 import logout, { store } from "./store.js";
+import { updateServiceMode } from "./user/userSlice.js";
 
 
 
@@ -16,14 +17,20 @@ instance.interceptors.request.use(config => {
     return config;
 });
 
-// Перехват ошибок связанных с истечением срока действия JWT-токена и включением сервисного режима
+// Перехват ошибок связанных с истечением срока действия JWT-токена и
+// включением сервисного режима, а также обновление сервисного режима
 instance.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        console.log(response)
+        const { serviceMode } = response; /////// !!!!!!!!!!!!
+        store.dispatch(updateServiceMode(serviceMode));
+        return response;
+    },
     (error) => {
         if (error.response) {
             const { status } = error.response;
             if ([401, 503].includes(status))
-                store.dispatch(logout());
+                logout();
         }
         return Promise.reject(error);
     }

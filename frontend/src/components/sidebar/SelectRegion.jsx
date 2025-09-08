@@ -2,9 +2,8 @@ import React, { useEffect } from 'react';
 import { useLocation } from "react-router";
 import { useDispatch } from 'react-redux';
 import { CustomIcon, FilterGroup, Select, SelectWrapper } from "../select/Select.jsx";
-import { fetchGetRegions } from "../../store/main/mainThunks.js";
-import { getAllRegions, getSelectedRegionId, setSelectedRegion } from "../../store/main/mainSlice.js";
-import { roleDetection} from "../../store/user/userSlice.js";
+import { getAllRegions, getSelectedRegionId, setSelectedRegion, fetchGetRegions } from "../../store/main/mainSlice.js";
+import { useRoleDetection} from "../../store/user/userSlice.js";
 
 
 
@@ -14,7 +13,7 @@ export const SelectRegion = () => {
 
     const regions = getAllRegions();
     const selectedRegionId = getSelectedRegionId();
-    const { isUser } = roleDetection();
+    const { isUser } = useRoleDetection();
     const limitOnUse = isUser && (regions.length === 1);
 
     useEffect(() => {

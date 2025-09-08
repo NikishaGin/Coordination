@@ -19,14 +19,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         });
     }
 
-    async validate(payload: UserPayload): Promise<UserPayload> {
-        if (payload.role !== UsersRole.ADMIN) {
-            const serviceMode = await this.prisma.settings.findFirst({
-                select: {serviceMode: true},
-            });
-            if (serviceMode)
-                throw new ServiceUnavailableException('Сервис недоступен: включён сервисный режим');
-        }
-        return payload;
+    async validate(payload: UserPayload): Promise<
+        UserPayload & { serviceMode?: boolean }
+    > {
+        const settings = await this.prisma.settings.findFirst({
+            select: { serviceMode: true },
+        });
+
+        if ((payload.role !== UsersRole.ADMIN) && settings?.serviceMode)
+            throw new ServiceUnavailableException('Сервис недоступен: включён сервисный режим');
+
+        return { ...payload, serviceMode: settings?.serviceMode };
     }
 }
