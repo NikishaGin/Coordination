@@ -1,5 +1,8 @@
 export function downloadExcel(response, fileName = "Выгрузка.xlsx") {
-    const contentDisposition = response.headers['content-disposition'];
+    const contentDisposition = response.headers['Content-Disposition'];
+
+    console.log(response.headers)
+
     if (contentDisposition) {
       const match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
       if (match)

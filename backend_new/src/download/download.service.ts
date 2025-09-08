@@ -40,6 +40,15 @@ export class DownloadService {
         };
     }
 
+    generateNameFile(prefix: string, isDerived: boolean, isArchived: boolean): string {
+        const source: string = isDerived ? ' производного долга' : ' взыскания по 47 ст.';
+        const isArchivedSource: string = isArchived ? 'архива' : '';
+        const date = new Date();
+        const formatedDate = date.toLocaleString();
+        const filename = `${prefix} ${isArchivedSource}${source} (${formatedDate}).xlsx`;
+        return encodeURIComponent(filename);
+    }
+
     async getCommonStatistics(data: GetDownloadParamsDto): Promise<ExcelJS.Buffer> {
         const statistics = await this.main.getClients(
             {
