@@ -19,9 +19,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         });
     }
 
-    async validate(payload: UserPayload): Promise<
-        UserPayload & { serviceMode?: boolean }
-    > {
+    async validate(payload: UserPayload): Promise<UserPayload> {
         const settings = await this.prisma.settings.findFirst({
             select: { serviceMode: true },
         });
@@ -29,6 +27,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         if ((payload.role !== UsersRole.ADMIN) && settings?.serviceMode)
             throw new ServiceUnavailableException('Сервис недоступен: включён сервисный режим');
 
-        return { ...payload, serviceMode: settings?.serviceMode };
+        return payload;
     }
 }

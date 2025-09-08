@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { StatusFilter } from "./StatusFilter.jsx";
 import { AmountFilter } from "./AmountFilter.jsx";
 import { parseNumber } from "../../utils/formatData.js";
-import { getFilters, setFilterCategory, setFilterStatusIp, setFilterAmount } from "../../store/main/mainSlice.js";
+import { useFilters, setFilterCategory, setFilterStatusIp, setFilterAmount } from "../../store/main/mainSlice.js";
 
 
 const WrapperFilter = styled.div`
@@ -31,14 +31,14 @@ const FilterToggle = styled.div`
 const FilterToggleButton = styled.button`
   flex: 1;
   padding: 10px;
-  background-color: ${props => props.active ? '#3a3a6a' : 'transparent'};
-  color: ${props => props.active ? '#ffffff' : '#a0a0a0'};
+  background-color: ${props => props.$active ? '#3a3a6a' : 'transparent'};
+  color: ${props => props.$active ? '#ffffff' : '#a0a0a0'};
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: ${props => props.active ? '#3a3a6a' : '#2a2a3a'};
+    background-color: ${props => props.$active ? '#3a3a6a' : '#2a2a3a'};
   }
 `;
 
@@ -60,7 +60,7 @@ const ActionButton = styled.button`
 export const FilterPanel = () => {
     const dispatch = useDispatch();
 
-    const filters = getFilters();
+    const filters = useFilters();
     const [statusIP, setStatusIP] = useState(filters.statusIP);
     const [categoryId, setCategoryId] = useState(filters.categoryId);
     const [amount, setAmount] = useState(filters.amount);
@@ -71,9 +71,9 @@ export const FilterPanel = () => {
     const handleApply = () => {
         if (statusIP.length > 0)
             dispatch(setFilterStatusIp(statusIP));
-        if (categoryId.length > 0)
-            dispatch(setFilterCategory(categoryId));
-        if (amount.field.length > 0)
+        if (categoryId)
+            dispatch(setFilterCategory(Number(categoryId)));
+        if ((amount.field.length > 0) && amount.value)
             dispatch(setFilterAmount({
                 field: amount.field,
                 value: parseNumber(amount.value),
@@ -93,13 +93,13 @@ export const FilterPanel = () => {
     return <WrapperFilter>
         <FilterToggle>
             <FilterToggleButton
-                active={activeFilter === 'status'}
+                $active={activeFilter === 'status'}
                 onClick={() => setActiveFilter('status')}
             >
                 По статусу
             </FilterToggleButton>
             <FilterToggleButton
-                active={activeFilter === 'sum'}
+                $active={activeFilter === 'sum'}
                 onClick={() => setActiveFilter('sum')}
             >
                 По сумме

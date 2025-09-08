@@ -10,7 +10,7 @@ import {
 } from './main.dto';
 import { getArchivedFilter, getDerivedFilter } from '../common/utils/ResolutionsFilter';
 import { getStatusIP, StatusMap } from '../common/utils/getStatusIP';
-import { ActivesType } from '../generated/prisma/enums';
+import {ActivesType, LeasStatus} from '../generated/prisma/enums';
 
 @Injectable()
 export class MainService {
@@ -311,9 +311,44 @@ export class MainService {
                   },
               });
 
-        const [resolutionsData, activeAmounts, interactionsData] = await Promise.all([
+        const isLeasingCountPromise = statistics
+            ? Promise.resolve<
+                  {
+                      clientId: number;
+                      _count: any;
+                  }[]
+              >([])
+            : this.prisma.actives.groupBy({
+            by: ["clientId"],
+            where: {
+                clientId: { in: clientIds },
+                isLeasing: LeasStatus.IS_PLEDGE_HOLDER,
+            },
+            _count: {
+                id: true,
+            },
+        });
+
+        const lastUpdatePromise = statistics
+            ? Promise.resolve<
+                  {
+                      clientId: number;
+                      _max: any;
+                  }[]
+              >([])
+            : this.prisma.actives.groupBy({
+            by: ['clientId'],
+            where: { clientId: { in: clientIds } },
+            _max: {
+                uploadDate: true,
+            },
+        });
+
+        const [resolutionsData, activeAmounts, isLeasingCountData, lastUpdateData, interactionsData] = await Promise.all([
             resolutionPromise,
             activeAmountsPromise,
+            isLeasingCountPromise,
+            lastUpdatePromise,
             interactionsPromise,
         ]);
 
@@ -337,6 +372,14 @@ export class MainService {
                           (item: AggregatedActivesType): boolean => item.clientId === client.id,
                       )!,
                   };
+
+            const isLeasingCount = isLeasingCountData.find(
+                (item): boolean => item?.clientId === client.id,
+            );
+
+            const lastUpdate = lastUpdateData.find(
+                (item): boolean => item?.clientId === client.id,
+            );
 
             const interaction = interactionsData.find(
                 (item): boolean => item?.clientId === client.id,
@@ -363,6 +406,23 @@ export class MainService {
             }
             client['interactionWithGMU'] = client['interactionWithGMU'] || '';
 
+            const currDate = new Date();
+            const lastDate = new Date(lastUpdate?._max?.uploadDate ?? 0)
+            client['indicators'] = {
+                isUpdated: currDate.getTime() - lastDate.getTime() <= 7*24*60*60*1000,
+                isLeasing: (isLeasingCount?._count?.id ?? 0) > 0
+            };
+
+
+
+
+            /*
+            if (isLeasingCount) {
+
+            }
+
+
+             */
             // resolution._min.WritExecutionBeginDate
             // client[indicators] = ''
         }

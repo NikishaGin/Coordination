@@ -3,7 +3,7 @@ import { Login } from "../pages/Login.jsx";
 import { Coordination } from "../pages/Coordination.jsx";
 // import { Client } from "../pages/Client/Client.jsx";
 // import { Library } from "../pages/Library.jsx";
-// import { RegionalStatistics } from "../pages/RegionalStatistics.jsx";
+import { RegionalStatistics } from "../pages/RegionalStatistics.jsx";
 import Layout from "./Layout.jsx";
 
 
@@ -22,12 +22,12 @@ export const AppRoutes = ({ isAuth }) => {
                     <Route path="/derivative-archive" element={<Coordination />} />
                 </Route>
 
-                {/*/!* Layout без Sidebar *!/*/}
-                {/*<Route element={<Layout includeSidebar={false}/>}>*/}
+                {/* Layout без Sidebar */}
+                <Route element={<Layout includeSidebar={false}/>}>
                 {/*    <Route path="/library-documentation" element={<Library />} />*/}
                 {/*    <Route path="/library-practice" element={<Library />} />*/}
-                {/*    <Route path="/statistics" element={<RegionalStatistics />} />*/}
-                {/*</Route>*/}
+                    <Route path="/statistics" element={<RegionalStatistics />} />
+                </Route>
 
                 {/*/!* Без Layout вообще *!/*/}
                 {/*<Route path="/client/:inn" element={<Client />} />*/}

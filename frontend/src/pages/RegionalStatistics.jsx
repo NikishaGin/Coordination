@@ -2,8 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 import { SnackbarProvider, enqueueSnackbar } from 'notistack'
 import { FileSpreadsheet, Download } from 'lucide-react';
-import { downloadAPI } from '../api/index.js';
 import { downloadExcel } from '../utils/downloadExcel.js';
+import { DownloadAPI } from "../store/API.js";
 
 const Container = styled.div`
     width: 100%;
@@ -14,6 +14,20 @@ const Container = styled.div`
     background-color: ${props => props.theme.colors.background};
     color: #ffffff;
     overflow-y: auto;
+    
+    &::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: #1a1a2e;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: #2a2a4a;
+        border-radius: 4px;
+    }
 `;
 
 const SectionsWrapper = styled.div`
@@ -141,48 +155,49 @@ const DownloadIcon = styled(Download)`
 
 export const RegionalStatistics = () => {
     const downloadingMap = {
-        'Активы НП':           downloadAPI.getDebtorActivesStat,
-        'Статистика регионов': downloadAPI.getStatistics
+        'Активы НП':           DownloadAPI.getActivesStatistics,
+        'Статистика регионов': DownloadAPI.getCommonStatistics,
     };
     const statNames = Object.keys(downloadingMap);
 
     const documentData = [
         {
             title: 'Взыскание по 47 ст.',
-            isArchive: false,
-            isDerived: false,
+            data: {
+                isDerived: false,
+                isArchived: false,
+            },
         },
         {
             title: 'Взыскание по 47 ст. Архив',
-            isArchive: true,
-            isDerived: false,
+            data: {
+                isDerived: false,
+                isArchived: true,
+            },
         },
         {
             title: 'Производный долг',
-            isArchive: false,
-            isDerived: true,
+            data: {
+                isDerived: true,
+                isArchived: false,
+            },
         },
         {
             title: 'Производный долг Архив',
-            isArchive: true,
-            isDerived: true,
+            data: {
+                isDerived: true,
+                isArchived: true,
+            },
         },
     ];
 
-    const handleDownload = async (
-        e,
-        statName,
-        isArchive,
-        isDerived
-    ) => {
-        e.preventDefault();
+    const handleDownload = async (event, statName, data) => {
+        event.preventDefault();
 
         try {
             enqueueSnackbar("Начало загрузки...",  { variant: "info" });
-
             const apiTarget =  downloadingMap[statName];
-            const response = await apiTarget(null, isDerived, isArchive);
-
+            const response = await apiTarget(data);
             downloadExcel(response);
             enqueueSnackbar("Загружено",  { variant: "info" });
         } catch (error) {
@@ -194,13 +209,13 @@ export const RegionalStatistics = () => {
     return (
         <Container>
             <SectionsWrapper>
-                {documentData.map((section) => (
-                    <Section key={section.id}>
-                        <SectionTitle>{section.title}</SectionTitle>
+                {documentData.map(({ title, data }, index1) => (
+                    <Section key={index1}>
+                        <SectionTitle>{title}</SectionTitle>
                         <DocumentGrid>
                             {statNames.map(
-                                (statName, i) => (
-                                    <DocumentCard key={i}>
+                                (statName, index2) => (
+                                    <DocumentCard key={index2}>
                                         <CardHeader>
                                             <DocumentName>{statName}</DocumentName>
                                         </CardHeader>
@@ -211,8 +226,7 @@ export const RegionalStatistics = () => {
                                                     handleDownload(
                                                         e,
                                                         statName,
-                                                        section.isArchive,
-                                                        section.isDerived
+                                                        data
                                                     )
                                                 }
                                             >

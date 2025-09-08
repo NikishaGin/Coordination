@@ -1,8 +1,10 @@
-import { Controller, Get, Res, Header, Query } from '@nestjs/common';
+import {Controller, Get, Res, Header, Query, UseGuards} from '@nestjs/common';
 import { FastifyReply } from 'fastify';
 import { DownloadService } from './download.service';
 import { GetDownloadParamsDto } from './download.dto';
+import {JwtAuthGuard} from "../common/guards/auth.guard";
 
+@UseGuards(JwtAuthGuard)
 @Controller('download')
 export class DownloadController {
     constructor(private readonly downloadService: DownloadService) {}
@@ -10,7 +12,12 @@ export class DownloadController {
     @Header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     @Get('common-statistics')
     async getCommonStatistics(@Query() query: GetDownloadParamsDto, @Res() reply: FastifyReply) {
+
         const buffer = await this.downloadService.getCommonStatistics(query);
+
+
+
+
         reply.header('Content-Disposition', 'attachment; filename="report.xlsx"').send(buffer);
     }
 

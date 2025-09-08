@@ -6,16 +6,16 @@ import { DownloadCloud } from 'lucide-react';
 import styled from "styled-components";
 import { TableContainer, Tr } from "../tables/Table.jsx";
 import { ButtonContainer } from "../buttons/Button.jsx";
-import { downloadAPI } from "../../api/index.js";
 import { downloadExcel } from "../../utils/downloadExcel.js"
 import {formatNumber } from "../../utils/formatData.js"
 import {
-    getFilteredClients,
-    getPageMeta,
-    getSelectedRegionId,
+    useFilteredClients,
+    usePageMeta,
+    useSelectedRegionId,
     pageDetection,
     fetchGetClients,
 } from "../../store/main/mainSlice.js";
+import { DownloadAPI } from "../../store/API.js";
 
 
 
@@ -207,7 +207,7 @@ const codeIndicators = {
     1: "status not-executed",
     2: "status executed-with-violation",
     3: "status executed-on-time",
-    isLizingFNS: "status pledged-to-tax",
+    isLeasing: "status pledged-to-tax",
     isUpdated: "status data-updated"
 }
 
@@ -218,11 +218,11 @@ export const Main = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const [selectedInn, setSelectedInn] = useState([]);
+    const [selectedClientId, setSelectedClientId] = useState([]);
 
-    const { isDerived, isArchived } = getPageMeta();
-    const selectedRegionId = getSelectedRegionId();
-    const filteredData = getFilteredClients();
+    const { isDerived, isArchived } = usePageMeta();
+    const selectedRegionId = useSelectedRegionId();
+    const filteredData = useFilteredClients();
 
 
     useEffect(() => {
@@ -240,37 +240,37 @@ export const Main = () => {
         [isDerived]
     );
 
-    const handleSelectAll = event => {
+    const handleSelectAllClients = event => {
         if (event.target.checked)
-            setSelectedInn(filteredData.map(item => item.inn));
+            setSelectedClientId(filteredData.map(item => item.id));
         else
-            setSelectedInn([]);
+            setSelectedClientId([]);
     };
 
 
-    const handleInnSelect = (event, inn) => {
+    const handleSelectClient = (event, id) => {
         if (event.target.checked)
-            setSelectedInn([...selectedInn, inn]);
+            setSelectedClientId([...selectedClientId, id]);
         else
-            setSelectedInn(selectedInn.filter(value => value !== inn));
+            setSelectedClientId(selectedClientId.filter(value => value !== id));
     };
 
 
-    const handleLink = (event, inn) => {
+    const handleLink = (event, id) => {
         if (event.target.type === 'checkbox') return;
-        navigate(`/client/${inn}`)
+        navigate(`/client/${id}`)
     }
 
 
-    const downloadStatistics = async flagButton => {
-        if (!selectedInn.length > 0) {
+    const downloadStatistics = async target => {
+        if (!selectedClientId.length > 0) {
             enqueueSnackbar("Выберете регион и строки, которые необходимо включить в статистику", { variant: "info" })
             return
         }
-        const target = flagButton ? downloadAPI.getStatistics : downloadAPI.getStatisticsIP;
         try {
-            enqueueSnackbar("Начало загрузки...", { variant: "info" })
-            const response = await target(selectedInn, isDerived, isArchived);
+            enqueueSnackbar("Начало загрузки...", { variant: "info" });
+            const data = { isDerived, isArchived, clientIds: selectedClientId };
+            const response = await target(data);
             downloadExcel(response);
             enqueueSnackbar("Загружено", { variant: "info" });
         } catch (error) {
@@ -286,23 +286,22 @@ export const Main = () => {
                     <td>{rowIndex + 1}</td>
                     <td>{row.tno?.CodeTNO}</td>
                     <td>{row.inn}</td>
-
-                    <td className={(row.indicators?.isUpdated) ?? codeIndicators.isUpdated}>{row.name}</td>
-                    <td>{formatNumber(row.resolution?.amount)}</td>
-                    <td>{formatNumber(row.resolution?.balance)}</td>
+                    <td className={(row.indicators.isUpdated) && codeIndicators.isUpdated}>{row.name}</td>
+                    <td>{formatNumber(row.amounts?.resolution?.amount, { defaultValue: 0 })}</td>
+                    <td>{formatNumber(row.amounts?.resolution?.balance, { defaultValue: 0 })}</td>
                     <td>{row.category.category}</td>
-                    <td className={(row.indicators?.isLizingFNS) && codeIndicators.isLizingFNS}>{formatNumber(row.actives.totalSum)}</td>
+                    <td className={(row.indicators.isLeasing) && codeIndicators.isLeasing}>{formatNumber(row.amounts?.actives?.totalSum, { defaultValue: 0 })}</td>
                     <td>{row.interactionWithGMU}</td>
                     <td>{row.interactionWithTNO}</td>
-                    <td className={codeIndicators[row.indicators?.arrest]}>{formatNumber(row.actives.arrest)}</td>
+                    <td className={codeIndicators[row.indicators?.arrest]}>{formatNumber(row.amounts?.actives?.arrest, { defaultValue: 0 })}</td>
                     <td>{row.securingArrest}</td>
-                    <td className={codeIndicators[row.indicators?.evaluation]}>{formatNumber(row.actives.wanted)}</td>
-                    <td className={codeIndicators[row.indicators?.evaluation]}>{formatNumber(row.actives.evaluation)}</td>
-                    <td className={codeIndicators[row.indicators?.submitRealizationFirstStage]}>{formatNumber(row.actives.realizationFirst)}</td>
-                    <td className={codeIndicators[row.indicators?.submitRealizationSecondStage]}>{formatNumber(row.actives.realizationSecond)}</td>
-                    <td className={codeIndicators[row.indicators?.realizationSecondStage]}>{formatNumber(row.actives.realizationResult)}</td>
-                    <td>{formatNumber(row.actives.refundProperty)}</td>
-                    <td className={codeIndicators[row.indicators?.collectionAccountsReceivable]}>{formatNumber(row.actives.debitForeclosure)}</td>
+                    <td className={codeIndicators[row.indicators?.evaluation]}>{formatNumber(row.amounts?.actives?.wanted, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.evaluation]}>{formatNumber(row.amounts?.actives?.evaluation, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.submitRealizationFirstStage]}>{formatNumber(row.amounts?.actives?.realizationFirst, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.submitRealizationSecondStage]}>{formatNumber(row.amounts?.actives?.realizationSecond, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.realizationSecondStage]}>{formatNumber(row.amounts?.actives?.realizationResult, { defaultValue: 0 })}</td>
+                    <td>{formatNumber(row.amounts?.actives?.refundProperty, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.collectionAccountsReceivable]}>{formatNumber(row.amounts?.actives?.debitForeclosure, { defaultValue: 0 })}</td>
                     <td>{row.statusIP}</td>
                     <td>{row.sosp?.CodeSOSP}</td>
                 </>
@@ -313,22 +312,22 @@ export const Main = () => {
                     <td>{rowIndex + 1}</td>
                     <td>{row.tno?.CodeTNO}</td>
                     <td>{row.inn}</td>
-                    <td className={(row.indicators?.isUpdated) ?? codeIndicators.isUpdated}>{row.name}</td>
-                    <td>{formatNumber(row.resolution?.amount)}</td>
-                    <td>{formatNumber(row.resolution?.balance)}</td>
+                    <td className={(row.indicators.isUpdated) ?? codeIndicators.isUpdated}>{row.name}</td>
+                    <td>{formatNumber(row.resolution?.amount, { defaultValue: 0 })}</td>
+                    <td>{formatNumber(row.resolution?.balance, { defaultValue: 0 })}</td>
                     <td>{row.category.category}</td>
-                    <td className={(row.indicators?.isLizingFNS) && codeIndicators.isLizingFNS}>{formatNumber(row.actives.totalSum)}</td>
+                    <td className={(row.indicators.isLeasing) && codeIndicators.isLeasing}>{formatNumber(row.amounts?.actives?.totalSum, { defaultValue: 0 })}</td>
                     <td>{row.interaction_gmu}</td>
                     <td>{row.interaction_tno}</td>
-                    <td className={codeIndicators[row.indicators?.arrest]}>{formatNumber(row.actives.arrest)}</td>
+                    <td className={codeIndicators[row.indicators?.arrest]}>{formatNumber(row.amounts?.actives?.arrest, { defaultValue: 0 })}</td>
                     <td>{row.securingArrest}</td>
-                    <td className={codeIndicators[row.indicators?.evaluation]}>{formatNumber(row.actives.wanted)}</td>
-                    <td className={codeIndicators[row.indicators?.evaluation]}>{formatNumber(row.actives.evaluation)}</td>
-                    <td className={codeIndicators[row.indicators?.submitRealizationFirstStage]}>{formatNumber(row.actives.realizationFirst)}</td>
-                    <td className={codeIndicators[row.indicators?.submitRealizationSecondStage]}>{formatNumber(row.actives.realizationSecond)}</td>
-                    <td className={codeIndicators[row.indicators?.realizationSecondStage]}>{formatNumber(row.actives.realizationResult)}</td>
-                    <td>{formatNumber(row.actives.refundProperty)}</td>
-                    <td className={codeIndicators[row.indicators?.collectionAccountsReceivable]}>{formatNumber(row.actives.debitForeclosure)}</td>
+                    <td className={codeIndicators[row.indicators?.evaluation]}>{formatNumber(row.amounts?.actives?.wanted, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.evaluation]}>{formatNumber(row.amounts?.actives?.evaluation, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.submitRealizationFirstStage]}>{formatNumber(row.amounts?.actives?.realizationFirst, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.submitRealizationSecondStage]}>{formatNumber(row.amounts?.actives?.realizationSecond, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.realizationSecondStage]}>{formatNumber(row.amounts?.actives?.realizationResult, { defaultValue: 0 })}</td>
+                    <td>{formatNumber(row.amounts?.actives?.refundProperty, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.collectionAccountsReceivable]}>{formatNumber(row.amounts?.actives?.debitForeclosure, { defaultValue: 0 })}</td>
                     <td>{row.statusIP}</td>
                     <td>{row.sosp?.CodeSOSP}</td>
                 </>
@@ -355,8 +354,8 @@ export const Main = () => {
                                 <CustomCheckbox>
                                     <input
                                         type="checkbox"
-                                        checked={(selectedInn.length === filteredData.length) && (filteredData.length > 0)}
-                                        onChange={handleSelectAll}
+                                        checked={(selectedClientId.length === filteredData.length) && (filteredData.length > 0)}
+                                        onChange={handleSelectAllClients}
                                     />
                                     <span></span>
                                 </CustomCheckbox>
@@ -372,8 +371,8 @@ export const Main = () => {
                                 key={row.inn}
                                 row={row}
                                 rowIndex={rowIndex}
-                                selectedInn={selectedInn}
-                                handleInnSelect={handleInnSelect}
+                                selectedClientId={selectedClientId}
+                                handleSelectClient={handleSelectClient}
                                 handleLink={handleLink}
                                 renderTableCells={renderTableCells}
                                 isDerived={isDerived}
@@ -384,14 +383,19 @@ export const Main = () => {
                 </TableContainer>
             </MainContent>
             <ButtonContainer>
-                <StatsButton onClick={() => downloadStatistics(true)}>
+                <StatsButton onClick={() => downloadStatistics(DownloadAPI.getCommonStatistics)}>
                     <DownloadCloud size={18}/>
                     Статистика
                 </StatsButton>
 
-                <StatsButton onClick={() => downloadStatistics(false)}>
+                <StatsButton onClick={() => downloadStatistics(DownloadAPI.getResolutionsStatistics)}>
                     <DownloadCloud size={18}/>
                     Статистика по ИП
+                </StatsButton>
+
+                <StatsButton onClick={() => downloadStatistics(DownloadAPI.getActivesStatistics)}>
+                    <DownloadCloud size={18}/>
+                    Статистика НП
                 </StatsButton>
             </ButtonContainer>
             <SnackbarProvider
@@ -403,16 +407,16 @@ export const Main = () => {
     );
 };
 
-const MemoizedRow = React.memo(({ row, rowIndex, selectedInn, handleInnSelect, handleLink, renderTableCells, isDerived }) => {
+const MemoizedRow = React.memo(({ row, rowIndex, selectedClientId, handleSelectClient, handleLink, renderTableCells, isDerived }) => {
     return (
-        <Tr key={rowIndex} isSelected={selectedInn.includes(row.inn)} cursor={true}
-            onClick={event => handleLink(event, row.inn)}>
+        <Tr key={rowIndex} isSelected={selectedClientId.includes(row.id)} cursor={true}
+            onClick={event => handleLink(event, row.id)}>
             <td onClick={event => event.stopPropagation()}>
                 <CustomCheckbox>
                     <input
                         type="checkbox"
-                        checked={selectedInn.includes(row.inn)}
-                        onChange={event => handleInnSelect(event, row.inn)}
+                        checked={selectedClientId.includes(row.id)}
+                        onChange={event => handleSelectClient(event, row.id)}
                     />
                     <span></span>
                 </CustomCheckbox>

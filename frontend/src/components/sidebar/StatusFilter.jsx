@@ -2,10 +2,12 @@ import React, { useEffect } from 'react';
 import { useDispatch } from "react-redux";
 import { CustomIcon, FilterGroup, Select, SelectWrapper } from "../select/Select.jsx";
 import {
-    getAllClientCategories,
-    getAllStatusesIP,
+    usePageMeta,
+    useSelectedRegionId,
+    useAllClientCategories,
+    useAllStatusesIP,
     fetchGetClientCategories,
-    fetchGetStatusesIP
+    fetchGetStatusesIP,
 } from "../../store/main/mainSlice.js";
 
 
@@ -13,13 +15,15 @@ import {
 export const StatusFilter = (props) => {
     const dispatch = useDispatch();
 
-    const categories = getAllClientCategories();
-    const statuses = getAllStatusesIP();
+    const { isDerived, isArchived } = usePageMeta();
+    const selectedRegionId = useSelectedRegionId();
+    const categories = useAllClientCategories();
+    const statuses = useAllStatusesIP();
 
     useEffect(() => {
         dispatch(fetchGetStatusesIP());
         dispatch(fetchGetClientCategories())
-    }, [dispatch]);
+    }, [dispatch, isDerived, isArchived, selectedRegionId]);
 
     const handleSelectStatuses = event => props.setStatusIP(event.target.value);
     const handleSelectCategories = event => props.setCategoryId(event.target.value);

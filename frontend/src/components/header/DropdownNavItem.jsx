@@ -27,7 +27,7 @@ const DropdownTrigger = styled.div`
     background-color: ${props => props.theme.colors.inactiveItemHover || 'rgba(255, 255, 255, 0.05)'};
   }
   
-  ${({ isOpen, theme }) => isOpen && `
+  ${({ $isOpen, theme }) => $isOpen && `
     background-color: ${theme.colors.secondary || 'rgba(25, 118, 210, 0.1)'};
     color: ${theme.colors.text || '#F5F6FA'};
   `}
@@ -49,7 +49,7 @@ const ArrowIcon = styled.svg`
   fill: currentColor;
   margin-left: 8px;
   transition: transform 200ms ease;
-  transform: ${({ isOpen }) => (isOpen ? 'rotate(180deg)' : 'rotate(0)')};
+  transform: ${({ $isOpen }) => ($isOpen ? 'rotate(180deg)' : 'rotate(0)')};
 `;
 
 const DropdownMenu = styled.div`
@@ -66,9 +66,9 @@ const DropdownMenu = styled.div`
     0px 8px 12px rgba(0, 0, 0, 0.08);
   padding: 8px 0;
   z-index: 1000;
-  opacity: ${({ isVisible }) => (isVisible ? 1 : 0)};
-  visibility: ${({ isVisible }) => (isVisible ? 'visible' : 'hidden')};
-  transform: translateY(${({ isVisible }) => (isVisible ? '0' : '10px')});
+  opacity: ${({ $isVisible }) => ($isVisible ? 1 : 0)};
+  visibility: ${({ $isVisible }) => ($isVisible ? 'visible' : 'hidden')};
+  transform: translateY(${({ $isVisible }) => ($isVisible ? '0' : '10px')});
   transition: opacity 200ms ease, transform 200ms ease, visibility 200ms ease;
   overflow: hidden;
   
@@ -172,17 +172,17 @@ const DropdownNavItem = ({ title, items, isOpen, onMouseEnter, onMouseLeave }) =
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
         >
-            <DropdownTrigger isOpen={isOpen || isAnyItemActive}>
+            <DropdownTrigger $isOpen={isOpen || isAnyItemActive}>
                 <Text>{title}</Text>
                 <ArrowIcon
                     viewBox="0 0 24 24"
-                    isOpen={isOpen}
+                    $isOpen={isOpen}
                 >
                     <path d="M7 10l5 5 5-5z" />
                 </ArrowIcon>
             </DropdownTrigger>
 
-            <DropdownMenu isVisible={isOpen}>
+            <DropdownMenu $isVisible={isOpen}>
                 {items.map((item, index) => (
                     <StyledDropdownLink key={index} to={item.to}>
                         {item.icon && (

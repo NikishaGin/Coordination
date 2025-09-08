@@ -1,7 +1,10 @@
-export function formatNumber(number) {
-  if (!number) return undefined
-  if (typeof number === "string") number = parseFloat(number)
-  return number.toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+export function formatNumber(number, { defaultValue=undefined } = {}) {
+  let value = number ? number : defaultValue;
+  if (!value && (typeof value !== 'number') && (typeof value !== 'string'))
+    return value;
+  if (typeof value === "string")
+    value = parseFloat(value)
+  return value.toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 

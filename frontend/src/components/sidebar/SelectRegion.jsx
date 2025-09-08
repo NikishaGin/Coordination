@@ -1,24 +1,29 @@
 import React, { useEffect } from 'react';
-import { useLocation } from "react-router";
 import { useDispatch } from 'react-redux';
 import { CustomIcon, FilterGroup, Select, SelectWrapper } from "../select/Select.jsx";
-import { getAllRegions, getSelectedRegionId, setSelectedRegion, fetchGetRegions } from "../../store/main/mainSlice.js";
+import {
+    useAllRegions,
+    useSelectedRegionId,
+    setSelectedRegion,
+    fetchGetRegions,
+    usePageMeta
+} from "../../store/main/mainSlice.js";
 import { useRoleDetection} from "../../store/user/userSlice.js";
 
 
 
 export const SelectRegion = () => {
-    const location = useLocation();
     const dispatch = useDispatch();
 
-    const regions = getAllRegions();
-    const selectedRegionId = getSelectedRegionId();
+    const { isDerived, isArchived } = usePageMeta();
+    const regions = useAllRegions();
+    const selectedRegionId = useSelectedRegionId();
     const { isUser } = useRoleDetection();
     const limitOnUse = isUser && (regions.length === 1);
 
     useEffect(() => {
         dispatch(fetchGetRegions());
-    }, [dispatch, location.pathname]);
+    }, [dispatch, isDerived, isArchived]);
 
     useEffect(() => {
         if (limitOnUse) {
@@ -28,7 +33,7 @@ export const SelectRegion = () => {
     }, [regions])
 
     const handleChange = (event) => {
-        const selectedValue = event.target.value;
+        const selectedValue = Number(event.target.value);
         dispatch(setSelectedRegion(selectedValue));
     };
 

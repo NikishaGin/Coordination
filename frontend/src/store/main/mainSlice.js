@@ -48,8 +48,9 @@ const mainSlice = createSlice({
         pageDetection(state, { payload }) {
             if (state.pathname !== payload) {
                 state.pathname = payload;
-                state.isArchived = ["/coordination-archive", "/coordination"].includes(payload);
-                state.isDerived = ["/derivative-archive", "/derivative"].includes(payload);
+                state.isArchived = ["/coordination-archive", "/derivative-archive"].includes(payload);
+                state.isDerived = ["/derivative", "/derivative-archive"].includes(payload);
+                state.clients = initialState.clients;
                 state.filters = initialState.filters; // либо очищать фильтры, либо для каждой страницы свой фильтр? (!!!)
             }
         },
@@ -108,24 +109,24 @@ export const {
     clearMain
 } = mainSlice.actions;
 
-export const getPageMeta = () => {
+export const usePageMeta = () => {
     const isDerived = useSelector((state) => state.main.isDerived);
     const isArchived = useSelector((state) => state.main.isArchived);
     return { isDerived, isArchived };
 }
 
-export const getAllRegions = () => useSelector((state) => state.main.allRegions);
+export const useAllRegions = () => useSelector((state) => state.main.allRegions);
 
-export const getAllClientCategories = () => useSelector((state) => state.main.allClientCategories);
+export const useAllClientCategories = () => useSelector((state) => state.main.allClientCategories);
 
-export const getAllStatusesIP = () => useSelector((state) => state.main.allStatusesIP);
+export const useAllStatusesIP = () => useSelector((state) => state.main.allStatusesIP);
 
-export const getSelectedRegionId = () => useSelector((state) => state.selectedRegionIdByPage[state.pathname]);
+export const useSelectedRegionId = () => useSelector((state) => state.main.selectedRegionIdByPage?.[state.main.pathname]);
 
-export const getFilters = () => useSelector((state) => state.main.filters);
+export const useFilters = () => useSelector((state) => state.main.filters);
 
-export const getFilteredClients = () => {
-    const filters = getFilters();
+export const useFilteredClients = () => {
+    const filters = useFilters();
     const data = useSelector((state) => state.main.clients.data);
     return useMemo(() => {
         return data.filter((row) => {

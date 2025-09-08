@@ -13,7 +13,7 @@ export const thunkLoginUser = async (formData, { rejectWithValue }) => {
         const response = await AuthAPI.login(data);
         return response.data;
     } catch (error) {
-        return rejectWithValue(error.message || 'Ошибка при авторизации')
+        return rejectWithValue(error.response.data.message || 'Ошибка при авторизации')
     }
 };
 

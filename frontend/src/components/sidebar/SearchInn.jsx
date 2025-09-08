@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { useDispatch } from "react-redux";
 import { Search } from 'lucide-react';
-import {getFilters, setInputValueInn} from "../../store/main/mainSlice.js";
+import {useFilters, setInputValueInn} from "../../store/main/mainSlice.js";
 
 const FilterGroup = styled.div`
   margin-bottom: 24px;
@@ -41,7 +41,7 @@ const SearchInput = styled.div`
 
 export const SearchInn = () => {
     const dispatch = useDispatch();
-    const { inputValueInn } = getFilters();
+    const { inputValueInn } = useFilters();
 
     const handleChange = (e) => {
         const value = e.target.value;

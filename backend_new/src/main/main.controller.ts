@@ -1,9 +1,11 @@
-import { Controller, Get, Query, Request } from '@nestjs/common';
+import {Controller, Get, Query, Request, UseGuards} from '@nestjs/common';
 import { MainService } from './main.service';
 import { GetMainParamsDto } from './main.dto';
 import { AuthenticatedRequest } from '../common/interfaces/user-request.interface';
 import { UsersRole } from '../generated/prisma/enums';
+import {JwtAuthGuard} from "../common/guards/auth.guard";
 
+@UseGuards(JwtAuthGuard)
 @Controller('main')
 export class MainController {
     constructor(private readonly mainService: MainService) {}

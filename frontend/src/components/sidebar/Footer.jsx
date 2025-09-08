@@ -30,7 +30,7 @@ const UserInfo = styled.div`
 `;
 
 // Стиль для кнопки
-const IconButton = styled.button`
+const IconButton = styled.div`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -91,8 +91,8 @@ const DropdownMenu = styled.div`
   0px 8px 12px rgba(255, 255, 255, 0.08); // Глубокая тень
   padding: 8px; // Внутренние отступы
   z-index: 1000; // Чтобы меню было поверх других элементов
-  opacity: ${({isVisible}) => (isVisible ? 1 : 0)}; // Прозрачность
-  visibility: ${({isVisible}) => (isVisible ? 'visible' : 'hidden')}; // Видимость
+  opacity: ${({$isVisible}) => ($isVisible ? 1 : 0)}; // Прозрачность
+  visibility: ${({$isVisible}) => ($isVisible ? 'visible' : 'hidden')}; // Видимость
   transform-origin: left center; // Точка трансформации для анимации
   transition: opacity 242ms cubic-bezier(0.4, 0, 0.2, 1),
   transform 161ms cubic-bezier(0.4, 0, 0.2, 1); // Плавные переходы
@@ -190,7 +190,7 @@ const Indicator = styled.span`
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background-image: ${({serviceMode}) => (serviceMode) ? "radial-gradient(rgba(0, 255, 0, 1), rgba(0, 255, 0, 0.1))" : "radial-gradient(rgba(255, 0, 0, 1), rgba(255, 0, 0, 0.1))"};
+  background-image: ${({$serviceMode}) => ($serviceMode) ? "radial-gradient(rgba(0, 255, 0, 1), rgba(0, 255, 0, 0.1))" : "radial-gradient(rgba(255, 0, 0, 1), rgba(255, 0, 0, 0.1))"};
 `
 
 const Modal = styled.div`
@@ -201,8 +201,8 @@ const Modal = styled.div`
   inset: 0;
   z-index: 10000;
   background: rgba(0, 0, 0, 0.8);
-  opacity: ${({ isVisible }) => (isVisible ? 1 : 0)};
-  visibility: ${({ isVisible }) => (isVisible ? 'visible' : 'hidden')};
+  opacity: ${({ $isVisible }) => ($isVisible ? 1 : 0)};
+  visibility: ${({ $isVisible }) => ($isVisible ? 'visible' : 'hidden')};
 `
 
 const ModalContent = styled.div`
@@ -283,7 +283,7 @@ export const Footer = () => {
             <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"></path>
           </Icon>
           {/* Выпадающее меню */}
-          <DropdownMenu isVisible={isMenuVisible}>
+          <DropdownMenu $isVisible={isMenuVisible}>
             <Arrow />
             <ul>
               {
@@ -301,7 +301,7 @@ export const Footer = () => {
                         d="M22.61 18.99l-9.08-9.08c.93-2.34.45-5.1-1.44-7C9.79.61 6.21.4 3.66 2.26L7.5 6.11 6.08 7.52 2.25 3.69C.39 6.23.6 9.82 2.9 12.11c1.86 1.86 4.57 2.35 6.89 1.48l9.11 9.11c.39.39 1.02.39 1.41 0l2.3-2.3c.4-.38.4-1.01 0-1.41zm-3 1.6l-9.46-9.46c-.61.45-1.29.72-2 .82-1.36.2-2.79-.21-3.83-1.25C3.37 9.76 2.93 8.5 3 7.26l3.09 3.09 4.24-4.24-3.09-3.09c1.24-.07 2.49.37 3.44 1.31 1.08 1.08 1.49 2.57 1.24 3.96-.12.71-.42 1.37-.88 1.96l9.45 9.45-.88.89z"/>
                   </svg>
                   Сервисный режим
-                  <Indicator serviceMode={serviceMode}/>
+                  <Indicator $serviceMode={serviceMode}/>
                 </MenuButton>
               </li>
               }
@@ -332,7 +332,7 @@ export const Footer = () => {
           </DropdownMenu>
         </IconButton>
       </UserInfo>
-      <Modal isVisible={isModalVisible}>
+      <Modal $isVisible={isModalVisible}>
         <ModalContent>
           Подтвердите {(serviceMode) ? "выключение" : "включение"} сервисного режима
           <ButtonContainer>

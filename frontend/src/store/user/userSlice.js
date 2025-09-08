@@ -40,9 +40,8 @@ const userSlice = createSlice({
                 state.token = payload.token;
                 state.messageAuth = '';
             })
-            .addCase(fetchLoginUser.rejected, (state, { error }) => {
-                if (state.serviceMode)
-                    state.messageAuth = error.message;
+            .addCase(fetchLoginUser.rejected, (state, { payload }) => {
+                state.messageAuth = payload;
             })
             .addCase(fetchToggleServiceMode.fulfilled, (state) => {
                 state.serviceMode = !state.serviceMode;
@@ -54,7 +53,10 @@ const userSlice = createSlice({
 export const { clearUser, updateServiceMode } = userSlice.actions;
 
 
-export const useToken = () => useSelector(state => state.user.token) || null;
+export const useIsAuth = () => {
+    const token = useSelector(state => state.user.token) || null;
+    return token && (token.length > 0);
+};
 
 export const useMessageAuth = () => useSelector(state => state.user.messageAuth);
 

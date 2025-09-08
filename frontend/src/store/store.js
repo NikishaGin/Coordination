@@ -2,15 +2,10 @@ import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import {
     persistStore,
     persistReducer,
-    FLUSH,
-    REHYDRATE,
-    PAUSE,
-    PERSIST,
-    PURGE,
-    REGISTER,
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-import userReducer, { clearUser } from "./user/userSlice.js";
+import { setupRequestInterceptor, setupResponseInterceptor } from "./API.js";
+import userReducer, { clearUser, updateServiceMode, useIsAuth } from "./user/userSlice.js";
 import mainReducer, { clearMain } from "./main/mainSlice.js";
 import activesReducer from "./activesSlice";
 import interactionsReducer from "./interactionsSlice";
@@ -38,9 +33,7 @@ export const store = configureStore({
     reducer: persistedReducer,
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
-            serializableCheck: {
-                ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
-            },
+            serializableCheck: false
         }),
 });
 
@@ -50,3 +43,6 @@ export default function logout() {
     store.dispatch(clearMain());
     store.dispatch(clearUser());
 }
+
+setupRequestInterceptor(store);
+setupResponseInterceptor(store, logout, updateServiceMode);

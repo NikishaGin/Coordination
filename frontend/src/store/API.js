@@ -1,6 +1,4 @@
 import axios from "axios";
-import logout, { store } from "./store.js";
-import { updateServiceMode } from "./user/userSlice.js";
 
 
 
@@ -9,33 +7,38 @@ const instance = axios.create({
 });
 
 // Добавление JWT-токена в заголовок каждого запроса
-instance.interceptors.request.use(config => {
-    const state = store.getState();
-    const token = state.user?.token || "";
-    if (token)
-        config.headers.Authorization = `Bearer ${token}`;
-    return config;
-});
+export function setupRequestInterceptor(store) {
+    instance.interceptors.request.use(config => {
+        const state = store.getState();
+        const token = state.user?.token || "";
+        if (token)
+            config.headers.Authorization = `Bearer ${token}`;
+        return config;
+    });
+}
 
 // Перехват ошибок связанных с истечением срока действия JWT-токена и
 // включением сервисного режима, а также обновление сервисного режима
-instance.interceptors.response.use(
-    (response) => {
-        console.log(response)
-        const { serviceMode } = response; /////// !!!!!!!!!!!!
-        store.dispatch(updateServiceMode(serviceMode));
-        return response;
-    },
-    (error) => {
-        if (error.response) {
-            const { status } = error.response;
-            if ([401, 503].includes(status))
-                logout();
+export function setupResponseInterceptor(store, logout, updateServiceMode) {
+    instance.interceptors.response.use(
+        (response) => {
+            /*
+            console.log(response)
+            const {serviceMode} = response; /////// !!!!!!!!!!!!
+            store.dispatch(updateServiceMode(serviceMode));
+             */
+            return response;
+        },
+        (error) => {
+            if (error.response) {
+                const {status} = error.response;
+                if ([401, 503].includes(status))
+                    logout();
+            }
+            return Promise.reject(error);
         }
-        return Promise.reject(error);
-    }
-);
-
+    );
+}
 
 export const AuthAPI = {
     login: (data) => instance.post('auth/login', data),
@@ -64,9 +67,9 @@ export const ActiveAPI = {
 }
 
 export const DownloadAPI = {
-    getCommonStatistics: (data) => instance.get('download/common-statistics', data),
-    getResolutionsStatistics: (data) => instance.get('download/resolutions-statistics', data),
-    getActivesStatistics: (data) => instance.get('download/actives-statistics', data),
+    getCommonStatistics: (data) => instance.get('download/common-statistics', { params: data, responseType: 'blob' }),
+    getResolutionsStatistics: (data) => instance.get('download/resolutions-statistics', { params: data, responseType: 'blob' }),
+    getActivesStatistics: (data) => instance.get('download/actives-statistics', { params: data, responseType: 'blob' }),
 }
 
 export const LibraryAPI = {

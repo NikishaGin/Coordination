@@ -66,7 +66,7 @@ export class DownloadService {
                     columns: HEADERS_COMMON_STATISTICS.ACTIVE,
                 },
                 {
-                    name: 'Статистика по дебиторской задолженности',
+                    name: 'Статистика по дебит. задолж.',
                     data: statistics,
                     columns: HEADERS_COMMON_STATISTICS.DEBIT,
                 },

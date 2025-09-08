@@ -1,4 +1,3 @@
-import {createAsyncThunk} from "@reduxjs/toolkit";
 import {MainAPI} from "../API.js";
 import axios from "axios";
 
@@ -9,8 +8,7 @@ let currentAbortController = null;
 
 
 export const thunkGetRegions = async (_, { rejectWithValue, getState }) => {
-    const { isDerived, isArchived } = getState().main
-    const data = { isDerived, isArchived };
+    const data = getState().main
     try {
         const response = await MainAPI.getRegions(data);
         return response.data;
@@ -22,8 +20,8 @@ export const thunkGetRegions = async (_, { rejectWithValue, getState }) => {
 
 
 export const thunkGetStatusesIP = async (_, { rejectWithValue, getState }) => {
-    const { isDerived, isArchived, selectedRegionId } = getState().main
-    const data = { isDerived, isArchived, regionId: selectedRegionId };
+    const { pathname, isDerived, isArchived, selectedRegionIdByPage } = getState().main;
+    const data = { isDerived, isArchived, regionId: selectedRegionIdByPage[pathname] };
     try {
         const response = await MainAPI.getStatusesIP(data);
         return response.data;
@@ -35,8 +33,8 @@ export const thunkGetStatusesIP = async (_, { rejectWithValue, getState }) => {
 
 
 export const thunkGetClientCategories = async (_, { rejectWithValue, getState }) => {
-    const { isDerived, isArchived, selectedRegionId } = getState().main
-    const data = { isDerived, isArchived, regionId: selectedRegionId };
+    const { pathname, isDerived, isArchived, selectedRegionIdByPage } = getState().main;
+    const data = { isDerived, isArchived, regionId: selectedRegionIdByPage[pathname] };
     try {
         const response = await MainAPI.getClientCategories(data);
         return response.data;
@@ -53,8 +51,10 @@ export const thunkGetClients = async (_, { rejectWithValue, getState }) => {
     }
     currentAbortController = new AbortController();
     const { signal } = currentAbortController;
-    const { isDerived, isArchived, selectedRegionId } = getState().main
-    const data = { isDerived, isArchived, regionId: selectedRegionId };
+
+    const { pathname, isDerived, isArchived, selectedRegionIdByPage } = getState().main;
+    const data = { isDerived, isArchived, regionId: selectedRegionIdByPage[pathname] };
+
     try {
         const response = await MainAPI.getClients(data, signal);
         return response.data;
