@@ -26,7 +26,7 @@ function isPasswordValid(password, passwordHash) {
 }
 
 
-const password = "grKa4HFR"
+const password = "root"
 const passwordHash = generatePasswordHash(password)
 const isValid = isPasswordValid(password, passwordHash)
 

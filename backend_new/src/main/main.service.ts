@@ -4,13 +4,13 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import {
     GetMainParamsDto,
     AggregatedActivesType,
-    RegionsType,
     ClientsType,
     ActiveAmountsType,
 } from './main.dto';
 import { getArchivedFilter, getDerivedFilter } from '../common/utils/ResolutionsFilter';
 import { getStatusIP, StatusMap } from '../common/utils/getStatusIP';
 import {ActivesType, LeasStatus} from '../generated/prisma/enums';
+import {RegionsType} from "./main.type";
 
 @Injectable()
 export class MainService {
@@ -392,6 +392,8 @@ export class MainService {
                 },
                 actives: amounts,
             };
+
+
 
             client.statusIP = getStatusIP(resolution._count);
 

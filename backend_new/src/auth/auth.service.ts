@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from 'src/generated/prisma/client';
 import { LoginDto } from './auth.dto';
 import { UserPayload } from '../common/interfaces/user-payload.interface';
+import {UsersRole} from "../generated/prisma/enums";
 
 @Injectable()
 export class AuthService {
@@ -20,6 +21,7 @@ export class AuthService {
 
     async login(loginData: LoginDto): Promise<{
         error?: string;
+        serviceMode?: string;
         data?: {
             user: UserPayload;
             token: string;
@@ -35,6 +37,12 @@ export class AuthService {
             },
         });
         if (!userData) return { error: 'Пользователя с таким логином не существует' };
+
+        const settings = await this.prisma.settings.findFirst({
+            select: { serviceMode: true },
+        });
+        if ((userData.role !== UsersRole.ADMIN) && settings?.serviceMode)
+            return { serviceMode: 'Сервис временно недоступен' };
 
         const isValidPassword: boolean = await this.validatePassword(
             loginData.password,

@@ -6,8 +6,6 @@ import { DownloadCloud } from 'lucide-react';
 import styled from "styled-components";
 import { TableContainer, Tr } from "../tables/Table.jsx";
 import { ButtonContainer } from "../buttons/Button.jsx";
-import { downloadExcel } from "../../utils/downloadExcel.js"
-import {formatNumber } from "../../utils/formatData.js"
 import {
     useFilteredClients,
     usePageMeta,
@@ -15,7 +13,9 @@ import {
     pageDetection,
     fetchGetClients,
 } from "../../store/main/mainSlice.js";
+import {formatNumber } from "../../utils/formatData.js"
 import { DownloadAPI } from "../../store/API.js";
+import { downloadExcel } from "../../utils/downloadExcel.js"
 
 
 

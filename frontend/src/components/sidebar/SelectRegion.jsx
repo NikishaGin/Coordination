@@ -20,6 +20,7 @@ export const SelectRegion = () => {
     const selectedRegionId = useSelectedRegionId();
     const { isUser } = useRoleDetection();
     const limitOnUse = isUser && (regions.length === 1);
+    const disabled = isUser && (regions.length <= 1);
 
     useEffect(() => {
         dispatch(fetchGetRegions());
@@ -41,7 +42,7 @@ export const SelectRegion = () => {
     return (
         <FilterGroup>
             <SelectWrapper>
-                <Select value={selectedRegionId || ""} onChange={handleChange} disabled={limitOnUse}>
+                <Select value={selectedRegionId || ""} onChange={handleChange} disabled={disabled}>
                     <option value="" disabled hidden>
                         Выберите регион
                     </option>
