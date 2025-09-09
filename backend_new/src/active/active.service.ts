@@ -23,7 +23,7 @@ export class ActiveService {
         });
     }
 
-    getActives(clientId: number, type: ActivesType): Promise<any[]> {
+    getActives(clientId: number, type: ActivesType) {
         return this.prisma.actives.findMany({
             where: {
                 clientId,

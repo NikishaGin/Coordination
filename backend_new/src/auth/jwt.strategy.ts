@@ -24,8 +24,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             select: { serviceMode: true },
         });
 
-        if ((payload.role !== UsersRole.ADMIN) && settings?.serviceMode)
+        if (payload.role !== UsersRole.ADMIN && settings?.serviceMode) {
             throw new ServiceUnavailableException('Сервис недоступен: включён сервисный режим');
+        }
 
         return payload;
     }

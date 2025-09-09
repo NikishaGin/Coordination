@@ -15,8 +15,9 @@ export class AuthController {
     async login(@Body() loginData: LoginDto): Promise<{ user: UserPayload; token: string }> {
         const { error, data } = await this.authService.login(loginData);
 
-        if (error || !data)
+        if (error || !data) {
             throw new UnauthorizedException(error || 'Ошибка авторизации');
+        }
 
         return data;
     }

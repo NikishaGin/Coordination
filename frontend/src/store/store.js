@@ -5,7 +5,7 @@ import {
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import { setupRequestInterceptor, setupResponseInterceptor } from "./API.js";
-import userReducer, { clearUser, updateServiceMode, useIsAuth } from "./user/userSlice.js";
+import userReducer, { clearUser, updateServiceMode } from "./user/userSlice.js";
 import mainReducer, { clearMain } from "./main/mainSlice.js";
 import activesReducer from "./activesSlice";
 import interactionsReducer from "./interactionsSlice";

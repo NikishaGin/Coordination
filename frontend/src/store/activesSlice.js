@@ -1,7 +1,8 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {activesAPI} from "../api/index.js";
 
-function  cleanTotalSum(value){
+
+const cleanTotalSum = (value) => {
     if (typeof value === 'number') return value;
     if (typeof value === 'string') {
         return Number(value.replace(/\s/g, '').replace(',', '.'));
@@ -32,12 +33,6 @@ export const updateActiveThunk = createAsyncThunk(
             console.log('updatedRow', updatedRow)
             const [field, value] = Object.entries(updatedRow)[0]
             return {id, type, field, value};
-
-
-
-
-
-
         } catch (error) {
             console.error("Ошибка при обновлении:", error);
             return rejectWithValue(error.message);
@@ -146,11 +141,6 @@ const activesSlice = createSlice({
                 state.error[type] = action.payload;
             })
             .addCase(updateActiveThunk.fulfilled, (state, action) => {
-
-
-
-
-
                 const {id, field, value, type} = action.payload;
                 const list = state[type];
                 const index = list.findIndex(item => item.id === id);
@@ -165,10 +155,6 @@ const activesSlice = createSlice({
                         });
                     }
                 }
-
-
-
-
             })
             .addCase(createRow.fulfilled, (state, action) => {
                 const {nameActive, data} = action.payload;

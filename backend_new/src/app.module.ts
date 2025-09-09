@@ -6,7 +6,6 @@ import { ClientModule } from './client/client.module';
 import { MainModule } from './main/main.module';
 import { ActiveModule } from './active/active.module';
 import { DownloadModule } from './download/download.module';
-import { InteractionModule } from './interaction/interaction.module';
 import { IndicatorsModule } from './indicators/indicators.module';
 import { LibraryModule } from './library/library.module';
 
@@ -21,7 +20,6 @@ import { LibraryModule } from './library/library.module';
         ActiveModule,
         ClientModule,
         DownloadModule,
-        InteractionModule,
         IndicatorsModule,
         LibraryModule,
         MainModule,

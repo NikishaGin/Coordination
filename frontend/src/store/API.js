@@ -1,13 +1,12 @@
 import axios from "axios";
 
 
-
 const instance = axios.create({
     baseURL: "http://127.0.0.1:3033/api/"
 });
 
 // Добавление JWT-токена в заголовок каждого запроса
-export function setupRequestInterceptor(store) {
+export const setupRequestInterceptor= (store) => {
     instance.interceptors.request.use(config => {
         const state = store.getState();
         const token = state.user?.token || "";
@@ -19,7 +18,7 @@ export function setupRequestInterceptor(store) {
 
 // Перехват ошибок связанных с истечением срока действия JWT-токена и
 // включением сервисного режима, а также обновление сервисного режима
-export function setupResponseInterceptor(store, logout, updateServiceMode) {
+export const setupResponseInterceptor = (store, logout, updateServiceMode) => {
     instance.interceptors.response.use(
         (response) => {
             /*
@@ -46,30 +45,33 @@ export const AuthAPI = {
 }
 
 export const MainAPI = {
-    getRegions: (data) => instance.get('main/regions', { params: data }),
-    getClientCategories: (data) => instance.get('main/categories', { params: data }),
-    getStatusesIP: (data) => instance.get('main/statuses-ip', { params: data }),
-    getClients: (data, signal) => instance.get('main/clients', { params: data, signal }),
+    getRegions: (params) => instance.get('main/regions', { params }),
+    getClientCategories: (params) => instance.get('main/categories', { params}),
+    getStatusesIP: (params) => instance.get('main/statuses-ip', { params }),
+    getClients: (params, signal) => instance.get('main/clients', { params, signal }),
 }
 
 export const ClientAPI = {
-    getResolutions: () => instance.get('clients/resolutions'),
-    getInteractions: () => instance.get('clients/interactions'),
-    createInteraction: () => instance.post('clients/interaction'),
-    updateInteraction: () => instance.patch('clients/interaction'),
+    getResolutions: (clientId, params) => instance.get(`clients/${clientId}/resolutions`, { params }),
+    getInteractions: (clientId, params) => instance.get(`clients/${clientId}/interactions`, { params }),
+    createInteraction: (clientId) => instance.post(`clients/${clientId}/interactions`),
+    // Согласно REST, принято создавать URL всегда с ID основной сущности,
+    // но можешь его не передавать (хотя принято - передавать), т.к. interactionId - уникален.
+    updateInteraction: (clientId, interactionId, data) => instance.patch(`clients/${clientId}/interactions/${interactionId}`, data),
 }
 
 export const ActiveAPI = {
-    getActivesStatistics: (clientId) => instance.get(`actives/${clientId}/statistics`),
-    getActives: (clientId, typeActive) => instance.get(`actives/${clientId}/${typeActive}`),
-    createActive: (clientId, data) => instance.post(`actives/${clientId}`, data),
-    updateActive: (clientId, data) => instance.patch(`actives/${clientId}`, data),
+    getActivesStatistics: (clientId) => instance.get(`clients/${clientId}/actives/statistics`),
+    getActives: (clientId, activeType) => instance.get(`clients/${clientId}/actives/${activeType}`),
+    createActive: (clientId, data) => instance.post(`clients/${clientId}/actives/`, data),
+    // Аналогично
+    updateActive: (clientId, activeId, data) => instance.patch(`clients/${clientId}/actives/${activeId}`, data),
 }
 
 export const DownloadAPI = {
-    getCommonStatistics: (data) => instance.get('download/common-statistics', { params: data, responseType: 'blob' }),
-    getResolutionsStatistics: (data) => instance.get('download/resolutions-statistics', { params: data, responseType: 'blob' }),
-    getActivesStatistics: (data) => instance.get('download/actives-statistics', { params: data, responseType: 'blob' }),
+    getCommonStatistics: (params) => instance.get('download/common-statistics', { params, responseType: 'blob' }),
+    getResolutionsStatistics: (params) => instance.get('download/resolutions-statistics', { params, responseType: 'blob' }),
+    getActivesStatistics: (params) => instance.get('download/actives-statistics', { params, responseType: 'blob' }),
 }
 
 export const LibraryAPI = {

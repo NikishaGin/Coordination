@@ -14,10 +14,11 @@ import { JwtStrategy } from './jwt.strategy';
         JwtModule.registerAsync({
             imports: [ConfigModule],
             inject: [ConfigService],
-            useFactory: (configService: ConfigService) => ({
-                secret: configService.get<string>('JWT_SECRET'),
-                signOptions: { expiresIn: '720h' },
-            }),
+            useFactory: (configService: ConfigService) => {
+                const secret = configService.get<string>('JWT_SECRET');
+                const expiresIn = configService.get<string>('TOKEN_LIFETIME');
+                return { secret, signOptions: { expiresIn } };
+            },
         }),
     ],
     controllers: [AuthController],
