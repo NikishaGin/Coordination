@@ -291,8 +291,8 @@ export const Main = () => {
                     <td>{formatNumber(row.amounts?.resolution?.balance, { defaultValue: 0 })}</td>
                     <td>{row.category.category}</td>
                     <td className={(row.indicators.isLeasing) && codeIndicators.isLeasing}>{formatNumber(row.amounts?.actives?.totalSum, { defaultValue: 0 })}</td>
-                    <td>{row.interactionWithGMU}</td>
-                    <td>{row.interactionWithTNO}</td>
+                    <td>{row.interaction.GMU}</td>
+                    <td>{row.interaction.TNO}</td>
                     <td className={codeIndicators[row.indicators?.arrest]}>{formatNumber(row.amounts?.actives?.arrest, { defaultValue: 0 })}</td>
                     <td>{row.securingArrest}</td>
                     <td className={codeIndicators[row.indicators?.evaluation]}>{formatNumber(row.amounts?.actives?.wanted, { defaultValue: 0 })}</td>
@@ -317,8 +317,8 @@ export const Main = () => {
                     <td>{formatNumber(row.resolution?.balance, { defaultValue: 0 })}</td>
                     <td>{row.category.category}</td>
                     <td className={(row.indicators.isLeasing) && codeIndicators.isLeasing}>{formatNumber(row.amounts?.actives?.totalSum, { defaultValue: 0 })}</td>
-                    <td>{row.interaction_gmu}</td>
-                    <td>{row.interaction_tno}</td>
+                    <td>{row.interaction.GMU}</td>
+                    <td>{row.interaction.TNO}</td>
                     <td className={codeIndicators[row.indicators?.arrest]}>{formatNumber(row.amounts?.actives?.arrest, { defaultValue: 0 })}</td>
                     <td>{row.securingArrest}</td>
                     <td className={codeIndicators[row.indicators?.evaluation]}>{formatNumber(row.amounts?.actives?.wanted, { defaultValue: 0 })}</td>

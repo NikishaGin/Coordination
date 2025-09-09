@@ -1,29 +1,35 @@
-import {Prisma} from "../generated/prisma/client";
-import {Decimal} from "@prisma/client/runtime/edge";
+import { Prisma } from "../generated/prisma/client";
+import { Decimal } from "@prisma/client/runtime/edge";
 
 
 export type RegionsType = Prisma.RegionsGetPayload<{ omit: { sonoName: true } }>;
 
 export type AggregatedActivesType = {
     clientId: number;
-    totalSum: Decimal | null;
-    arrest: Decimal | null;
-    wanted: Decimal | null;
-    evaluation: Decimal | null;
-    realizationFirst: Decimal | null;
-    realizationSecond: Decimal | null;
-    realizationResult: Decimal | null;
-    refundProperty: Decimal | null;
-    debitForeclosure: Decimal | null;
+    totalSum?: Decimal | null;
+    arrest?: Decimal | null;
+    wanted?: Decimal | null;
+    evaluation?: Decimal | null;
+    realizationFirst?: Decimal | null;
+    realizationSecond?: Decimal | null;
+    realizationResult?: Decimal | null;
+    refundProperty?: Decimal | null;
+    debitForeclosure?: Decimal | null;
+    lastUploadDate?: Date | null;
+    isLeasing?: boolean;
+    isArrestAllActives?: boolean;
+    isExistsNoArrestedActive?: boolean;
 };
 
-export type r = {
-    COMMON: AggregatedActivesType;
-    ACTIVE: AggregatedActivesType;
-    DEBIT: AggregatedActivesType;
+export type CommonStatisticActivesType<T> = {
+    COMMON: T;
+    ACTIVE: T;
+    DEBIT: T;
 };
 
-export type ActiveAmountsType = AggregatedActivesType | r;
+export type ActiveDataType<T> = T | CommonStatisticActivesType<T>;
+
+type SecuringArrestType = number | CommonStatisticActivesType<number>;
 
 export type ClientsType = Prisma.ClientsGetPayload<{
     omit: {
@@ -43,8 +49,16 @@ export type ClientsType = Prisma.ClientsGetPayload<{
             amount: Decimal | null;
             balance: Decimal | null;
         };
-        actives: ActiveAmountsType;
+        actives: ActiveDataType<AggregatedActivesType>;
     };
+    securingArrest: SecuringArrestType;
     statusIP: string;
-    interactionWithGMU?: string;
+    interaction?: {
+        GMU?: string;
+        TNO?: string;
+    };
+    indicators?: {
+        isUpdated: boolean;
+        isLeasing: boolean;
+    };
 };

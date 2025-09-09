@@ -20,7 +20,9 @@ export class ExcelService {
                 // доп обработка
 
                 const rowValues = this.extractRowValues(rowData, options.columns);
-                worksheet.addRow(rowValues);
+                const row = worksheet.addRow(rowValues);
+
+                row.getCell()
             });
         }
         this.applySheetStyles(worksheet);
@@ -52,21 +54,17 @@ export class ExcelService {
         headerRow.alignment = {
             vertical: 'middle',
             horizontal: 'center',
+            wrapText: true,
         };
-        headerRow.height = 25;
+        //headerRow.height = 25;
 
-        /*
+
         // Автоподбор ширины столбцов
         worksheet.columns.forEach((column) => {
-            let maxLength = 0;
-            column.eachCell({ includeEmpty: true }, (cell) => {
-                const columnLength = cell.value ? cell.value.toString().length : 10;
-                if (columnLength > maxLength) {
-                    maxLength = columnLength;
-                }
-            });
-            column.width = Math.min(maxLength + 2, 50);
+            column.width = 40; // Math.min(maxLength + 2, 50);
+            column.
         });
+
 
         // Границы для всех ячеек
         worksheet.eachRow((row, rowNumber) => {
@@ -79,6 +77,6 @@ export class ExcelService {
                 };
             });
         });
-         */
+
     }
 }

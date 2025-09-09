@@ -1,16 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { ClientCategories, Prisma } from 'src/generated/prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import {
-    GetMainParamsDto,
-    AggregatedActivesType,
-    ClientsType,
-    ActiveAmountsType,
-} from './main.dto';
+import { GetMainParamsDto } from './main.dto';
 import { getArchivedFilter, getDerivedFilter } from '../common/utils/ResolutionsFilter';
 import { getStatusIP, StatusMap } from '../common/utils/getStatusIP';
 import {ActivesType, LeasStatus} from '../generated/prisma/enums';
-import {RegionsType} from "./main.type";
+import {
+    RegionsType,
+    AggregatedActivesType,
+    ClientsType,
+    ActiveDataType, CommonStatisticActivesType,
+} from "./main.type";
+import {sqlAggregatedActivesData} from "./main.SQLqueries";
 
 @Injectable()
 export class MainService {
@@ -31,7 +32,7 @@ export class MainService {
         };
     }
 
-    getSqlAggregatedActives(
+    getAggregatedActives(
         clientIds: number[],
         {
             includeActives = true,
@@ -50,58 +51,9 @@ export class MainService {
         else additionalCondition = Prisma.sql``;
 
         return this.prisma.$queryRaw<AggregatedActivesType[]>(
-            Prisma.sql`
-                SELECT
-                   actives.clientId,
-                   SUM(
-                       IF(
-                           (wanteds.endDate IS NOT NULL) AND (wanteds.result = 'END_PROPERTY_SEARCH_ACTIVITIES'),
-                           0,
-                           actives.cost
-                       )
-                   )                                             AS totalSum,
-                   SUM(arrests.amount)                           AS arrest,
-                   
-                   SUM(
-                        IF(
-                           (wanteds.beginDate IS NOT NULL) AND (wanteds.endDate IS NULL), 
-                           actives.cost,
-                           0
-                       )
-                   )                                             AS wanted,                       
-                   SUM(evaluations.amount)                       AS evaluation,
-                   SUM(realizationFirst.submitAmount)            AS realizationFirst,
-                   SUM(realizationSecond.submitAmount)           AS realizationSecond,
-                   SUM(realizationFirst.realizedPropertyAmount) +
-                   SUM(realizationSecond.realizedPropertyAmount) AS realizationResult,
-                   SUM(refund_property.amount)                   AS refundProperty,
-                   SUM(debit_foreclosure.requestAmount)          AS debitForeclosure
-                FROM actives
-                LEFT JOIN arrests ON actives.id = arrests.activeId
-                LEFT JOIN wanteds ON actives.id = wanteds.activeId                    
-                LEFT JOIN evaluations ON actives.id = evaluations.activeId
-                LEFT JOIN realizations AS realizationFirst
-                    ON
-                        realizationFirst.id = evaluations.activeId
-                      AND
-                        realizationFirst.stage = 'FIRST'
-                LEFT JOIN realizations AS realizationSecond
-                    ON
-                        realizationSecond.id = evaluations.activeId
-                      AND
-                        realizationSecond.stage = 'SECOND'
-                LEFT JOIN refund_property ON actives.id = refund_property.activeId
-                LEFT JOIN debit_foreclosure ON actives.id = debit_foreclosure.activeId
-                WHERE 
-                    actives.clientId IN (${Prisma.join(clientIds)})
-                  ${additionalCondition}
-                  AND
-                    actives.status <> 'GMU' 
-                  AND
-                    actives.isVisible = 1
-                GROUP BY actives.clientId
-            `,
+            sqlAggregatedActivesData(clientIds, additionalCondition),
         );
+
     }
 
     getRegions(data: GetMainParamsDto, userRegionId: number | null): Promise<RegionsType[]> {
@@ -224,6 +176,7 @@ export class MainService {
             resolution: this.createClientFilter(data.isArchived, derivedFilter, archivedFilter),
         };
 
+
         const clients = (await this.prisma.clients.findMany({
             where: {
                 isVisible: true,
@@ -243,7 +196,9 @@ export class MainService {
             orderBy: [{ inn: 'asc' }],
         })) as ClientsType[];
 
+
         const clientIds: number[] = clients.map(({ id }: { id: number }): number => id);
+
 
         const resolutionPromise = this.prisma.resolutions.groupBy({
             by: ['clientId'],
@@ -268,17 +223,18 @@ export class MainService {
             },
         });
 
-        const activeAmountsPromise = statistics
+
+        const aggregatedActivesPromise: Promise<ActiveDataType<AggregatedActivesType[]>> = statistics
             ? Promise.all([
-                  this.getSqlAggregatedActives(clientIds, {
+                  this.getAggregatedActives(clientIds, {
                       includeActives: true,
                       includeDebit: true,
                   }),
-                  this.getSqlAggregatedActives(clientIds, {
+                  this.getAggregatedActives(clientIds, {
                       includeActives: true,
                       includeDebit: false,
                   }),
-                  this.getSqlAggregatedActives(clientIds, {
+                  this.getAggregatedActives(clientIds, {
                       includeActives: false,
                       includeDebit: true,
                   }),
@@ -287,7 +243,8 @@ export class MainService {
                   ACTIVE: active,
                   DEBIT: debit,
               }))
-            : this.getSqlAggregatedActives(clientIds);
+            : this.getAggregatedActives(clientIds);
+
 
         const interactionsPromise = statistics
             ? Promise.resolve<
@@ -311,44 +268,10 @@ export class MainService {
                   },
               });
 
-        const isLeasingCountPromise = statistics
-            ? Promise.resolve<
-                  {
-                      clientId: number;
-                      _count: any;
-                  }[]
-              >([])
-            : this.prisma.actives.groupBy({
-            by: ["clientId"],
-            where: {
-                clientId: { in: clientIds },
-                isLeasing: LeasStatus.IS_PLEDGE_HOLDER,
-            },
-            _count: {
-                id: true,
-            },
-        });
 
-        const lastUpdatePromise = statistics
-            ? Promise.resolve<
-                  {
-                      clientId: number;
-                      _max: any;
-                  }[]
-              >([])
-            : this.prisma.actives.groupBy({
-            by: ['clientId'],
-            where: { clientId: { in: clientIds } },
-            _max: {
-                uploadDate: true,
-            },
-        });
-
-        const [resolutionsData, activeAmounts, isLeasingCountData, lastUpdateData, interactionsData] = await Promise.all([
+        const [resolutionsData, aggregatedActives, interactionsData] = await Promise.all([
             resolutionPromise,
-            activeAmountsPromise,
-            isLeasingCountPromise,
-            lastUpdatePromise,
+            aggregatedActivesPromise,
             interactionsPromise,
         ]);
 
@@ -357,29 +280,24 @@ export class MainService {
                 (item): boolean => item.clientId === client.id,
             )!;
 
-            const amounts: ActiveAmountsType = !statistics
-                ? (activeAmounts as AggregatedActivesType[]).find(
-                      (item: AggregatedActivesType): boolean => item.clientId === client.id,
-                  )!
-                : {
-                      COMMON: (activeAmounts as { COMMON: AggregatedActivesType[] }).COMMON.find(
-                          (item: AggregatedActivesType): boolean => item.clientId === client.id,
-                      )!,
-                      ACTIVE: (activeAmounts as { ACTIVE: AggregatedActivesType[] }).ACTIVE.find(
-                          (item: AggregatedActivesType): boolean => item.clientId === client.id,
-                      )!,
-                      DEBIT: (activeAmounts as { DEBIT: AggregatedActivesType[] }).DEBIT.find(
-                          (item: AggregatedActivesType): boolean => item.clientId === client.id,
-                      )!,
-                  };
+            let activeData: ActiveDataType<AggregatedActivesType>;
+            if (!statistics) {
+                const active = aggregatedActives as AggregatedActivesType[];
+                activeData = active.find(
+                    (item: AggregatedActivesType): boolean => item.clientId === client.id,
+                )!;
+            } else {
+                const active = aggregatedActives as CommonStatisticActivesType<AggregatedActivesType[]>;
+                const entriesActive = Object.entries(active).map(
+                    ([nameStatistics, data]) => {
+                        const foundData = data.find(item => item.clientId === client.id)!;
+                        return [nameStatistics, foundData];
+                    }
+                );
+                activeData = Object.fromEntries(entriesActive);
+            }
 
-            const isLeasingCount = isLeasingCountData.find(
-                (item): boolean => item?.clientId === client.id,
-            );
 
-            const lastUpdate = lastUpdateData.find(
-                (item): boolean => item?.clientId === client.id,
-            );
 
             const interaction = interactionsData.find(
                 (item): boolean => item?.clientId === client.id,
@@ -390,43 +308,48 @@ export class MainService {
                     amount: resolution._sum.amount,
                     balance: resolution._sum.balance,
                 },
-                actives: amounts,
+                actives: activeData,
             };
 
 
+            if (!statistics) {
+                const { arrest = 0, isArrestAllActives, isExistsNoArrestedActive } = client.amounts.actives as AggregatedActivesType;
+                const arrestAmount = arrest || 0;
+                const balanceAmount =  client.amounts.resolution.balance || 0;
+                if (arrestAmount >= balanceAmount)
+                    client.securingArrest = 1;
+                else if ((arrestAmount < balanceAmount) && isArrestAllActives)
+                    client.securingArrest = 2;
+                else if ((arrestAmount < balanceAmount) && isExistsNoArrestedActive)
+                    client.securingArrest = 3;
+                else
+                    client.securingArrest = 4;
+            }
 
             client.statusIP = getStatusIP(resolution._count);
 
             if (interaction) {
                 const count = interaction._count!;
-                if (count.submissionDate + count.originalFilename_1 > 0)
-                    client['interactionWithGMU'] = isGMU
-                        ? 'Получено сообщение от МИУДОЛ'
-                        : 'Получен ответ от ГМУ';
-                else if (count.reviewDate + count.result + count.originalFilename_2 > 0)
-                    client['interactionWithGMU'] = 'Отправлено';
-            }
-            client['interactionWithGMU'] = client['interactionWithGMU'] || '';
-
-            const currDate = new Date();
-            const lastDate = new Date(lastUpdate?._max?.uploadDate ?? 0)
-            client['indicators'] = {
-                isUpdated: currDate.getTime() - lastDate.getTime() <= 7*24*60*60*1000,
-                isLeasing: (isLeasingCount?._count?.id ?? 0) > 0
-            };
-
-
-
-
-            /*
-            if (isLeasingCount) {
-
+                const isExistsSubmit: boolean = count.submissionDate + count.originalFilename_1 > 0;
+                const isExistsReview: boolean = count.reviewDate + count.result + count.originalFilename_2 > 0;
+                client.interaction = {
+                    GMU: isExistsSubmit
+                            ? (isGMU ? 'Получено сообщение от МИУДОЛ' : 'Получен ответ от ГМУ')
+                            : (isExistsReview ? 'Отправлено' : ''),
+                };
             }
 
+            if (!statistics) {
+                const { lastUploadDate, isLeasing } = client.amounts.actives as AggregatedActivesType;
+                const currDate = new Date();
+                const lastDate = new Date(lastUploadDate ?? 0);
+                client.indicators = {
+                    isUpdated: currDate.getTime() - lastDate.getTime() <= 7 * 24 * 60 * 60 * 1000,
+                    isLeasing: !!isLeasing,
+                };
 
-             */
-            // resolution._min.WritExecutionBeginDate
-            // client[indicators] = ''
+                // resolution._min.WritExecutionBeginDate
+            }
         }
         return clients;
     }

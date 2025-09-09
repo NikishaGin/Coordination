@@ -1,7 +1,6 @@
 export interface ExcelColumnOptions {
     header: string;
     key: string;
-    width?: number;
     numFmt?: string;
 }
 

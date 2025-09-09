@@ -12,7 +12,6 @@ export class ActiveService {
             where: {
                 clientId,
                 isVisible: true,
-                status: { not: DataStatus.GMU },
                 wanted: {
                     endDate: { not: null },
                     result: WantedResults.END_PROPERTY_SEARCH_ACTIVITIES,
@@ -28,7 +27,6 @@ export class ActiveService {
             where: {
                 clientId,
                 type,
-                status: { not: DataStatus.GMU },
             },
             include: {
                 description: true,
