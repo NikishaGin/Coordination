@@ -12,10 +12,89 @@ import {
     ActiveDataType, CommonStatisticActivesType,
 } from "./main.type";
 import {sqlAggregatedActivesData} from "./main.SQLqueries";
+import {DEADLINES} from "../common/constants";
 
 @Injectable()
 export class MainService {
     constructor(private prisma: PrismaService) {}
+
+    private getAggregatedActives(
+        clientIds: number[],
+        isStatistics: boolean,
+    ): Promise<ActiveDataType<AggregatedActivesType[]>> {
+        const getAggregatedActivesByIncluding = (
+            includeActives: boolean,
+            includeDebit: boolean,
+        ): Promise<AggregatedActivesType[]> => {
+            let additionalCondition: Prisma.Sql;
+            if (includeActives && !includeDebit)
+                additionalCondition = Prisma.sql`
+                AND actives.type <> ${ActivesType.DEBIT}
+                `;
+            else if (!includeActives && includeDebit)
+                additionalCondition = Prisma.sql`
+                AND actives.type = ${ActivesType.DEBIT}
+                `;
+            else additionalCondition = Prisma.sql``;
+
+            return this.prisma.$queryRaw<AggregatedActivesType[]>(
+                sqlAggregatedActivesData(clientIds, additionalCondition),
+            );
+        }
+
+        if (isStatistics) {
+            const map = ([COMMON, ACTIVE, DEBIT]: any[]) => ({ COMMON, ACTIVE, DEBIT });
+            return Promise.all([
+                getAggregatedActivesByIncluding(true, true),
+                getAggregatedActivesByIncluding(true, false),
+                getAggregatedActivesByIncluding(false, true),
+            ]).then(map);
+        } else
+            return getAggregatedActivesByIncluding(true, true);
+    }
+
+    private findAggregatedActives(
+        aggregatedActives: ActiveDataType<AggregatedActivesType[]>,
+        findActive: (actives: AggregatedActivesType[]) => AggregatedActivesType | undefined,
+        isStatistics: boolean,
+    ): ActiveDataType<AggregatedActivesType | undefined> {
+        if (isStatistics) {
+            const active = aggregatedActives as CommonStatisticActivesType<AggregatedActivesType[]>;
+            return {
+                COMMON: findActive(active.COMMON),
+                ACTIVE: findActive(active.ACTIVE),
+                DEBIT: findActive(active.DEBIT),
+            };
+        } else {
+            const active = aggregatedActives as AggregatedActivesType[];
+            return findActive(active)
+        }
+    }
+
+    private getInteractions(clientIds: number[], isStatistics: boolean) {
+        if (isStatistics)
+            return Promise.resolve<
+                {
+                    clientId: number;
+                    _count: any;
+                }[]
+            >([]);
+        else
+            return this.prisma.interactions.groupBy({
+                by: ['clientId'],
+                where: {
+                    clientId: { in: clientIds },
+                    type: 'GMU',
+                },
+                _count: {
+                    submissionDate: true,
+                    reviewDate: true,
+                    result: true,
+                    originalFilename_1: true,
+                    originalFilename_2: true,
+                },
+            });
+    }
 
     createClientFilter(
         isArchived: boolean,
@@ -30,30 +109,6 @@ export class MainService {
             },
             ...(isArchived ? { every: archivedFilter } : {}),
         };
-    }
-
-    getAggregatedActives(
-        clientIds: number[],
-        {
-            includeActives = true,
-            includeDebit = true,
-        }: { includeActives?: boolean; includeDebit?: boolean } = {},
-    ): Promise<AggregatedActivesType[]> {
-        let additionalCondition: Prisma.Sql;
-        if (includeActives && !includeDebit)
-            additionalCondition = Prisma.sql`
-            AND actives.type <> ${ActivesType.DEBIT}
-            `;
-        else if (!includeActives && includeDebit)
-            additionalCondition = Prisma.sql`
-            AND actives.type = ${ActivesType.DEBIT}
-            `;
-        else additionalCondition = Prisma.sql``;
-
-        return this.prisma.$queryRaw<AggregatedActivesType[]>(
-            sqlAggregatedActivesData(clientIds, additionalCondition),
-        );
-
     }
 
     getRegions(data: GetMainParamsDto, userRegionId: number | null): Promise<RegionsType[]> {
@@ -153,20 +208,20 @@ export class MainService {
         data: GetMainParamsDto,
         isGMU?: boolean,
         {
-            statistics = false,
+            isStatistics = false,
             selectedClientId = [],
         }: {
-            statistics?: boolean;
+            isStatistics?: boolean;
             selectedClientId?: number[];
         } = {},
     ): Promise<ClientsType[]> {
-        const regionFilter: Prisma.ClientsWhereInput =
-            data.regionId && selectedClientId.length === 0
-                ? { tno: { regionId: data.regionId } }
-                : {};
+        const regionFilter: Prisma.ClientsWhereInput = data.regionId && selectedClientId.length === 0
+            ? { tno: { regionId: data.regionId } }
+            : {};
 
-        const clientByIdsFilter: Prisma.ClientsWhereInput =
-            selectedClientId.length > 0 ? { id: { in: selectedClientId } } : {};
+        const clientByIdsFilter: Prisma.ClientsWhereInput = selectedClientId.length > 0
+            ? { id: { in: selectedClientId } }
+            : {};
 
         const derivedFilter: Prisma.ResolutionsWhereInput = getDerivedFilter(data.isDerived);
         const archivedFilter: Prisma.ResolutionsWhereInput = getArchivedFilter(data.isArchived);
@@ -197,7 +252,9 @@ export class MainService {
         })) as ClientsType[];
 
 
-        const clientIds: number[] = clients.map(({ id }: { id: number }): number => id);
+        const clientIds: number[] = selectedClientId.length > 0
+            ? selectedClientId
+            : clients.map(({ id }): number => id);
 
 
         const resolutionPromise = this.prisma.resolutions.groupBy({
@@ -224,98 +281,70 @@ export class MainService {
         });
 
 
-        const aggregatedActivesPromise: Promise<ActiveDataType<AggregatedActivesType[]>> = statistics
-            ? Promise.all([
-                  this.getAggregatedActives(clientIds, {
-                      includeActives: true,
-                      includeDebit: true,
-                  }),
-                  this.getAggregatedActives(clientIds, {
-                      includeActives: true,
-                      includeDebit: false,
-                  }),
-                  this.getAggregatedActives(clientIds, {
-                      includeActives: false,
-                      includeDebit: true,
-                  }),
-              ]).then(([common, active, debit]) => ({
-                  COMMON: common,
-                  ACTIVE: active,
-                  DEBIT: debit,
-              }))
-            : this.getAggregatedActives(clientIds);
+        const aggregatedActivesPromise = this.getAggregatedActives(clientIds, isStatistics);
 
 
-        const interactionsPromise = statistics
-            ? Promise.resolve<
-                  {
-                      clientId: number;
-                      _count: any;
-                  }[]
-              >([])
-            : this.prisma.interactions.groupBy({
-                  by: ['clientId'],
-                  where: {
-                      clientId: { in: clientIds },
-                      type: 'GMU',
-                  },
-                  _count: {
-                      submissionDate: true,
-                      reviewDate: true,
-                      result: true,
-                      originalFilename_1: true,
-                      originalFilename_2: true,
-                  },
-              });
+        const interactionsPromise = this.getInteractions(clientIds, isStatistics);
 
 
-        const [resolutionsData, aggregatedActives, interactionsData] = await Promise.all([
+        const [resolutionsData, aggregatedActivesData, interactionsData] = await Promise.all([
             resolutionPromise,
             aggregatedActivesPromise,
             interactionsPromise,
         ]);
 
+
         for (const client of clients) {
             const resolution = resolutionsData.find(
                 (item): boolean => item.clientId === client.id,
-            )!;
+            );
 
-            let activeData: ActiveDataType<AggregatedActivesType>;
-            if (!statistics) {
-                const active = aggregatedActives as AggregatedActivesType[];
-                activeData = active.find(
+            const aggregatedActive = this.findAggregatedActives(
+                aggregatedActivesData,
+                (actives: AggregatedActivesType[]) => actives.find(
                     (item: AggregatedActivesType): boolean => item.clientId === client.id,
-                )!;
-            } else {
-                const active = aggregatedActives as CommonStatisticActivesType<AggregatedActivesType[]>;
-                const entriesActive = Object.entries(active).map(
-                    ([nameStatistics, data]) => {
-                        const foundData = data.find(item => item.clientId === client.id)!;
-                        return [nameStatistics, foundData];
-                    }
-                );
-                activeData = Object.fromEntries(entriesActive);
-            }
-
-
+                ),
+                isStatistics,
+            );
 
             const interaction = interactionsData.find(
                 (item): boolean => item?.clientId === client.id,
             );
 
+
             client.amounts = {
                 resolution: {
-                    amount: resolution._sum.amount,
-                    balance: resolution._sum.balance,
+                    amount: resolution?._sum?.amount || null,
+                    balance: resolution?._sum?.balance || null,
                 },
-                actives: activeData,
+                active: (aggregatedActive || {}) as ActiveDataType<AggregatedActivesType>,
             };
 
 
-            if (!statistics) {
-                const { arrest = 0, isArrestAllActives, isExistsNoArrestedActive } = client.amounts.actives as AggregatedActivesType;
+
+
+
+
+
+
+            if (!isStatistics) {
+                const {
+                    arrest,
+                    countActives,
+                    countArrestedActives,
+                    countNoArrestedActives
+                } = client.amounts.active as AggregatedActivesType;
+
                 const arrestAmount = arrest || 0;
                 const balanceAmount =  client.amounts.resolution.balance || 0;
+
+                const isArrestAllActives = (countActives && countArrestedActives)
+                    ? countActives === countArrestedActives
+                    : false;
+                const isExistsNoArrestedActive = countNoArrestedActives
+                    ? countNoArrestedActives > 0
+                    : false;
+
                 if (arrestAmount >= balanceAmount)
                     client.securingArrest = 1;
                 else if ((arrestAmount < balanceAmount) && isArrestAllActives)
@@ -326,10 +355,19 @@ export class MainService {
                     client.securingArrest = 4;
             }
 
-            client.statusIP = getStatusIP(resolution._count);
+
+
+            // client.statusIP = getStatusIP(resolution._count);
+
+
+
+
+
+
+
 
             if (interaction) {
-                const count = interaction._count!;
+                const count = interaction._count;
                 const isExistsSubmit: boolean = count.submissionDate + count.originalFilename_1 > 0;
                 const isExistsReview: boolean = count.reviewDate + count.result + count.originalFilename_2 > 0;
                 client.interaction = {
@@ -339,13 +377,13 @@ export class MainService {
                 };
             }
 
-            if (!statistics) {
-                const { lastUploadDate, isLeasing } = client.amounts.actives as AggregatedActivesType;
+            if (!isStatistics) {
+                const { lastUploadDate, countIsLeasing } = client.amounts.active as AggregatedActivesType;
                 const currDate = new Date();
-                const lastDate = new Date(lastUploadDate ?? 0);
+                const lastDate = new Date(lastUploadDate || 0);
                 client.indicators = {
-                    isUpdated: currDate.getTime() - lastDate.getTime() <= 7 * 24 * 60 * 60 * 1000,
-                    isLeasing: !!isLeasing,
+                    isUpdated: currDate.getTime() - lastDate.getTime() <= DEADLINES.WEEK,
+                    isLeasing: (countIsLeasing || 0) > 0,
                 };
 
                 // resolution._min.WritExecutionBeginDate

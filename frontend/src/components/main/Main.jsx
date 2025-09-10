@@ -290,18 +290,18 @@ export const Main = () => {
                     <td>{formatNumber(row.amounts?.resolution?.amount, { defaultValue: 0 })}</td>
                     <td>{formatNumber(row.amounts?.resolution?.balance, { defaultValue: 0 })}</td>
                     <td>{row.category.category}</td>
-                    <td className={(row.indicators.isLeasing) && codeIndicators.isLeasing}>{formatNumber(row.amounts?.actives?.totalSum, { defaultValue: 0 })}</td>
+                    <td className={(row.indicators.isLeasing) && codeIndicators.isLeasing}>{formatNumber(row.amounts?.active?.totalSum, { defaultValue: 0 })}</td>
                     <td>{row.interaction.GMU}</td>
                     <td>{row.interaction.TNO}</td>
-                    <td className={codeIndicators[row.indicators?.arrest]}>{formatNumber(row.amounts?.actives?.arrest, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.arrest]}>{formatNumber(row.amounts?.active?.arrest, { defaultValue: 0 })}</td>
                     <td>{row.securingArrest}</td>
-                    <td className={codeIndicators[row.indicators?.evaluation]}>{formatNumber(row.amounts?.actives?.wanted, { defaultValue: 0 })}</td>
-                    <td className={codeIndicators[row.indicators?.evaluation]}>{formatNumber(row.amounts?.actives?.evaluation, { defaultValue: 0 })}</td>
-                    <td className={codeIndicators[row.indicators?.submitRealizationFirstStage]}>{formatNumber(row.amounts?.actives?.realizationFirst, { defaultValue: 0 })}</td>
-                    <td className={codeIndicators[row.indicators?.submitRealizationSecondStage]}>{formatNumber(row.amounts?.actives?.realizationSecond, { defaultValue: 0 })}</td>
-                    <td className={codeIndicators[row.indicators?.realizationSecondStage]}>{formatNumber(row.amounts?.actives?.realizationResult, { defaultValue: 0 })}</td>
-                    <td>{formatNumber(row.amounts?.actives?.refundProperty, { defaultValue: 0 })}</td>
-                    <td className={codeIndicators[row.indicators?.collectionAccountsReceivable]}>{formatNumber(row.amounts?.actives?.debitForeclosure, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.evaluation]}>{formatNumber(row.amounts?.active?.wanted, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.evaluation]}>{formatNumber(row.amounts?.active?.evaluation, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.submitRealizationFirstStage]}>{formatNumber(row.amounts?.active?.realizationFirst, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.submitRealizationSecondStage]}>{formatNumber(row.amounts?.active?.realizationSecond, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.realizationSecondStage]}>{formatNumber(row.amounts?.active?.realizationResult, { defaultValue: 0 })}</td>
+                    <td>{formatNumber(row.amounts?.active?.refundProperty, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.collectionAccountsReceivable]}>{formatNumber(row.amounts?.active?.debitForeclosure, { defaultValue: 0 })}</td>
                     <td>{row.statusIP}</td>
                     <td>{row.sosp?.CodeSOSP}</td>
                 </>
@@ -316,18 +316,18 @@ export const Main = () => {
                     <td>{formatNumber(row.resolution?.amount, { defaultValue: 0 })}</td>
                     <td>{formatNumber(row.resolution?.balance, { defaultValue: 0 })}</td>
                     <td>{row.category.category}</td>
-                    <td className={(row.indicators.isLeasing) && codeIndicators.isLeasing}>{formatNumber(row.amounts?.actives?.totalSum, { defaultValue: 0 })}</td>
+                    <td className={(row.indicators.isLeasing) && codeIndicators.isLeasing}>{formatNumber(row.amounts?.active?.totalSum, { defaultValue: 0 })}</td>
                     <td>{row.interaction.GMU}</td>
                     <td>{row.interaction.TNO}</td>
-                    <td className={codeIndicators[row.indicators?.arrest]}>{formatNumber(row.amounts?.actives?.arrest, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.arrest]}>{formatNumber(row.amounts?.active?.arrest, { defaultValue: 0 })}</td>
                     <td>{row.securingArrest}</td>
-                    <td className={codeIndicators[row.indicators?.evaluation]}>{formatNumber(row.amounts?.actives?.wanted, { defaultValue: 0 })}</td>
-                    <td className={codeIndicators[row.indicators?.evaluation]}>{formatNumber(row.amounts?.actives?.evaluation, { defaultValue: 0 })}</td>
-                    <td className={codeIndicators[row.indicators?.submitRealizationFirstStage]}>{formatNumber(row.amounts?.actives?.realizationFirst, { defaultValue: 0 })}</td>
-                    <td className={codeIndicators[row.indicators?.submitRealizationSecondStage]}>{formatNumber(row.amounts?.actives?.realizationSecond, { defaultValue: 0 })}</td>
-                    <td className={codeIndicators[row.indicators?.realizationSecondStage]}>{formatNumber(row.amounts?.actives?.realizationResult, { defaultValue: 0 })}</td>
-                    <td>{formatNumber(row.amounts?.actives?.refundProperty, { defaultValue: 0 })}</td>
-                    <td className={codeIndicators[row.indicators?.collectionAccountsReceivable]}>{formatNumber(row.amounts?.actives?.debitForeclosure, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.evaluation]}>{formatNumber(row.amounts?.active?.wanted, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.evaluation]}>{formatNumber(row.amounts?.active?.evaluation, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.submitRealizationFirstStage]}>{formatNumber(row.amounts?.active?.realizationFirst, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.submitRealizationSecondStage]}>{formatNumber(row.amounts?.active?.realizationSecond, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.realizationSecondStage]}>{formatNumber(row.amounts?.active?.realizationResult, { defaultValue: 0 })}</td>
+                    <td>{formatNumber(row.amounts?.active?.refundProperty, { defaultValue: 0 })}</td>
+                    <td className={codeIndicators[row.indicators?.collectionAccountsReceivable]}>{formatNumber(row.amounts?.active?.debitForeclosure, { defaultValue: 0 })}</td>
                     <td>{row.statusIP}</td>
                     <td>{row.sosp?.CodeSOSP}</td>
                 </>

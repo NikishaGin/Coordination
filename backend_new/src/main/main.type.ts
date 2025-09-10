@@ -16,9 +16,10 @@ export type AggregatedActivesType = {
     refundProperty?: Decimal | null;
     debitForeclosure?: Decimal | null;
     lastUploadDate?: Date | null;
-    isLeasing?: boolean;
-    isArrestAllActives?: boolean;
-    isExistsNoArrestedActive?: boolean;
+    countIsLeasing?: number;
+    countActives?: number;
+    countArrestedActives?: number;
+    countNoArrestedActives?: number;
 };
 
 export type CommonStatisticActivesType<T> = {
@@ -49,7 +50,7 @@ export type ClientsType = Prisma.ClientsGetPayload<{
             amount: Decimal | null;
             balance: Decimal | null;
         };
-        actives: ActiveDataType<AggregatedActivesType>;
+        active: ActiveDataType<AggregatedActivesType>;
     };
     securingArrest: SecuringArrestType;
     statusIP: string;

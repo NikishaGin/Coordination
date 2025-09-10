@@ -15,17 +15,23 @@ export class ExcelService {
     private addSheet(workbook: ExcelJS.Workbook, options: ExcelSheetOptions) {
         const worksheet = workbook.addWorksheet(options.name);
         worksheet.columns = options.columns;
-        if (options.data && options.data.length > 0) {
+        const numberRows = options.data.length;
+        const numberColumns = options.columns.length;
+        const numFmt = options.columns.map(({ numFmt }) => numFmt)
+        if (numberRows > 0) {
             options.data.forEach((rowData) => {
                 // доп обработка
+
+
 
                 const rowValues = this.extractRowValues(rowData, options.columns);
                 const row = worksheet.addRow(rowValues);
 
-                row.getCell()
+
+                // row.getCell()
             });
         }
-        this.applySheetStyles(worksheet);
+        this.applySheetStyles(worksheet, numFmt, numberRows, numberColumns);
     }
 
     private extractRowValues(rowData, columns: ExcelColumnOptions[]) {
@@ -38,7 +44,27 @@ export class ExcelService {
         });
     }
 
-    private applySheetStyles(worksheet: ExcelJS.Worksheet): void {
+    private applySheetStyles(
+        worksheet: ExcelJS.Worksheet,
+        numFmt: (string | undefined)[],
+        numberRows: number,
+        numberColumns: number,
+    ): void {
+
+
+
+
+
+
+
+
+
+        worksheet.getColumn('N').numFmt = '#,##0.00';
+
+
+
+
+
         // Стиль для заголовков
         const headerRow = worksheet.getRow(1);
         headerRow.font = {
@@ -59,10 +85,23 @@ export class ExcelService {
         //headerRow.height = 25;
 
 
+        worksheet.views = [
+            {
+                state: 'frozen',
+                ySplit: 1,
+
+            }
+        ];
+
+
+
+
         // Автоподбор ширины столбцов
-        worksheet.columns.forEach((column) => {
-            column.width = 40; // Math.min(maxLength + 2, 50);
-            column.
+        worksheet.columns.forEach((column, index) => {
+            column.width = 40;
+            if (numFmt[index] !== undefined) {
+                column.numFmt = numFmt[index];
+            }
         });
 
 
@@ -74,6 +113,12 @@ export class ExcelService {
                     left: { style: 'thin' },
                     bottom: { style: 'thin' },
                     right: { style: 'thin' },
+                };
+
+
+                cell.alignment = {
+                    vertical: 'top',
+                    wrapText: true,
                 };
             });
         });

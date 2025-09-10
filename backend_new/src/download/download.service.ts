@@ -16,6 +16,7 @@ import {
 import { ActivesType, LeasStatus, ObjectStatus, RealizationStage } from '../generated/prisma/enums';
 import { StatusObjectType, StatusType, WantedType } from './download.type';
 import { getActionRealizationStatus } from '../common/utils/getActionRealizationStatus';
+import {VERIFICATION_STATUS} from "../common/constants";
 
 @Injectable()
 export class DownloadService {
@@ -57,7 +58,7 @@ export class DownloadService {
             },
             true,
             {
-                statistics: true,
+                isStatistics: true,
                 selectedClientId: data.clientIds,
             },
         );
@@ -171,7 +172,7 @@ export class DownloadService {
                             sospId: true,
                         },
                         include: {
-                            tno: { include: { region: true } },
+                            tno: { select: { CodeTNO: true } },
                             category: { select: { category: true } },
                         },
                     },
@@ -194,6 +195,7 @@ export class DownloadService {
 
                 active['statusText'] = active.status ? StatusType[active.status] : null;
 
+
                 const objectStatus =
                     active.objectStatus === ObjectStatus.OTHER
                         ? (active.otherObjectStatus ?? '')
@@ -203,7 +205,10 @@ export class DownloadService {
                     : null;
 
                 active['isVerifiedText'] =
-                    active.isVerified !== null ? (active.isVerified ? 'Да' : 'Нет') : '';
+                    active.isVerified !== null ? VERIFICATION_STATUS[active.isVerified] : '';
+
+
+
 
                 if (active.wanted)
                     active.wanted['resultText'] = active.wanted.result
