@@ -4,7 +4,6 @@ import { ExcelColumnOptions } from './excel/excel.interface';
 import { ActivesType } from "../../generated/prisma/enums";
 import {
     IdHeaders,
-    TypeCommonStatistics,
     CommonAggregatedActives,
     CommonStatistics,
     ResolutionStatistics,
@@ -40,31 +39,46 @@ const COMMON_AGGREGATED_ACTIVE_HEADERS: CommonAggregatedActives = (
     { header: 'Сумма возврата имущества должнику, ₽',   key: `amounts.active.${type}.refundProperty`,    numFmt: '#,##0.00' },
 ];
 
-export const HEADERS_COMMON_STATISTICS: CommonStatistics = {
-    COMMON: (isDerived: boolean) => {
-        const sourceResolution: string = isDerived ? 'исполнительного листа' : 'по постановлениям по статье 47 НК РФ';
-        return [
-            ...ID_HEADERS(),
-            { header: `Сумма ${sourceResolution}, ₽`,                                  key: 'amounts.resolution.amount',               numFmt: '#,##0.00' },
-            { header: `Остаток ${sourceResolution}, ₽`,                                key: 'amounts.resolution.balance',              numFmt: '#,##0.00' },
-            { header: 'Категория должника',                                            key: 'category.category' },
-            { header: 'Сумма активов и дебиторской задолженности, ₽',                  key: 'amounts.active.COMMON.totalSum',         numFmt: '#,##0.00' },
-            ...COMMON_AGGREGATED_ACTIVE_HEADERS(TypeCommonStatistics.COMMON),
-            { header: 'Сумма по обращениям на взыскания дебиторской задолженности, ₽', key: 'amounts.active.COMMON.debitForeclosure', numFmt: '#,##0.00' },
-            { header: 'Статус ИП',                                                     key: 'statusIP' },
-        ]
-    },
+export const HEADERS_COMMON_STATISTICS: CommonStatistics = (isDerived: boolean) => {
+    const sourceResolution: string = isDerived ? 'исполнительного листа' : 'по постановлениям по статье 47 НК РФ';
+
+    return {
+        COMMON: [
+        ...ID_HEADERS(),
+        {header: `Сумма ${sourceResolution}, ₽`, key: 'amounts.resolution.amount', numFmt: '#,##0.00'},
+        {header: `Остаток ${sourceResolution}, ₽`, key: 'amounts.resolution.balance', numFmt: '#,##0.00'},
+        {header: 'Категория должника', key: 'category.category'},
+        {
+            header: 'Сумма активов и дебиторской задолженности, ₽',
+            key: 'amounts.active.COMMON.totalSum',
+            numFmt: '#,##0.00'
+        },
+        ...COMMON_AGGREGATED_ACTIVE_HEADERS(TypeCommonStatistics.COMMON),
+        {
+            header: 'Сумма по обращениям на взыскания дебиторской задолженности, ₽',
+            key: 'amounts.active.COMMON.debitForeclosure',
+            numFmt: '#,##0.00'
+        },
+        {header: 'Статус ИП', key: 'statusIP'},
+    ],
     ACTIVE: [
         ...ID_HEADERS(),
-        { header: 'Сумма активов, ₽',                                                  key: 'amounts.active.ACTIVE.totalSum',         numFmt: '#,##0.00' },
+        {header: 'Сумма активов, ₽', key: 'amounts.active.ACTIVE.totalSum', numFmt: '#,##0.00'},
         ...COMMON_AGGREGATED_ACTIVE_HEADERS(TypeCommonStatistics.ACTIVE),
     ],
-    DEBIT: [
+        DEBIT
+:
+    [
         ...ID_HEADERS(),
-        { header: 'Сумма дебиторской задолженности, ₽',                                key: 'amounts.active.DEBIT.totalSum',          numFmt: '#,##0.00' },
+        {header: 'Сумма дебиторской задолженности, ₽', key: 'amounts.active.DEBIT.totalSum', numFmt: '#,##0.00'},
         ...COMMON_AGGREGATED_ACTIVE_HEADERS(TypeCommonStatistics.DEBIT),
-        { header: 'Сумма по обращениям на взыскания дебиторской задолженности, ₽',     key: 'amounts.active.DEBIT.debitForeclosure',  numFmt: '#,##0.00' },
+        {
+            header: 'Сумма по обращениям на взыскания дебиторской задолженности, ₽',
+            key: 'amounts.active.DEBIT.debitForeclosure',
+            numFmt: '#,##0.00'
+        },
     ],
+}
 };
 
 

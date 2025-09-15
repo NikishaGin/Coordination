@@ -5,7 +5,6 @@ import { ExcelService } from './excel/excel.service';
 import { ExcelColumnOptions, ExcelSheetOptions } from './excel/excel.interface';
 import { GetDownloadParamsDto } from './download.dto';
 import * as ExcelJS from 'exceljs';
-import { getStatusIP } from '../../common/utils/getStatusIP';
 import { Prisma } from '../../generated/prisma/client';
 import { getArchivedFilter, getDerivedFilter } from '../../common/utils/ResolutionsFilter';
 import {
@@ -13,10 +12,14 @@ import {
     HEADERS_COMMON_STATISTICS,
     HEADERS_RESOLUTIONS_STATISTICS,
 } from './download.headers';
-import { ActivesType, LeasStatus, ObjectStatus, RealizationStage } from '../../generated/prisma/enums';
-import { StatusObjectType, StatusType, WantedType } from './download.type';
-import { getActionRealizationStatus } from '../../common/utils/getActionRealizationStatus';
-import {VERIFICATION_STATUS} from "../../common/constants";
+import { ActivesType, LeasStatus, WantedResults } from '../../generated/prisma/enums';
+import {STATUS_TYPE, VERIFICATION_STATUS, WANTED_STATUS} from "../../common/constants";
+import {
+    getValueFromMap,
+    getObjectStatus,
+    destructuringRealization,
+    getStatusIP
+} from "../../common/utils/calculatedActualValues";
 
 @Injectable()
 export class DownloadService {
@@ -26,18 +29,20 @@ export class DownloadService {
         private ststs: AggregatedStatisticsService,
     ) {}
 
-    private createStatisticsFilter(
-        data: GetDownloadParamsDto,
-        derivedFilter: Prisma.ResolutionsWhereInput,
-        archivedFilter: Prisma.ResolutionsWhereInput,
-    ): Prisma.ClientsWhereInput {
+    private createStatisticsFilter(data: GetDownloadParamsDto): Prisma.ClientsWhereInput {
+        const derivedFilter: Prisma.ResolutionsWhereInput = getDerivedFilter(data.isDerived);
+        const archivedFilter: Prisma.ResolutionsWhereInput = getArchivedFilter(data.isArchived);
+
         return {
             ...(data.clientIds ? { id: { in: data.clientIds } } : {}),
-            resolution: this.main.createClientFilter(
-                data.isArchived,
-                derivedFilter,
-                archivedFilter,
-            ),
+            resolution: {
+                some: {
+                    isVisible: true,
+                    ...derivedFilter,
+                    ...(!data.isArchived ? archivedFilter : {}),
+                },
+                ...(data.isArchived ? { every: archivedFilter } : {}),
+            },
         };
     }
 
@@ -181,7 +186,6 @@ export class DownloadService {
                     wanted: true,
                     evaluation: true,
                     realization: true,
-
                     refundProperty: true,
                     debitForeclosure: true,
                     complaint: true,
@@ -193,42 +197,19 @@ export class DownloadService {
                     (item): boolean => item.clientId === active.clientId,
                 );
 
-                active['statusText'] = active.status ? StatusType[active.status] : null;
+                active['statusText'] = getValueFromMap(active.status, STATUS_TYPE);
 
+                active['objectStatusText'] = getObjectStatus(active.objectStatus, active.otherObjectStatus);
 
-                const objectStatus =
-                    active.objectStatus === ObjectStatus.OTHER
-                        ? (active.otherObjectStatus ?? '')
-                        : '';
-                active['objectStatusText'] = active.objectStatus
-                    ? StatusObjectType[active.objectStatus] + objectStatus
-                    : null;
-
-                active['isVerifiedText'] =
-                    active.isVerified !== null ? VERIFICATION_STATUS[active.isVerified] : '';
-
-
-
+                active['isVerifiedText'] = getValueFromMap(active.isVerified, VERIFICATION_STATUS);
 
                 if (active.wanted)
-                    active.wanted['resultText'] = active.wanted.result
-                        ? WantedType[active.wanted.result]
-                        : null;
+                    active.wanted['resultText'] = getValueFromMap(active.wanted.result, WANTED_STATUS);
 
                 if (active.realization) {
-                    active.realization['first'] =
-                        active.realization.find(({ stage }) => stage === RealizationStage.FIRST) ||
-                        {};
-                    active.realization['first']['actionStatus'] = getActionRealizationStatus(
-                        active.realization['first'],
-                    );
-
-                    active.realization['second'] =
-                        active.realization.find(({ stage }) => stage === RealizationStage.SECOND) ||
-                        {};
-                    active.realization['second']['actionStatus'] = getActionRealizationStatus(
-                        active.realization['second'],
-                    );
+                    const realization = destructuringRealization(active.realization);
+                    active['realizationFirst'] = realization.realizationFirst;
+                    active['realizationSecond'] = realization.realizationSecond;
                 }
             }
 
@@ -237,20 +218,30 @@ export class DownloadService {
 
         const sheets = await Promise.all([
             getSheet('Транспорт', ActivesType.TRANSPORT),
-            getSheet('Транспорт (залогодержатель не ФНС)', ActivesType.TRANSPORT, {
+            getSheet('Транспорт (залог. не ФНС)', ActivesType.TRANSPORT, {
                 isLeasing: LeasStatus.IS_NOT_PLEDGE_HOLDER,
             }),
+            getSheet('Транспорт (прекращение розыска)', ActivesType.TRANSPORT, {
+                wanted: {
+                    endDate: { not: null },
+                    result: { equals: WantedResults.END_PROPERTY_SEARCH_ACTIVITIES },
+                }
+            }),
+
             getSheet('Недвижимость', ActivesType.PROPERTY),
-            getSheet('Недвижимость (залогодержатель не ФНС)', ActivesType.PROPERTY, {
+            getSheet('Недвижимость (залог. не ФНС)', ActivesType.PROPERTY, {
                 isLeasing: LeasStatus.IS_NOT_PLEDGE_HOLDER,
             }),
+
             getSheet('Земельные участки', ActivesType.GROUND),
-            getSheet('Земельные участки (залогодержатель не ФНС)', ActivesType.GROUND, {
+            getSheet('Земельные участки (залог. не ФНС)', ActivesType.GROUND, {
                 isLeasing: LeasStatus.IS_NOT_PLEDGE_HOLDER,
             }),
+
             getSheet('Дебиторская задолженность', ActivesType.DEBIT),
+
             getSheet('Иные активы', ActivesType.OTHER),
-            getSheet('Иные активы (залогодержатель не ФНС)', ActivesType.OTHER, {
+            getSheet('Иные активы (залог. не ФНС)', ActivesType.OTHER, {
                 isLeasing: LeasStatus.IS_NOT_PLEDGE_HOLDER,
             }),
         ]);

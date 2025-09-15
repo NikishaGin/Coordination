@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { ClientCategories, Prisma } from 'src/generated/prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { GetMainParamsDto } from './main.dto';
 import { getArchivedFilter, getDerivedFilter } from '../../common/utils/ResolutionsFilter';
-import { StatusMap } from '../../common/utils/getStatusIP';
-import { RegionsType } from "./main.type";
 import {AggregatedStatisticsService} from "../aggregated-statistics/aggregated-statistics.service";
-import { ClientsType } from "../aggregated-statistics/aggregated-statistics.type";
+import {STATUS_IP} from "../../common/constants";
+
 
 @Injectable()
 export class MainService {
@@ -30,7 +29,10 @@ export class MainService {
         };
     }
 
-    getRegions(data: GetMainParamsDto, userRegionId: number | null): Promise<RegionsType[]> {
+    getRegions(
+        data: GetMainParamsDto,
+        userRegionId: number | null
+    ): Promise<Prisma.RegionsGetPayload<{ omit: { sonoName: true } }>[]> {
         const regionFilter: Prisma.RegionsWhereInput =
             userRegionId !== null ? { id: userRegionId } : {};
 
@@ -58,7 +60,7 @@ export class MainService {
         });
     }
 
-    getClientCategories(data: GetMainParamsDto): Promise<ClientCategories[]> {
+    getClientCategories(data: GetMainParamsDto): Promise<Prisma.ClientCategoriesGetPayload<{}>[]> {
         /*
         const derivedFilter: Prisma.ResolutionsWhereInput = getDerivedFilter(data.isDerived);
         const archivedFilter: Prisma.ResolutionsWhereInput = getArchivedFilter(data.isArchived);
@@ -120,13 +122,13 @@ export class MainService {
             return result.includes(status) ? result : [...result, status];
         }, []);
          */
-        return Object.values(StatusMap);
+        return Object.values(STATUS_IP);
     }
 
     getClients(
         data: GetMainParamsDto,
         isGMU: boolean,
-    ): Promise<ClientsType[]> {
+    ) {
         const regionFilter: Prisma.ClientsWhereInput = data.regionId ? {tno: {regionId: data.regionId}} : {};
         const derivedFilter: Prisma.ResolutionsWhereInput = getDerivedFilter(data.isDerived);
         const archivedFilter: Prisma.ResolutionsWhereInput = getArchivedFilter(data.isArchived);
@@ -134,7 +136,11 @@ export class MainService {
             ...regionFilter,
             resolution: this.createClientFilter(data.isArchived, derivedFilter, archivedFilter),
         };
+        const resolutionsFilter: Prisma.ResolutionsWhereInput = {
+            ...derivedFilter,
+            ...archivedFilter
+        }
 
-        return this.stats.getMainData(clientFilter, isGMU);
+        return this.stats.getMainData(clientFilter, resolutionsFilter, isGMU);
     }
 }

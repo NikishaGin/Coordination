@@ -1,17 +1,18 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import {Prisma} from "../../generated/prisma/client";
-import {ActivesType} from "../../generated/prisma/enums";
-import {ClientsType} from "./aggregated-statistics.type";
-
+import {ActivesType, InteractionType} from "../../generated/prisma/enums";
+import {AggregatedActivesType, ClientsType, SelectType} from "./aggregated-statistics.type";
+import { queryAggregatedActives } from "./aggregated-statistics.query";
+import {CommonStatisticsType} from "../download/download.type";
+import {getInteractionStatusWithGMU, getSecuringArrest, getStatusIP} from "../../common/utils/calculatedActualValues";
+import {DEADLINES} from "../../common/constants";
 
 @Injectable()
 export class AggregatedStatisticsService {
     constructor(private prisma: PrismaService) {}
 
-    private getClients(
-        clientFilter: Prisma.ClientsWhereInput,
-    ) {
+    private getClients(clientFilter: Prisma.ClientsWhereInput) {
         return this.prisma.clients.findMany({
             where: {
                 isVisible: true,
@@ -32,14 +33,11 @@ export class AggregatedStatisticsService {
         });
     }
 
-    private getAggregatedActives(
-        clientIds: number[],
-        isStatistics: boolean,
-    ): Promise<ActiveDataType<AggregatedActivesType[]>> {
+    private getAggregatedActives(clientIds: number[], isStatistics: boolean) {
         const getAggregatedActivesByIncluding = (
             includeActives: boolean,
             includeDebit: boolean,
-        ): Promise<AggregatedActivesType[]> => {
+        ) => {
             let additionalCondition: Prisma.Sql;
             if (includeActives && !includeDebit)
                 additionalCondition = Prisma.sql`
@@ -52,7 +50,7 @@ export class AggregatedStatisticsService {
             else additionalCondition = Prisma.sql``;
 
             return this.prisma.$queryRaw<AggregatedActivesType[]>(
-                sqlAggregatedActivesData(clientIds, additionalCondition),
+                queryAggregatedActives(clientIds, additionalCondition),
             );
         }
 
@@ -67,14 +65,16 @@ export class AggregatedStatisticsService {
             return getAggregatedActivesByIncluding(true, true);
     }
 
-    private getResolutions() {
+    private getResolutions(
+        clientIds: number[],
+        resolutionsFilter: Prisma.ResolutionsWhereInput,
+    ) {
         return this.prisma.resolutions.groupBy({
             by: ['clientId'],
             where: {
                 clientId: { in: clientIds },
-                ...derivedFilter,
-                ...archivedFilter,
                 isVisible: true,
+                ...resolutionsFilter,
             },
             _count: {
                 WritExecutionStopDate: true,
@@ -92,12 +92,12 @@ export class AggregatedStatisticsService {
         });
     }
 
-    private getInteractions() {
+    private getInteractions(clientIds: number[], type: InteractionType) {
         return this.prisma.interactions.groupBy({
             by: ['clientId'],
             where: {
                 clientId: { in: clientIds },
-                type: 'GMU',
+                type,
             },
             _count: {
                 submissionDate: true,
@@ -110,23 +110,117 @@ export class AggregatedStatisticsService {
     }
 
 
+    async getCommonStatistics(
+        clientFilter: Prisma.ClientsWhereInput,
+        resolutionsFilter: Prisma.ResolutionsWhereInput,
+    ): Promise<ClientsType<'CommonStats'>[]> {
+        const clients = await this.getClients(clientFilter) as ClientsType<'CommonStats'>[];
+        const clientIds: number[] = clients.map(({ id }): number => id);
+
+        const resolutionPromise = this.getResolutions(clientIds, resolutionsFilter);
+
+        const aggregatedActivesPromise = this.getAggregatedActives(
+            clientIds,
+            true
+        ) as Promise<CommonStatisticsType<AggregatedActivesType[]>>;
+
+        const [resolutions, aggregatedActives] = await Promise.all([
+            resolutionPromise,
+            aggregatedActivesPromise,
+        ]);
+
+        for (const client of clients) {
+            const resolution = resolutions.find(
+                (item): boolean => item.clientId === client.id,
+            );
+
+            const active: CommonStatisticsType<AggregatedActivesType | undefined> = {
+                COMMON: aggregatedActives.COMMON.find((item): boolean => item.clientId === client.id),
+                ACTIVE: aggregatedActives.ACTIVE.find((item): boolean => item.clientId === client.id),
+                DEBIT: aggregatedActives.DEBIT.find((item): boolean => item.clientId === client.id),
+            };
+
+            client.amounts = {
+                resolution: {
+                    amount: resolution?._sum?.amount || null,
+                    balance: resolution?._sum?.balance || null,
+                },
+                active,
+            };
+
+            client.securingArrest = {
+                COMMON: getSecuringArrest(active?.COMMON, resolution?._sum?.balance),
+                ACTIVE: getSecuringArrest(active?.ACTIVE, resolution?._sum?.balance),
+                DEBIT: getSecuringArrest(active?.DEBIT, resolution?._sum?.balance),
+            };
+            client.statusIP = getStatusIP(resolution?._count);
+        }
+
+        return clients;
+    }
 
 
+    async getMainData(
+        clientFilter: Prisma.ClientsWhereInput,
+        resolutionsFilter: Prisma.ResolutionsWhereInput,
+        isGMU: boolean,
+    ): Promise<ClientsType<'Simple'>[]> {
+        const clients = await this.getClients(clientFilter) as ClientsType<'Simple'>[];
+        const clientIds: number[] = clients.map(({ id }): number => id);
 
+        const resolutionPromise = this.getResolutions(clientIds, resolutionsFilter);
 
+        const aggregatedActivesPromise = this.getAggregatedActives(
+            clientIds,
+            false
+        ) as Promise<AggregatedActivesType[]>;
 
+        const interactionsPromise = this.getInteractions(clientIds, InteractionType.GMU);
 
+        const [resolutions, aggregatedActives, interactions] = await Promise.all([
+            resolutionPromise,
+            aggregatedActivesPromise,
+            interactionsPromise,
+        ]);
 
+        for (const client of clients) {
+            const resolution = resolutions.find(
+                (item): boolean => item.clientId === client.id,
+            );
 
+            const active: AggregatedActivesType | undefined = aggregatedActives.find(
+                (item): boolean => item.clientId === client.id
+            );
 
+            const interaction = interactions.find(
+                (item): boolean => item?.clientId === client.id,
+            );
 
+            client.amounts = {
+                resolution: {
+                    amount: resolution?._sum?.amount || null,
+                    balance: resolution?._sum?.balance || null,
+                },
+                active,
+            }
 
+            client.securingArrest = getSecuringArrest(active, resolution?._sum?.balance);
+            client.statusIP = getStatusIP(resolution?._count);
+            client.interaction = {
+                GMU:getInteractionStatusWithGMU(interaction?._count, isGMU)
+            };
 
-    getCommonStatistics(
-        clientFilter: Prisma.ClientsWhereInput
-    ): Promise<ClientsType[]> {}
+            const { lastUploadDate, countIsLeasing } = client.amounts.active || {};
+            const currDate = new Date();
+            const lastDate = new Date(lastUploadDate || 0);
+            client.indicators = {
+                isUpdated: currDate.getTime() - lastDate.getTime() <= DEADLINES.WEEK,
+                isLeasing: (countIsLeasing || 0) > 0,
+            };
 
-    getMainData(
-        clientFilter: Prisma.ClientsWhereInput
-    ): Promise<ClientsType[]> {}
+            // resolution._min.WritExecutionBeginDate
+        }
+
+        return clients;
+    }
 }

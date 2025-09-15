@@ -1,6 +1,6 @@
 import {Prisma} from "../../generated/prisma/client";
 
-export const sqlAggregatedActivesData = (
+export const queryAggregatedActives = (
     clientIds: number[],
     additionalCondition: Prisma.Sql,
 ) => Prisma.sql`

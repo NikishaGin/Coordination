@@ -7,6 +7,13 @@ export const STATUS_IP = {
 };
 
 
+export const INTERACTION_STATUS = {
+    RESPONSE_FOR_GMU: 'Получено сообщение от МИУДОЛ',
+    RESPONSE_FOR_MIUDOL: 'Получен ответ от ГМУ',
+    SUBMITTED: 'Отправлено',
+}
+
+
 export const STATUS_TYPE = {
     AIS: 'Данные из АИС',
     GMU: 'Данные из ГМУ',
@@ -44,15 +51,15 @@ export const VERIFICATION_STATUS = {
 };
 
 
-export const WANTED_TYPE = {
+export const WANTED_STATUS = {
     FINDING_PROPERTY: 'В связи с розыском имущества должника',
     END_PROPERTY_SEARCH_ACTIVITIES: 'В связи с выполнением всех мероприятий по розыску',
 };
 
 
-export const REALIZATION_STATUS = {
-    Computed: 'Завершено',
-    NoComputed: 'Не завершено'
+export const REALIZATIONS_ACTION_STATUS = {
+    COMPUTED: 'Завершено',
+    NO_COMPUTED: 'Не завершено'
 };
 
 

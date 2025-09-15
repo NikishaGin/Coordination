@@ -1,5 +1,12 @@
 import {Decimal} from "@prisma/client/runtime/edge";
 import {Prisma} from "../../generated/prisma/client";
+import {CommonStatisticsType} from "../download/download.type";
+
+
+type StatisticsType = 'Simple' | 'CommonStats';
+
+export type SelectType<DataType extends StatisticsType, T> = DataType extends 'Simple' ? T : CommonStatisticsType<T>;
+
 
 export type AggregatedActivesType = {
     clientId: number;
@@ -19,16 +26,7 @@ export type AggregatedActivesType = {
     countNoArrestedActives?: number;
 };
 
-export type CommonStatisticActivesType<T> = {
-    COMMON: T;
-    ACTIVE: T;
-    DEBIT: T;
-};
-
-export type ActiveDataType<T> = T | CommonStatisticActivesType<T>;
-
-
-export type ClientsType<T> = Prisma.ClientsGetPayload<{
+export type ClientsType<DataType extends StatisticsType> = Prisma.ClientsGetPayload<{
     omit: {
         tnoId: true;
         sospId: true;
@@ -42,19 +40,19 @@ export type ClientsType<T> = Prisma.ClientsGetPayload<{
     };
 }> & {
     amounts: {
-        resolution: {
+        resolution?: {
             amount: Decimal | null;
             balance: Decimal | null;
         };
-        active: ActiveDataType<AggregatedActivesType>;
+        active: SelectType<DataType, AggregatedActivesType | undefined>;
     };
-    securingArrest: ActiveDataType<number>;
+    securingArrest: SelectType<DataType, number>;
     statusIP: string;
-    interaction?: {
+    interaction: DataType extends 'CommonStats' ? undefined : {
         GMU?: string;
         TNO?: string;
     };
-    indicators?: {
+    indicators: DataType extends 'CommonStats' ? undefined : {
         isUpdated: boolean;
         isLeasing: boolean;
     };
