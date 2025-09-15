@@ -2,7 +2,7 @@ import {Controller, Get, Res, Header, Query, UseGuards} from '@nestjs/common';
 import { FastifyReply } from 'fastify';
 import { DownloadService } from './download.service';
 import { GetDownloadParamsDto } from './download.dto';
-import {JwtAuthGuard} from "../common/guards/auth.guard";
+import {JwtAuthGuard} from "../../common/guards/auth.guard";
 
 @UseGuards(JwtAuthGuard)
 @Controller('download')

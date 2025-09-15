@@ -1,29 +1,29 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { MainService } from '../main/main.service';
+import {AggregatedStatisticsService} from "../aggregated-statistics/aggregated-statistics.service";
 import { ExcelService } from './excel/excel.service';
 import { ExcelColumnOptions, ExcelSheetOptions } from './excel/excel.interface';
 import { GetDownloadParamsDto } from './download.dto';
 import * as ExcelJS from 'exceljs';
-import { getStatusIP } from '../common/utils/getStatusIP';
-import { Prisma } from '../generated/prisma/client';
-import { getArchivedFilter, getDerivedFilter } from '../common/utils/ResolutionsFilter';
+import { getStatusIP } from '../../common/utils/getStatusIP';
+import { Prisma } from '../../generated/prisma/client';
+import { getArchivedFilter, getDerivedFilter } from '../../common/utils/ResolutionsFilter';
 import {
     HEADERS_ACTIVES_STATISTICS,
     HEADERS_COMMON_STATISTICS,
     HEADERS_RESOLUTIONS_STATISTICS,
 } from './download.headers';
-import { ActivesType, LeasStatus, ObjectStatus, RealizationStage } from '../generated/prisma/enums';
+import { ActivesType, LeasStatus, ObjectStatus, RealizationStage } from '../../generated/prisma/enums';
 import { StatusObjectType, StatusType, WantedType } from './download.type';
-import { getActionRealizationStatus } from '../common/utils/getActionRealizationStatus';
-import {VERIFICATION_STATUS} from "../common/constants";
+import { getActionRealizationStatus } from '../../common/utils/getActionRealizationStatus';
+import {VERIFICATION_STATUS} from "../../common/constants";
 
 @Injectable()
 export class DownloadService {
     constructor(
         private prisma: PrismaService,
         private excel: ExcelService,
-        private main: MainService,
+        private ststs: AggregatedStatisticsService,
     ) {}
 
     private createStatisticsFilter(

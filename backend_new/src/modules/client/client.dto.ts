@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsOptional } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
-import { Prisma } from '../generated/prisma/client';
+import { Prisma } from '../../generated/prisma/client';
 
 const transformToBoolean = ({ value }) => ['true', '1'].includes(`${value}`.toLowerCase());
 

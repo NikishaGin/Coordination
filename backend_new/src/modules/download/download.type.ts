@@ -1,11 +1,20 @@
 import { ExcelColumnOptions } from './excel/excel.interface';
-import { ActivesType } from '../generated/prisma/enums';
+import { ActivesType } from '../../generated/prisma/enums';
 
 export enum TypeCommonStatistics {
     COMMON = 'COMMON',
     ACTIVE = 'ACTIVE',
     DEBIT = 'DEBIT',
 }
+export type CommonStatisticActivesType<T> = {
+    COMMON: T;
+    ACTIVE: T;
+    DEBIT: T;
+};
+
+
+
+
 
 export type IdHeaders = (prefix?: string) => ExcelColumnOptions[];
 
@@ -25,6 +34,25 @@ export type ActivesStatistics = {
     [ActivesType.DEBIT]: ExcelColumnOptions[];
     [ActivesType.OTHER]: ExcelColumnOptions[];
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 export enum StatusType {
     AIS = 'Данные из АИС',

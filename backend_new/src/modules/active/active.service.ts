@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { ActivesType, DataStatus, WantedResults } from '../generated/prisma/enums';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
+import { ActivesType, DataStatus, WantedResults } from '../../generated/prisma/enums';
 
 @Injectable()
 export class ActiveService {

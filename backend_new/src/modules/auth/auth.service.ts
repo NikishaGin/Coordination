@@ -4,8 +4,8 @@ import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from 'src/generated/prisma/client';
 import { LoginDto } from './auth.dto';
-import { UserPayload } from '../common/interfaces/user-payload.interface';
-import {UsersRole} from "../generated/prisma/enums";
+import { UserPayload } from '../../common/interfaces/user-payload.interface';
+import {UsersRole} from "../../generated/prisma/enums";
 
 @Injectable()
 export class AuthService {

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { GetResolutionsParamsDto } from './client.dto';
-import { InteractionType } from '../generated/prisma/enums';
+import { InteractionType } from '../../generated/prisma/enums';
 
 @Injectable()
 export class ClientService {

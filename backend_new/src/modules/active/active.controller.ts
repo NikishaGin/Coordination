@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Patch, Param } from '@nestjs/common';
 import { ActiveService } from './active.service';
-import { ActivesType } from '../generated/prisma/enums';
+import { ActivesType } from '../../generated/prisma/enums';
 
 @Controller('actives')
 export class ActiveController {

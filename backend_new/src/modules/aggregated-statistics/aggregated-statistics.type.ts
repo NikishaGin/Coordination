@@ -1,8 +1,5 @@
-import { Prisma } from "../generated/prisma/client";
-import { Decimal } from "@prisma/client/runtime/edge";
-
-
-export type RegionsType = Prisma.RegionsGetPayload<{ omit: { sonoName: true } }>;
+import {Decimal} from "@prisma/client/runtime/edge";
+import {Prisma} from "../../generated/prisma/client";
 
 export type AggregatedActivesType = {
     clientId: number;
@@ -30,9 +27,8 @@ export type CommonStatisticActivesType<T> = {
 
 export type ActiveDataType<T> = T | CommonStatisticActivesType<T>;
 
-type SecuringArrestType = number | CommonStatisticActivesType<number>;
 
-export type ClientsType = Prisma.ClientsGetPayload<{
+export type ClientsType<T> = Prisma.ClientsGetPayload<{
     omit: {
         tnoId: true;
         sospId: true;
@@ -52,7 +48,7 @@ export type ClientsType = Prisma.ClientsGetPayload<{
         };
         active: ActiveDataType<AggregatedActivesType>;
     };
-    securingArrest: SecuringArrestType;
+    securingArrest: ActiveDataType<number>;
     statusIP: string;
     interaction?: {
         GMU?: string;
