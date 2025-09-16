@@ -109,6 +109,14 @@ export class AggregatedStatisticsService {
         });
     }
 
+    /*
+    private getAggregatedIndicators(clientId: number, writExecutionBeginDate: Date) {
+        this.prisma.actives.aggregate({
+            where: {}
+        })
+    }
+    */
+
 
     async getCommonStatistics(
         clientFilter: Prisma.ClientsWhereInput,

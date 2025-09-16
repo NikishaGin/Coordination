@@ -56,17 +56,9 @@ export class DownloadService {
     }
 
     async getCommonStatistics(data: GetDownloadParamsDto): Promise<ExcelJS.Buffer> {
-        const statistics = await this.main.getClients(
-            {
-                isDerived: data.isDerived,
-                isArchived: data.isArchived,
-            },
-            true,
-            {
-                isStatistics: true,
-                selectedClientId: data.clientIds,
-            },
-        );
+        const clientFilter = this.createStatisticsFilter(data);
+
+        const statistics = await this.ststs.getCommonStatistics();
 
         return this.excel.createExcelWorkbook({
             sheets: [
