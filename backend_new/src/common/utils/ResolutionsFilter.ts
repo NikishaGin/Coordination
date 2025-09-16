@@ -17,3 +17,32 @@ export function getArchivedFilter(isArchived: boolean): Prisma.ResolutionsWhereI
         ],
     };
 }
+
+export function createDataFilters(
+    isDerived: boolean,
+    isArchived: boolean
+): {
+    clientsFilter: Prisma.ClientsWhereInput,
+    resolutionsFilter: Prisma.ResolutionsWhereInput,
+} {
+    const derivedFilter: Prisma.ResolutionsWhereInput = getDerivedFilter(isDerived);
+    const archivedFilter: Prisma.ResolutionsWhereInput = getArchivedFilter(isArchived);
+    const clientsFilter: Prisma.ClientsWhereInput = {
+        isVisible: true,
+        resolution: {
+            some: {
+                isVisible: true,
+                ...derivedFilter,
+                ...(!isArchived ? archivedFilter : {}),
+            },
+            ...(isArchived ? { every: archivedFilter } : {}),
+        },
+    };
+    const resolutionsFilter: Prisma.ResolutionsWhereInput = {
+        isVisible: true,
+        ...derivedFilter,
+        ...archivedFilter
+    };
+
+    return { clientsFilter, resolutionsFilter };
+}

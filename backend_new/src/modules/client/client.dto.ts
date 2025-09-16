@@ -1,6 +1,5 @@
-import { IsNotEmpty, IsOptional } from 'class-validator';
-import { Type, Transform } from 'class-transformer';
-import { Prisma } from '../../generated/prisma/client';
+import { IsNotEmpty } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 const transformToBoolean = ({ value }) => ['true', '1'].includes(`${value}`.toLowerCase());
 
@@ -12,9 +11,4 @@ export class GetResolutionsParamsDto {
     @Transform(transformToBoolean)
     @IsNotEmpty()
     isArchived: boolean;
-
-    @Type(() => Number)
-    clientId: number;
 }
-
-// export type RegionType = Prisma.ResolutionsGetPayload<{ omit: { sonoName: true } }>;

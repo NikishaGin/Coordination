@@ -27,26 +27,18 @@ export function getSecuringArrest(
 ): number {
     const {
         arrest,
-        countActives,
-        countArrestedActives,
-        countNoArrestedActives
+        isArrestedAllActives,
+        isNoArrestedActives,
     } = aggregatedActives || {};
 
     const arrestAmount = arrest || 0;
     const balanceAmount =  resolutionsBalance || 0;
 
-    const isArrestAllActives = (countActives && countArrestedActives)
-        ? countActives === countArrestedActives
-        : false;
-    const isExistsNoArrestedActive = countNoArrestedActives
-        ? countNoArrestedActives > 0
-        : false;
-
     if (arrestAmount >= balanceAmount)
         return 1;
-    else if ((arrestAmount < balanceAmount) && isArrestAllActives)
+    else if ((arrestAmount < balanceAmount) && Boolean(isArrestedAllActives))
         return 2;
-    else if ((arrestAmount < balanceAmount) && isExistsNoArrestedActive)
+    else if ((arrestAmount < balanceAmount) && Boolean(isNoArrestedActives))
         return 3;
     else
         return 4;

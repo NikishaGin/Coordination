@@ -38,20 +38,19 @@ SELECT
    SUM(debit_foreclosure.requestAmount)              AS debitForeclosure,
    
    MAX(actives.uploadDate)                           AS lastUploadDate,
-   COUNT(actives.isLeasing = 'IS_PLEDGE_HOLDER')     AS countIsLeasing,
-   COUNT(actives.id)                                 AS countActives,
+   COUNT(actives.isLeasing = 'IS_PLEDGE_HOLDER') > 0 AS isLeasing,
    COUNT(
            arrests.beginDate IS NOT NULL
                AND
            arrests.amount IS NOT NULL
-   )                                                 AS countArrestedActives,
+   ) = COUNT(actives.id)                             AS isArrestedAllActives,
    COUNT(
            actives.cost IS NOT NULL
                AND
            arrests.beginDate IS NULL
                AND
            arrests.amount IS NULL
-   )                                                 AS countNoArrestedActives
+   ) > 0                                             AS isNoArrestedActives
 FROM actives
 LEFT JOIN arrests ON actives.id = arrests.activeId
 LEFT JOIN wanteds ON actives.id = wanteds.activeId                    

@@ -1,5 +1,5 @@
 import { IsArray, IsInt, IsNotEmpty, IsOptional } from 'class-validator';
-import { Transform } from 'class-transformer';
+import {Transform, Type} from 'class-transformer';
 
 const transformToBoolean = ({ value }) => ['true', '1'].includes(`${value}`.toLowerCase());
 
@@ -12,8 +12,6 @@ export class GetDownloadParamsDto {
     @IsNotEmpty()
     isArchived: boolean;
 
-    @IsArray()
-    @IsInt({ each: true })
     @IsOptional()
     clientIds: number[];
 }

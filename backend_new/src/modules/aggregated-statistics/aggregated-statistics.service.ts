@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import {Prisma} from "../../generated/prisma/client";
 import {ActivesType, InteractionType} from "../../generated/prisma/enums";
-import {AggregatedActivesType, ClientsType, SelectType} from "./aggregated-statistics.type";
+import {AggregatedActivesType, AggregatedIndicatorsType, ClientsType, SelectType} from "./aggregated-statistics.type";
 import { queryAggregatedActives } from "./aggregated-statistics.query";
 import {CommonStatisticsType} from "../download/download.type";
 import {getInteractionStatusWithGMU, getSecuringArrest, getStatusIP} from "../../common/utils/calculatedActualValues";
@@ -12,12 +12,19 @@ import {DEADLINES} from "../../common/constants";
 export class AggregatedStatisticsService {
     constructor(private prisma: PrismaService) {}
 
-    private getClients(clientFilter: Prisma.ClientsWhereInput) {
+    private deleteUnnecessaryKey(active: AggregatedActivesType | undefined) {
+        return active && {
+            ...active,
+            lastUploadDate: undefined,
+            isLeasing: undefined,
+            isArrestedAllActives: undefined,
+            isNoArrestedActives: undefined,
+        };
+    }
+
+    private getClients(clientsFilter: Prisma.ClientsWhereInput) {
         return this.prisma.clients.findMany({
-            where: {
-                isVisible: true,
-                ...clientFilter,
-            },
+            where: clientsFilter,
             omit: {
                 tnoId: true,
                 sospId: true,
@@ -25,7 +32,7 @@ export class AggregatedStatisticsService {
                 isVisible: true,
             },
             include: {
-                tno: { select: { CodeTNO: true } },
+                tno: { select: { CodeTNO: true, region: true } },
                 sosp: { select: { CodeSOSP: true } },
                 category: true,
             },
@@ -73,7 +80,6 @@ export class AggregatedStatisticsService {
             by: ['clientId'],
             where: {
                 clientId: { in: clientIds },
-                isVisible: true,
                 ...resolutionsFilter,
             },
             _count: {
@@ -109,20 +115,35 @@ export class AggregatedStatisticsService {
         });
     }
 
-    /*
-    private getAggregatedIndicators(clientId: number, writExecutionBeginDate: Date) {
+    private getAggregatedIndicators(
+        clientId: number,
+        lastUploadDate: Date | null | undefined,
+        isLeasing: boolean | undefined,
+        writExecutionBeginDate: Date | null | undefined,
+    ): AggregatedIndicatorsType {
+
+        /*
         this.prisma.actives.aggregate({
             where: {}
         })
+         */
+
+        const currDate = new Date();
+        const lastDate = new Date(lastUploadDate || 0);
+
+        return {
+            isUpdated: currDate.getTime() - lastDate.getTime() <= DEADLINES.WEEK,
+            isLeasing: Boolean(isLeasing),
+        };
     }
-    */
+
 
 
     async getCommonStatistics(
-        clientFilter: Prisma.ClientsWhereInput,
+        clientsFilter: Prisma.ClientsWhereInput,
         resolutionsFilter: Prisma.ResolutionsWhereInput,
     ): Promise<ClientsType<'CommonStats'>[]> {
-        const clients = await this.getClients(clientFilter) as ClientsType<'CommonStats'>[];
+        const clients = await this.getClients(clientsFilter) as ClientsType<'CommonStats'>[];
         const clientIds: number[] = clients.map(({ id }): number => id);
 
         const resolutionPromise = this.getResolutions(clientIds, resolutionsFilter);
@@ -153,7 +174,11 @@ export class AggregatedStatisticsService {
                     amount: resolution?._sum?.amount || null,
                     balance: resolution?._sum?.balance || null,
                 },
-                active,
+                active: {
+                    COMMON: this.deleteUnnecessaryKey(active.COMMON),
+                    ACTIVE: this.deleteUnnecessaryKey(active.ACTIVE),
+                    DEBIT: this.deleteUnnecessaryKey(active.DEBIT),
+                },
             };
 
             client.securingArrest = {
@@ -169,11 +194,11 @@ export class AggregatedStatisticsService {
 
 
     async getMainData(
-        clientFilter: Prisma.ClientsWhereInput,
+        clientsFilter: Prisma.ClientsWhereInput,
         resolutionsFilter: Prisma.ResolutionsWhereInput,
         isGMU: boolean,
     ): Promise<ClientsType<'Simple'>[]> {
-        const clients = await this.getClients(clientFilter) as ClientsType<'Simple'>[];
+        const clients = await this.getClients(clientsFilter) as ClientsType<'Simple'>[];
         const clientIds: number[] = clients.map(({ id }): number => id);
 
         const resolutionPromise = this.getResolutions(clientIds, resolutionsFilter);
@@ -209,26 +234,18 @@ export class AggregatedStatisticsService {
                     amount: resolution?._sum?.amount || null,
                     balance: resolution?._sum?.balance || null,
                 },
-                active,
+                active: this.deleteUnnecessaryKey(active),
             }
 
             client.securingArrest = getSecuringArrest(active, resolution?._sum?.balance);
             client.statusIP = getStatusIP(resolution?._count);
             client.interaction = {
-                GMU:getInteractionStatusWithGMU(interaction?._count, isGMU)
+                GMU: getInteractionStatusWithGMU(interaction?._count, isGMU)
             };
-
-            const { lastUploadDate, countIsLeasing } = client.amounts.active || {};
-            const currDate = new Date();
-            const lastDate = new Date(lastUploadDate || 0);
-            client.indicators = {
-                isUpdated: currDate.getTime() - lastDate.getTime() <= DEADLINES.WEEK,
-                isLeasing: (countIsLeasing || 0) > 0,
-            };
-
-            // resolution._min.WritExecutionBeginDate
+            const { lastUploadDate, isLeasing } = active || {};
+            const { WritExecutionBeginDate } = resolution?._min || {};
+            client.indicators = this.getAggregatedIndicators(client.id, lastUploadDate, isLeasing, WritExecutionBeginDate);
         }
-
         return clients;
     }
 }

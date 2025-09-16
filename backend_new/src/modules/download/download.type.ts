@@ -8,12 +8,11 @@ export type CommonStatisticsType<T> = {
     DEBIT: T;
 };
 
-
-
+export type KeyCommonStatistics = keyof CommonStatisticsType<unknown>;
 
 export type IdHeaders = (prefix?: string) => ExcelColumnOptions[];
 
-export type CommonAggregatedActives = (type: string) => ExcelColumnOptions[];
+export type CommonAggregatedActives = (type: KeyCommonStatistics) => ExcelColumnOptions[];
 
 export type CommonStatistics = (isDerived: boolean) => CommonStatisticsType<ExcelColumnOptions[]>;
 

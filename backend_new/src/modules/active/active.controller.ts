@@ -16,9 +16,9 @@ export class ActiveController {
         return this.activeService.getActives(clientId, typeActive);
     }
 
-    @Post(':clientId')
+    @Post(':clientId/:typeActive')
     createActive() {}
 
-    @Patch(':clientId')
+    @Patch(':activeId')
     updateActive() {}
 }

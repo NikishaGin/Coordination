@@ -7,7 +7,6 @@ type StatisticsType = 'Simple' | 'CommonStats';
 
 export type SelectType<DataType extends StatisticsType, T> = DataType extends 'Simple' ? T : CommonStatisticsType<T>;
 
-
 export type AggregatedActivesType = {
     clientId: number;
     totalSum?: Decimal | null;
@@ -20,10 +19,14 @@ export type AggregatedActivesType = {
     refundProperty?: Decimal | null;
     debitForeclosure?: Decimal | null;
     lastUploadDate?: Date | null;
-    countIsLeasing?: number;
-    countActives?: number;
-    countArrestedActives?: number;
-    countNoArrestedActives?: number;
+    isLeasing?: boolean;
+    isArrestedAllActives?: boolean;
+    isNoArrestedActives?: boolean;
+};
+
+export type AggregatedIndicatorsType = {
+    isUpdated: boolean;
+    isLeasing: boolean;
 };
 
 export type ClientsType<DataType extends StatisticsType> = Prisma.ClientsGetPayload<{
@@ -52,8 +55,5 @@ export type ClientsType<DataType extends StatisticsType> = Prisma.ClientsGetPayl
         GMU?: string;
         TNO?: string;
     };
-    indicators: DataType extends 'CommonStats' ? undefined : {
-        isUpdated: boolean;
-        isLeasing: boolean;
-    };
+    indicators: DataType extends 'CommonStats' ? undefined : AggregatedIndicatorsType;
 };

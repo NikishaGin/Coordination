@@ -1,9 +1,9 @@
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
-import { activesAPI, serviceAPI, userAPI } from "../api/index.js";
-import {MainAPI} from "./API.js";
+import { activesAPI, serviceAPI, userAPI } from "../../api/index.js";
+import {MainAPI} from "../API.js";
 
 
-
+/*
 export const fetchGetResolutions = createAsyncThunk(
     'client/fetchGetResolutions',
     async ({inn, type}, {rejectWithValue}) => {
@@ -15,10 +15,24 @@ export const fetchGetResolutions = createAsyncThunk(
         }
     }
 );
+ */
 
-const initialState = {}
+const initialState = {
+    info: {
+        CodeTNO: '',
+        inn: '',
+        name: '',
+        category: '',
+        CodeSOSP: '',
+    },
+}
 
 const clientSlice = createSlice({
     name: "clients",
     initialState,
+    reducers: {
+        setClientInfo: (state, action) => {
+
+        }
+    }
 })

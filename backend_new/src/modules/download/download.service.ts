@@ -6,7 +6,7 @@ import { ExcelColumnOptions, ExcelSheetOptions } from './excel/excel.interface';
 import { GetDownloadParamsDto } from './download.dto';
 import * as ExcelJS from 'exceljs';
 import { Prisma } from '../../generated/prisma/client';
-import { getArchivedFilter, getDerivedFilter } from '../../common/utils/ResolutionsFilter';
+import {createDataFilters, getArchivedFilter, getDerivedFilter} from '../../common/utils/ResolutionsFilter';
 import {
     HEADERS_ACTIVES_STATISTICS,
     HEADERS_COMMON_STATISTICS,
@@ -26,25 +26,8 @@ export class DownloadService {
     constructor(
         private prisma: PrismaService,
         private excel: ExcelService,
-        private ststs: AggregatedStatisticsService,
+        private stats: AggregatedStatisticsService,
     ) {}
-
-    private createStatisticsFilter(data: GetDownloadParamsDto): Prisma.ClientsWhereInput {
-        const derivedFilter: Prisma.ResolutionsWhereInput = getDerivedFilter(data.isDerived);
-        const archivedFilter: Prisma.ResolutionsWhereInput = getArchivedFilter(data.isArchived);
-
-        return {
-            ...(data.clientIds ? { id: { in: data.clientIds } } : {}),
-            resolution: {
-                some: {
-                    isVisible: true,
-                    ...derivedFilter,
-                    ...(!data.isArchived ? archivedFilter : {}),
-                },
-                ...(data.isArchived ? { every: archivedFilter } : {}),
-            },
-        };
-    }
 
     generateNameFile(prefix: string, isDerived: boolean, isArchived: boolean): string {
         const source: string = isDerived ? ' производного долга' : ' взыскания по 47 ст.';
@@ -56,41 +39,43 @@ export class DownloadService {
     }
 
     async getCommonStatistics(data: GetDownloadParamsDto): Promise<ExcelJS.Buffer> {
-        const clientFilter = this.createStatisticsFilter(data);
+        const { clientsFilter, resolutionsFilter } = createDataFilters(data.isDerived, data.isArchived);
+        if (data.clientIds)
+            clientsFilter.id = { in: data.clientIds };
 
-        const statistics = await this.ststs.getCommonStatistics();
+        const statistics = await this.stats.getCommonStatistics(clientsFilter, resolutionsFilter);
+        const HEADERS = HEADERS_COMMON_STATISTICS(data.isDerived);
 
         return this.excel.createExcelWorkbook({
             sheets: [
                 {
                     name: 'Статистика',
                     data: statistics,
-                    columns: HEADERS_COMMON_STATISTICS.COMMON(data.isDerived),
+                    columns: HEADERS.COMMON,
                 },
                 {
                     name: 'Статистика по активам',
                     data: statistics,
-                    columns: HEADERS_COMMON_STATISTICS.ACTIVE,
+                    columns: HEADERS.ACTIVE,
                 },
                 {
                     name: 'Статистика по дебит. задолж.',
                     data: statistics,
-                    columns: HEADERS_COMMON_STATISTICS.DEBIT,
+                    columns: HEADERS.DEBIT,
                 },
             ],
         });
     }
 
     async getResolutionsStatistics(data: GetDownloadParamsDto): Promise<ExcelJS.Buffer> {
-        const derivedFilter: Prisma.ResolutionsWhereInput = getDerivedFilter(data.isDerived);
-        const archivedFilter: Prisma.ResolutionsWhereInput = getArchivedFilter(data.isArchived);
+        const { clientsFilter, resolutionsFilter } = createDataFilters(data.isDerived, data.isArchived);
+        if (data.clientIds)
+            clientsFilter.id = { in: data.clientIds };
+
         const resolutions = await this.prisma.resolutions.findMany({
             where: {
-                ...this.main.createClientFilter(data.isArchived, derivedFilter, archivedFilter),
-                client: {
-                    isVisible: true,
-                    ...(data.clientIds ? { id: { in: data.clientIds } } : {}),
-                },
+                ...resolutionsFilter,
+                client: clientsFilter,
             },
             include: {
                 client: {
@@ -128,15 +113,20 @@ export class DownloadService {
     }
 
     async getActivesStatistics(data: GetDownloadParamsDto): Promise<ExcelJS.Buffer> {
-        const derivedFilter: Prisma.ResolutionsWhereInput = getDerivedFilter(data.isDerived);
-        const archivedFilter: Prisma.ResolutionsWhereInput = getArchivedFilter(data.isArchived);
-        const filter = this.createStatisticsFilter(data, derivedFilter, archivedFilter);
+        const { clientsFilter, resolutionsFilter } = createDataFilters(data.isDerived, data.isArchived);
+        if (data.clientIds)
+            clientsFilter.id = { in: data.clientIds };
 
         const resolutions = await this.prisma.resolutions.groupBy({
             by: ['clientId'],
-            where: { client: filter },
+            where: {
+                ...resolutionsFilter,
+                client: clientsFilter,
+            },
             _sum: { amount: true, balance: true },
         });
+
+        const clientIds: number[] = resolutions.map(({ clientId }): number => clientId);
 
         const getSheet = async (
             name: string,
@@ -148,14 +138,7 @@ export class DownloadService {
 
             const actives = await this.prisma.actives.findMany({
                 where: {
-                    client: {
-                        isVisible: true,
-                        resolution: this.main.createClientFilter(
-                            data.isArchived,
-                            derivedFilter,
-                            archivedFilter,
-                        ),
-                    },
+                    client: { id: { in: clientIds } },
                     isVisible: true,
                     type,
                     ...(additionalActiveFilter ?? {}),
@@ -169,7 +152,7 @@ export class DownloadService {
                             sospId: true,
                         },
                         include: {
-                            tno: { select: { CodeTNO: true } },
+                            tno: { select: { CodeTNO: true, region: true } },
                             category: { select: { category: true } },
                         },
                     },
@@ -198,11 +181,14 @@ export class DownloadService {
                 if (active.wanted)
                     active.wanted['resultText'] = getValueFromMap(active.wanted.result, WANTED_STATUS);
 
+                /*
                 if (active.realization) {
                     const realization = destructuringRealization(active.realization);
                     active['realizationFirst'] = realization.realizationFirst;
                     active['realizationSecond'] = realization.realizationSecond;
                 }
+
+                 */
             }
 
             return { name, columns, data: actives };
@@ -225,8 +211,8 @@ export class DownloadService {
                 isLeasing: LeasStatus.IS_NOT_PLEDGE_HOLDER,
             }),
 
-            getSheet('Земельные участки', ActivesType.GROUND),
-            getSheet('Земельные участки (залог. не ФНС)', ActivesType.GROUND, {
+            getSheet('Земельные уч.', ActivesType.GROUND),
+            getSheet('Земельные уч. (залог. не ФНС)', ActivesType.GROUND, {
                 isLeasing: LeasStatus.IS_NOT_PLEDGE_HOLDER,
             }),
 

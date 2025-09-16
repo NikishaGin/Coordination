@@ -22,11 +22,8 @@ export class ExcelService {
             options.data.forEach((rowData) => {
                 // доп обработка
 
-
-
                 const rowValues = this.extractRowValues(rowData, options.columns);
                 const row = worksheet.addRow(rowValues);
-
 
                 // row.getCell()
             });
@@ -40,7 +37,9 @@ export class ExcelService {
         };
         return columns.map((column) => {
             if (!column.key) return undefined;
-            return column.key.split('.').reduce(extract, rowData);
+            const transform = value => column.numFmt ? Number(value) : value;
+            const value = column.key.split('.').reduce(extract, rowData);
+            return value ? transform(value) : '';
         });
     }
 
@@ -50,21 +49,6 @@ export class ExcelService {
         numberRows: number,
         numberColumns: number,
     ): void {
-
-
-
-
-
-
-
-
-
-        worksheet.getColumn('N').numFmt = '#,##0.00';
-
-
-
-
-
         // Стиль для заголовков
         const headerRow = worksheet.getRow(1);
         headerRow.font = {
@@ -82,19 +66,14 @@ export class ExcelService {
             horizontal: 'center',
             wrapText: true,
         };
-        //headerRow.height = 25;
 
 
         worksheet.views = [
             {
                 state: 'frozen',
                 ySplit: 1,
-
             }
         ];
-
-
-
 
         // Автоподбор ширины столбцов
         worksheet.columns.forEach((column, index) => {

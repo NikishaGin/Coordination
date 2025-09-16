@@ -7,7 +7,7 @@ import {
     CommonAggregatedActives,
     CommonStatistics,
     ResolutionStatistics,
-    ActivesStatistics,
+    ActivesStatistics, KeyCommonStatistics,
 } from './download.type'
 
 
@@ -17,7 +17,7 @@ const ID_HEADERS: IdHeaders = (
     const source = prefix ? `${prefix}.` : '';
     return [
         { header: 'Регион',                key: `${source}tno.region.regionName` },
-        { header: 'Код НО',                key: `${source}tno.codeTNO` },
+        { header: 'Код НО',                key: `${source}tno.CodeTNO` },
         { header: 'ИНН должника',          key: `${source}inn` },
         { header: 'Наименование должника', key: `${source}name` },
     ];
@@ -28,7 +28,7 @@ const ID_HEADERS: IdHeaders = (
 //////////////////////////////////////////// Заголовки для общей статистики ////////////////////////////////////////////
 
 const COMMON_AGGREGATED_ACTIVE_HEADERS: CommonAggregatedActives = (
-    type: string
+    type: KeyCommonStatistics
 ) => [
     { header: 'Арест имущества, ₽',                     key: `amounts.active.${type}.arrest`,            numFmt: '#,##0.00' },
     { header: 'Обеспеченность остатка долга арестом',   key: `securingArrest.${type}` },
@@ -53,7 +53,7 @@ export const HEADERS_COMMON_STATISTICS: CommonStatistics = (isDerived: boolean) 
             key: 'amounts.active.COMMON.totalSum',
             numFmt: '#,##0.00'
         },
-        ...COMMON_AGGREGATED_ACTIVE_HEADERS(TypeCommonStatistics.COMMON),
+        ...COMMON_AGGREGATED_ACTIVE_HEADERS('COMMON'),
         {
             header: 'Сумма по обращениям на взыскания дебиторской задолженности, ₽',
             key: 'amounts.active.COMMON.debitForeclosure',
@@ -64,14 +64,14 @@ export const HEADERS_COMMON_STATISTICS: CommonStatistics = (isDerived: boolean) 
     ACTIVE: [
         ...ID_HEADERS(),
         {header: 'Сумма активов, ₽', key: 'amounts.active.ACTIVE.totalSum', numFmt: '#,##0.00'},
-        ...COMMON_AGGREGATED_ACTIVE_HEADERS(TypeCommonStatistics.ACTIVE),
+        ...COMMON_AGGREGATED_ACTIVE_HEADERS('ACTIVE'),
     ],
         DEBIT
 :
     [
         ...ID_HEADERS(),
         {header: 'Сумма дебиторской задолженности, ₽', key: 'amounts.active.DEBIT.totalSum', numFmt: '#,##0.00'},
-        ...COMMON_AGGREGATED_ACTIVE_HEADERS(TypeCommonStatistics.DEBIT),
+        ...COMMON_AGGREGATED_ACTIVE_HEADERS('DEBIT'),
         {
             header: 'Сумма по обращениям на взыскания дебиторской задолженности, ₽',
             key: 'amounts.active.DEBIT.debitForeclosure',
@@ -155,26 +155,26 @@ const COMMON_ACTIVE_HEADERS: (type: ActivesType) => ExcelColumnOptions[] = (
         { header: 'Принятие результатов оценки имущества',                   key: 'evaluation.endDate' },
         { header: 'Сумма оценки, ₽',                                         key: 'evaluation.amount',                                     numFmt: '#,##0.00' },
         { header: 'Статус оценки',                                           key: 'evaluation.status' },
-        { header: 'Передано на реализацию',                                  key: 'realization.first.submitDate' },
-        { header: 'Сумма переданного имущества на реализацию, ₽',            key: 'realization.first.submitAmount',                        numFmt: '#,##0.00' },
-        { header: 'Статус передачи на реализацию',                           key: 'realization.first.submitStatus' },
-        { header: 'Дата первых торгов',                                      key: 'realization.first.realizationDate' },
-        { header: 'Отчет о реализации (1 этап)',                             key: 'realization.first.realizationResultDate' },
-        { header: 'Сумма реализованного имущества (1 этап), ₽',              key: 'realization.first.realizedPropertyAmount',              numFmt: '#,##0.00' },
-        { header: 'Уведомление о не реализации',                             key: 'realization.first.notificationNotRealizationDate' },
-        { header: 'Причина признания  1 торгов не состоявшимися',            key: 'realization.first.notRealizationReason' },
-        { header: 'Текущий статус 1 торгов',                                 key: 'realization.first.actionStatus' },
-        { header: 'Статус реализации 1 этап',                                key: 'realization.first.realizationStatus' },
-        { header: 'Постановление о снижении цены',                           key: 'realization.second.submitDate' },
-        { header: 'Сумма снижения цены, ₽',                                  key: 'realization.second.submitAmount',                       numFmt: '#,##0.00' },
-        { header: 'Статус передачи на реализацию 2 этап',                    key: 'realization.second.submitStatus' },
-        { header: 'Дата вторых торгов',                                      key: 'realization.second.realizationDate' },
-        { header: 'Отчет о реализации (2 этап)',                             key: 'realization.second.realizationResultDate' },
-        { header: 'Сумма реализованного имущества (2 этап), ₽',              key: 'realization.second.realizedPropertyAmount',             numFmt: '#,##0.00' },
-        { header: 'Уведомление о не реализации (2 этап)',                    key: 'realization.second.notificationNotRealizationDate' },
-        { header: 'Причина признания  2 торгов не состоявшимися',            key: 'realization.second.notRealizationReason' },
-        { header: 'Текущий статус 2 торгов',                                 key: 'realization.second.actionStatus' },
-        { header: 'Статус реализации 2 этап',                                key: 'realization.second.realizationStatus' },
+        { header: 'Передано на реализацию',                                  key: 'realizationFirst.submitDate' },
+        { header: 'Сумма переданного имущества на реализацию, ₽',            key: 'realizationFirst.submitAmount',                        numFmt: '#,##0.00' },
+        { header: 'Статус передачи на реализацию',                           key: 'realizationFirst.submitStatus' },
+        { header: 'Дата первых торгов',                                      key: 'realizationFirst.realizationDate' },
+        { header: 'Отчет о реализации (1 этап)',                             key: 'realizationFirst.realizationResultDate' },
+        { header: 'Сумма реализованного имущества (1 этап), ₽',              key: 'realizationFirst.realizedPropertyAmount',              numFmt: '#,##0.00' },
+        { header: 'Уведомление о не реализации',                             key: 'realizationFirst.notificationNotRealizationDate' },
+        { header: 'Причина признания  1 торгов не состоявшимися',            key: 'realizationFirst.notRealizationReason' },
+        { header: 'Текущий статус 1 торгов',                                 key: 'realizationFirst.actionStatus' },
+        { header: 'Статус реализации 1 этап',                                key: 'realizationFirst.realizationStatus' },
+        { header: 'Постановление о снижении цены',                           key: 'realizationSecond.submitDate' },
+        { header: 'Сумма снижения цены, ₽',                                  key: 'realizationSecond.submitAmount',                       numFmt: '#,##0.00' },
+        { header: 'Статус передачи на реализацию 2 этап',                    key: 'realizationSecond.submitStatus' },
+        { header: 'Дата вторых торгов',                                      key: 'realizationSecond.realizationDate' },
+        { header: 'Отчет о реализации (2 этап)',                             key: 'realizationSecond.realizationResultDate' },
+        { header: 'Сумма реализованного имущества (2 этап), ₽',              key: 'realizationSecond.realizedPropertyAmount',             numFmt: '#,##0.00' },
+        { header: 'Уведомление о не реализации (2 этап)',                    key: 'realizationSecond.notificationNotRealizationDate' },
+        { header: 'Причина признания  2 торгов не состоявшимися',            key: 'realizationSecond.notRealizationReason' },
+        { header: 'Текущий статус 2 торгов',                                 key: 'realizationSecond.actionStatus' },
+        { header: 'Статус реализации 2 этап',                                key: 'realizationSecond.realizationStatus' },
         { header: 'Акт передачи имущества должнику',                         key: 'refundProperty.date' },
         { header: 'Сумма возврата имущества должнику, ₽',                    key: 'refundProperty.amount',                                 numFmt: '#,##0.00' },
         ...(type === ActivesType.DEBIT ? DEBIT_FORECLOSURE_HEADERS : []),
