@@ -15,20 +15,15 @@ export class ExcelService {
     private addSheet(workbook: ExcelJS.Workbook, options: ExcelSheetOptions) {
         const worksheet = workbook.addWorksheet(options.name);
         worksheet.columns = options.columns;
-        const numberRows = options.data.length;
-        const numberColumns = options.columns.length;
-        const numFmt = options.columns.map(({ numFmt }) => numFmt)
-        if (numberRows > 0) {
+        // const numFmt = options.columns.map(({ numFmt }) => numFmt)
+        if (options.data.length > 0) {
             options.data.forEach((rowData) => {
                 // доп обработка
 
-                const rowValues = this.extractRowValues(rowData, options.columns);
-                const row = worksheet.addRow(rowValues);
-
-                // row.getCell()
+                this.extractRowValues(rowData, options.columns);
             });
         }
-        this.applySheetStyles(worksheet, numFmt, numberRows, numberColumns);
+        this.applySheetStyles(worksheet);
     }
 
     private extractRowValues(rowData, columns: ExcelColumnOptions[]) {
@@ -37,7 +32,7 @@ export class ExcelService {
         };
         return columns.map((column) => {
             if (!column.key) return undefined;
-            const transform = value => column.numFmt ? Number(value) : value;
+            const transform = value => column.isNumber ? Number(value) : value;
             const value = column.key.split('.').reduce(extract, rowData);
             return value ? transform(value) : '';
         });
@@ -45,29 +40,7 @@ export class ExcelService {
 
     private applySheetStyles(
         worksheet: ExcelJS.Worksheet,
-        numFmt: (string | undefined)[],
-        numberRows: number,
-        numberColumns: number,
     ): void {
-        // Стиль для заголовков
-        const headerRow = worksheet.getRow(1);
-        headerRow.font = {
-            bold: true,
-            color: { argb: 'FFFFFF' },
-            size: 12,
-        };
-        headerRow.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'FF4F81BD' },
-        };
-        headerRow.alignment = {
-            vertical: 'middle',
-            horizontal: 'center',
-            wrapText: true,
-        };
-
-
         worksheet.views = [
             {
                 state: 'frozen',
@@ -75,16 +48,15 @@ export class ExcelService {
             }
         ];
 
-        // Автоподбор ширины столбцов
         worksheet.columns.forEach((column, index) => {
             column.width = 40;
-            if (numFmt[index] !== undefined) {
-                column.numFmt = numFmt[index];
-            }
+
+            // if (numFmt[index] !== undefined) {
+            //     column.numFmt = numFmt[index];
+            // }
+
         });
 
-
-        // Границы для всех ячеек
         worksheet.eachRow((row, rowNumber) => {
             row.eachCell((cell) => {
                 cell.border = {
@@ -94,11 +66,25 @@ export class ExcelService {
                     right: { style: 'thin' },
                 };
 
-
                 cell.alignment = {
-                    vertical: 'top',
+                    vertical: 'middle',
+                    horizontal: (rowNumber === 1) ? 'center' : 'left',
                     wrapText: true,
                 };
+
+                if (rowNumber === 1) {
+                    cell.fill = {
+                        type: 'pattern',
+                        pattern: 'solid',
+                        fgColor: {argb: '082950FA'},
+                    };
+
+                    cell.font = {
+                        bold: true,
+                        color: { argb: 'FFFFFF' },
+                        size: 12,
+                    };
+                }
             });
         });
 

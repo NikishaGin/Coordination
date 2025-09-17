@@ -11,40 +11,21 @@ export class DownloadController {
     constructor(private readonly downloadService: DownloadService) {}
 
     @Get('common-statistics')
-    async getCommonStatistics(
-        @Query() query: GetDownloadParamsDto,
-        @Query('clientIds[]') clientIds: string[],
-        @Res() reply: FastifyReply
-    ) {
-        console.log(clientIds)
-        if (clientIds.length > 0)
-            query.clientIds = clientIds.map(item => Number(item));
+    async getCommonStatistics(@Query() query: GetDownloadParamsDto, @Res() reply: FastifyReply) {
         const buffer = await this.downloadService.getCommonStatistics(query);
         const filename = this.downloadService.generateNameFile('Выгрузка', query.isDerived, query.isArchived)
         reply.header('Content-Disposition', `filename="${filename}"`).send(buffer);
     }
 
     @Get('resolutions-statistics')
-    async getResolutionsStatistics(
-        @Query() query: GetDownloadParamsDto,
-        @Query('clientIds[]') clientIds: string[],
-        @Res() reply: FastifyReply
-    ) {
-        if (clientIds.length > 0)
-            query.clientIds = clientIds.map(item => Number(item));
+    async getResolutionsStatistics(@Query() query: GetDownloadParamsDto, @Res() reply: FastifyReply) {
         const buffer = await this.downloadService.getResolutionsStatistics(query);
         const filename = this.downloadService.generateNameFile('Выгрузка по ИП', query.isDerived, query.isArchived)
         reply.header('Content-Disposition', `filename="${filename}"`).send(buffer);
     }
 
     @Get('actives-statistics')
-    async getActivesStatistics(
-        @Query() query: GetDownloadParamsDto,
-        @Query('clientIds[]') clientIds: string[],
-        @Res() reply: FastifyReply
-    ) {
-        if (clientIds.length > 0)
-            query.clientIds = clientIds.map(item => Number(item));
+    async getActivesStatistics(@Query() query: GetDownloadParamsDto, @Res() reply: FastifyReply) {
         const buffer = await this.downloadService.getActivesStatistics(query);
         const filename = this.downloadService.generateNameFile('Активы НП', query.isDerived, query.isArchived)
         reply.header('Content-Disposition', `filename="${filename}"`).send(buffer);

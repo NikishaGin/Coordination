@@ -1,7 +1,7 @@
 export interface ExcelColumnOptions {
     header: string;
     key: string;
-    numFmt?: string;
+    isNumber?: boolean;
 }
 
 export interface ExcelSheetOptions {

@@ -6,6 +6,17 @@ const instance = axios.create({
     baseURL: "http://127.0.0.1:3033/api/"
 });
 
+instance.defaults.paramsSerializer = {
+    serialize: (params) => {
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+            const data = Array.isArray(value) ? value.join(',') : value;
+            searchParams.append(key, data);
+        });
+        return searchParams.toString();
+    }
+};
+
 // Добавление JWT-токена в заголовок каждого запроса
 export function setupRequestInterceptor(store) {
     instance.interceptors.request.use(config => {
