@@ -9,12 +9,12 @@ SELECT
    SUM(
        IF(
            (
-               wanteds.endDate IS NOT NULL 
-                   AND 
-               wanteds.result = 'END_PROPERTY_SEARCH_ACTIVITIES'
+               wanteds.endDate IS NULL 
+                   OR 
+               wanteds.result <> 'END_PROPERTY_SEARCH_ACTIVITIES'
            ),
-           0,
-           actives.cost
+           actives.cost,
+            0
        )
    )                                                 AS totalSum,
    SUM(arrests.amount)                               AS arrest,

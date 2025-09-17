@@ -14,10 +14,9 @@ export class ClientService {
 
     getResolutions(
         clientId: number,
-        isDerived: boolean,
-        isArchived:boolean,
+        data: GetResolutionsParamsDto,
     ) {
-        const { resolutionsFilter } = createDataFilters(isDerived, isArchived);
+        const { resolutionsFilter } = createDataFilters(data.isDerived, data.isArchived);
 
         return this.prisma.resolutions.findMany({
             where: {

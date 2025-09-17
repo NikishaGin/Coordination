@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { AlertCircle, DownloadCloud } from "lucide-react";
-import { useParams } from "react-router";
-import { activesAPI, downloadAPI } from "../../../../api/index.js";
 import { Button} from "../../../../components/buttons/Button.jsx";
 import { downloadExcel } from '../../../../utils/downloadExcel.js';
 import { enqueueSnackbar, SnackbarProvider } from 'notistack';
-import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { fetchGetActivesStatistics, useActivesStatistics, useClientId } from "../../../../store/client/clientSlice.js";
+import { ActivesType } from "../../../../constants.js";
+import { formatNumber } from "../../../../utils/formatData.js";
+import { DownloadAPI } from "../../../../store/API.js";
+import { usePageMeta } from "../../../../store/main/mainSlice.js";
 
 
 const ChartContainer = styled.div`
@@ -205,11 +208,22 @@ const StatsButton = styled(Button)`
     }
 `;
 
-// Форматирование числа по российскому стандарту без десятичных знаков
-const formatNumber = (value) =>
-    value == null ? null : new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 }).format(value);
 
-// Компонент, отображающий сообщение "Нет данных"
+
+// Цвета для секторов диаграммы
+const COLORS = ["#4F46E5", "#65A30D", "#0891B2", "#D97706", "#9333EA"];
+
+// Названия типов активов
+const ASSET_NAMES = {
+    [ActivesType.TRANSPORT]: "Транспорт",
+    [ActivesType.PROPERTY]: "Земля",
+    [ActivesType.GROUND]: "Недвижимость",
+    [ActivesType.DEBIT]: "Дебиторская задолженность",
+    [ActivesType.OTHER]: "Прочие активы"
+};
+
+
+
 const NoDataDisplay = ({ message = "Нет данных" }) => (
     <NoDataWrapper>
         <AlertCircle size={36} />
@@ -217,51 +231,47 @@ const NoDataDisplay = ({ message = "Нет данных" }) => (
     </NoDataWrapper>
 );
 
-// Цвета для секторов диаграммы
-const COLORS = ["#4F46E5", "#65A30D", "#0891B2", "#D97706", "#9333EA"];
-
-// Названия типов активов
-const ASSET_NAMES = {
-    transport: "Транспорт",
-    ground: "Земля",
-    property: "Недвижимость",
-    debit: "Дебиторская задолженность",
-    another: "Прочие активы"
-};
-
-// Парсинг стоимости актива: возвращает число или 0
-const parseCost = (asset) => parseFloat(asset?.cost) || 0;
 
 export default function PieChartAssets() {
-    const pageKey = useSelector((state) => state.global.pageKey);
-    const isderived = ["/derivative-archive", "/derivative"].includes(pageKey);
+    const dispatch = useDispatch();
+    const { isDerived, isArchived } = usePageMeta();
+    const clientId = useClientId()
+    const activesStatistics = useActivesStatistics();
 
-    const [assets, setAssets] = useState(null); // Состояние для хранения данных об активах
-    const [loading, setLoading] = useState(true); // Состояние загрузки
-    const { inn }  = useParams(); // Получаем ИНН из параметров URL
 
-    // Получение статистики активов при изменении ИНН
     useEffect(() => {
-        if (!inn) return;
+        dispatch(fetchGetActivesStatistics());
+    }, []);
 
-        setLoading(true);
-        activesAPI.getActivesStatistics(inn) // Запрос к API
-            .then(({ data }) => setAssets(data)) // Сохраняем полученные данные
-            .catch(console.error) // Обрабатываем ошибку
-            .finally(() => setLoading(false)); // Отключаем индикатор загрузки
-    }, [inn]);
+
+
+
+
+
+
+
+
 
     // Подготовка данных для отображения в диаграмме
     const getChartData = () => {
-        if (!assets) return [];
+        if (!activesStatistics.received) return [];
+
+
 
         return Object.entries(ASSET_NAMES)
             .map(([key, name]) => {
+
                 const cost = parseCost(assets[key]); // Стоимость актива
-                const quantity = assets[key]?.count || 0; // Кол-во активов
-                return cost > 0 ? { id: key, name, value: cost, quantity } : null;
+                const count = assets[key]?.count || 0; // Кол-во активов
+                return cost > 0 ? { id: key, name, value: cost, count } : null;
+
+
             })
             .filter(Boolean); // Убираем null
+
+
+
+
     };
 
     // Расчёт общей стоимости всех активов
@@ -272,12 +282,16 @@ export default function PieChartAssets() {
             .reduce((sum, key) => sum + parseCost(assets[key]), 0);
     };
 
+
+
+
+
     // Компонент всплывающей подсказки при наведении на сектор диаграммы
     const renderTooltip = ({ active, payload }) => {
         if (!active || !payload?.length) return null;
         const { value, payload: data } = payload[0];
         const name = data.name;
-        const quantity = data.quantity || 0;
+        const count = data.count || 0;
         const percent = Math.round((value / getTotalCost()) * 100); // % от общего числа
 
         return (
@@ -287,7 +301,7 @@ export default function PieChartAssets() {
                 {(["ground", "property"].includes(payload[0].payload.id)) && <p>Кадастровая стоимость: <strong>{formatNumber(value)} ₽</strong></p>}
                 {(payload[0].payload.id === "debit") && <p>Дебиторская задолженность: <strong>{formatNumber(value)} ₽</strong></p>}
                 {(payload[0].payload.id === "another") && <p>Сумма взыскания: <strong>{formatNumber(value)} ₽</strong></p>}
-                <p>Количество: <strong>{formatNumber(quantity)}</strong></p>
+                <p>Количество: <strong>{formatNumber(count)}</strong></p>
                 <p>{percent}% от общей суммы</p>
             </TooltipWrapper>
         );
@@ -324,13 +338,11 @@ export default function PieChartAssets() {
 
     const handleDownload = async (e) => {
         e.preventDefault();
-
         try{
             enqueueSnackbar("Начало загрузки...", { variant: "info" });
-
-            const response = await downloadAPI.getDebtorActivesStat(inn, isderived);
+            const data = { isDerived, isArchived, clientIds: [ clientId ] };
+            const response = await DownloadAPI.getActivesStatistics(data);
             downloadExcel(response);
-
             enqueueSnackbar("Загружено",  { variant: "info" });
         } catch (error) {
             console.log(error);
@@ -338,7 +350,20 @@ export default function PieChartAssets() {
         }
     };
 
-    // Основной JSX, содержащий диаграмму и общую стоимость
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     return (
         <>
             <ChartContainer>
@@ -379,7 +404,7 @@ export default function PieChartAssets() {
                 <InfoSection>
                     <TotalValueContainer>
                         <p>Общая стоимость активов:</p>
-                        <p>{formatNumber(totalCost)} ₽</p>
+                        <p>{formatNumber(activesStatistics.value.TOTAL)} ₽</p>
                     </TotalValueContainer>
 
                     {renderCustomLegend()}

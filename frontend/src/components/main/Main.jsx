@@ -13,6 +13,7 @@ import {
     pageDetection,
     fetchGetClients,
 } from "../../store/main/mainSlice.js";
+import { setClientInfo } from "../../store/client/clientSlice.js";
 import {formatNumber } from "../../utils/formatData.js"
 import { DownloadAPI } from "../../store/API.js";
 import { downloadExcel } from "../../utils/downloadExcel.js"
@@ -255,12 +256,11 @@ export const Main = () => {
             setSelectedClientId(selectedClientId.filter(value => value !== id));
     };
 
-
-    const handleLink = (event, id) => {
+    const handleLink = (event, row) => {
         if (event.target.type === 'checkbox') return;
-        navigate(`/client/${id}`)
+        dispatch(setClientInfo(row))
+        navigate(`/client/${row.id}`)
     }
-
 
     const downloadStatistics = async target => {
         if (!selectedClientId.length > 0) {
@@ -410,7 +410,7 @@ export const Main = () => {
 const MemoizedRow = React.memo(({ row, rowIndex, selectedClientId, handleSelectClient, handleLink, renderTableCells, isDerived }) => {
     return (
         <Tr key={rowIndex} isSelected={selectedClientId.includes(row.id)} cursor={true}
-            onClick={event => handleLink(event, row.id)}>
+            onClick={event => handleLink(event, row)}>
             <td onClick={event => event.stopPropagation()}>
                 <CustomCheckbox>
                     <input

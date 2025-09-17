@@ -5,8 +5,9 @@ import {
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import { setupRequestInterceptor, setupResponseInterceptor } from "./API.js";
-import userReducer, { clearUser, updateServiceMode, useIsAuth } from "./user/userSlice.js";
+import userReducer, { clearUser, updateServiceMode } from "./user/userSlice.js";
 import mainReducer, { clearMain } from "./main/mainSlice.js";
+import clientReducer, { clearClient } from "./client/clientSlice.js";
 import activesReducer from "./activesSlice";
 import interactionsReducer from "./interactionsSlice";
 import fileStorageReducer from "./fileStorageSlice";
@@ -21,6 +22,7 @@ const persistConfig = {
 const rootReducer = combineReducers({
     user: userReducer,
     main: mainReducer,
+    client: clientReducer,
     actives: activesReducer,
     interactions: interactionsReducer,
     fileStorage: fileStorageReducer,
@@ -42,6 +44,7 @@ export const persistor = persistStore(store)
 export default function logout() {
     store.dispatch(clearMain());
     store.dispatch(clearUser());
+    store.dispatch(clearClient())
 }
 
 setupRequestInterceptor(store);

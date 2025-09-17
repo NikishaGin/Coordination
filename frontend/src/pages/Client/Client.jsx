@@ -1,21 +1,21 @@
 import React, {useState, useEffect, useMemo, useCallback, Suspense, lazy, memo} from 'react';
-import {useNavigate, useParams} from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import styled, {createGlobalStyle} from "styled-components";
-import {activesAPI} from "../../api/index.js";
 import {TableResolutions} from "./sections/Info/TableResolutions.jsx";
 import ActivesStatistics from "./sections/Info/ActivesStatistics.jsx";
-import {TableRowTransport} from "./sections/Actives/TableRowTransport.jsx";
-import {TableRowProperty} from "./sections/Actives/TableRowProperty.jsx";
-import {TableRowDebit} from "./sections/Actives/TableRowDebit.jsx";
-import {TableOtherAssets} from "./sections/Actives/TableOtherAssets.jsx";
-import {tableHeadersAnother, tableHeadersDebit, tableHeadersProperty, tableHeadersTransport} from "./sections/Actives/components/table/tableHeaders.js";
-import { AddButton } from "./sections/Actives/components/modalForm/AddButton.jsx";
-import DebitForm from "./sections/Actives/components/modalForm/DebitForm.jsx";
-import OtherAssetForm from "./sections/Actives/components/modalForm/OtherAssetForm.jsx";
-import InteractionResultForm from "./sections/Interaction/InteractionResultForm.jsx";
-import TnoInteractionResultForm from "./sections/Interaction/TnoInteractionResultForm.jsx";
+// import {TableRowTransport} from "./sections/Actives/TableRowTransport.jsx";
+// import {TableRowProperty} from "./sections/Actives/TableRowProperty.jsx";
+// import {TableRowDebit} from "./sections/Actives/TableRowDebit.jsx";
+// import {TableOtherAssets} from "./sections/Actives/TableOtherAssets.jsx";
+// import {tableHeadersAnother, tableHeadersDebit, tableHeadersProperty, tableHeadersTransport} from "./sections/Actives/components/table/tableHeaders.js";
+// import { AddButton } from "./sections/Actives/components/modalForm/AddButton.jsx";
+// import DebitForm from "./sections/Actives/components/modalForm/DebitForm.jsx";
+// import OtherAssetForm from "./sections/Actives/components/modalForm/OtherAssetForm.jsx";
+// import InteractionResultForm from "./sections/Interaction/InteractionResultForm.jsx";
+// import TnoInteractionResultForm from "./sections/Interaction/TnoInteractionResultForm.jsx";
 import { useDispatch } from "react-redux";
 import { clearSelectedRows } from "../../store/activesSlice.js";
+import { useClientId, useClientInfo } from "../../store/client/clientSlice.js";
 
 
 
@@ -175,18 +175,17 @@ const TableUniversal = lazy(() => import('./sections/Actives/components/table/Ta
 
 
 export const Client = memo(() => {
-    const dispatch = useDispatch();
-    const {inn} = useParams();
+    // const dispatch = useDispatch();
     const navigate = useNavigate();
     const [nav, setNav] = useState("info");
     const [sidebarNav, setSidebarNav] = useState("");
-    const [info, setInfo] = useState({});
+    const clientId = useClientId()
+    const info = useClientInfo();
 
     useEffect(() => {
-        activesAPI.getInfo(inn)
-            .then(data => setInfo(data.data))
-            .catch(console.log)
-    }, [inn]);
+        if (!clientId)
+            navigate('/coordination');
+    }, [clientId])
 
     useEffect(() => {
         const firstSidebarItem = sidebarItems[nav]?.[0];
@@ -196,21 +195,21 @@ export const Client = memo(() => {
     }, [nav]);
 
     useEffect(() => {
-        if (nav === "actives")
-            dispatch(clearSelectedRows())
+        // if (nav === "actives")
+        //     dispatch(clearSelectedRows())
     }, [nav, sidebarNav]);
 
 
     const mainNavItems = useMemo(() => [
         {key: "info", label: "Информация о должнике"},
-        {key: "actives", label: "Активы должника"},
-        {key: "interaction", label: "Взаимодействие"},
+        // {key: "actives", label: "Активы должника"},
+        //  {key: "interaction", label: "Взаимодействие"},
     ], []);
 
     const sidebarItems = useMemo(() => ({
         info: ["Постановления", "Статистика по активам"],
-        actives: ["Транспорт", "Недвижимость", "Земельные участки", "Дебиторская задолженность", "Иные активы"],
-        interaction: ["Направление ходатайства в ГМУ", "Примечание ТНО"]
+        // actives: ["Транспорт", "Недвижимость", "Земельные участки", "Дебиторская задолженность", "Иные активы"],
+        // interaction: ["Направление ходатайства в ГМУ", "Примечание ТНО"]
     }), []);
 
     const contentMap = useMemo(() => ({
@@ -218,53 +217,53 @@ export const Client = memo(() => {
             "Постановления": <TableResolutions/>,
             "Статистика по активам": <ActivesStatistics/>
         },
-        actives: {
-            'Транспорт': (
-                <TableUniversal
-                    type="transport"
-                    headers={tableHeadersTransport}
-                    RowComponent={TableRowTransport}
-                />
-            ),
-            'Недвижимость': (
-                <TableUniversal
-                    type="property"
-                    headers={tableHeadersProperty}
-                    RowComponent={TableRowProperty}
-                />
-            ),
-            'Земельные участки': (
-                <TableUniversal
-                    type="ground"
-                    headers={tableHeadersProperty}
-                    RowComponent={TableRowProperty}
-                />
-            ),
-            'Дебиторская задолженность': (
-                <TableUniversal
-                    type="debit"
-                    headers={tableHeadersDebit}
-                    RowComponent={TableRowDebit}
-                    Button={<AddButton titleBtn="Добавить дебиторскую задолженность" Form={DebitForm}/>}
-                />
-            ),
-            "Иные активы": (
-                <TableUniversal
-                    type="another"
-                    headers={tableHeadersAnother}
-                    RowComponent={TableOtherAssets}
-                    Button={<AddButton titleBtn="Добавить иные активы" Form={OtherAssetForm}/>}
-                />
-            )
-        },
-        interaction: {
-            "Направление ходатайства в ГМУ": (
-                <InteractionResultForm/>
-            ),
-            'Примечание ТНО': (
-                <TnoInteractionResultForm/>
-            )
-        }
+        // actives: {
+        //     'Транспорт': (
+        //         <TableUniversal
+        //             type="transport"
+        //             headers={tableHeadersTransport}
+        //             RowComponent={TableRowTransport}
+        //         />
+        //     ),
+        //     'Недвижимость': (
+        //         <TableUniversal
+        //             type="property"
+        //             headers={tableHeadersProperty}
+        //             RowComponent={TableRowProperty}
+        //         />
+        //     ),
+        //     'Земельные участки': (
+        //         <TableUniversal
+        //             type="ground"
+        //             headers={tableHeadersProperty}
+        //             RowComponent={TableRowProperty}
+        //         />
+        //     ),
+        //     'Дебиторская задолженность': (
+        //         <TableUniversal
+        //             type="debit"
+        //             headers={tableHeadersDebit}
+        //             RowComponent={TableRowDebit}
+        //             Button={<AddButton titleBtn="Добавить дебиторскую задолженность" Form={DebitForm}/>}
+        //         />
+        //     ),
+        //     "Иные активы": (
+        //         <TableUniversal
+        //             type="another"
+        //             headers={tableHeadersAnother}
+        //             RowComponent={TableOtherAssets}
+        //             Button={<AddButton titleBtn="Добавить иные активы" Form={OtherAssetForm}/>}
+        //         />
+        //     )
+        // },
+        // interaction: {
+        //     "Направление ходатайства в ГМУ": (
+        //         <InteractionResultForm/>
+        //     ),
+        //     'Примечание ТНО': (
+        //         <TnoInteractionResultForm/>
+        //     )
+        // }
     }), []);
 
     const handleNavClick = useCallback((key) => {
@@ -301,9 +300,9 @@ export const Client = memo(() => {
                     <CompanyTitle>{info.name}</CompanyTitle>
                     <InfoBox>
                         <div><span>ИНН:</span>&emsp;{info.inn}</div>
-                        <div><span>Код НО:</span>&emsp;{info.kno}</div>
+                        <div><span>Код НО:</span>&emsp;{info.CodeTNO}</div>
                         <div><span>Категория должника:</span>&emsp;{info.category}</div>
-                        {(info.sosp_code) && <div><span>Код СОСП:</span>&emsp;{info.sosp_code}</div>}
+                        {(info.CodeSOSP) && <div><span>Код СОСП:</span>&emsp;{info.CodeSOSP}</div>}
                     </InfoBox>
                     <Nav>
                         {mainNavItems.map(({key, label}) => (

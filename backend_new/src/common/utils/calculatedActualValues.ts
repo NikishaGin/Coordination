@@ -90,8 +90,8 @@ export function destructuringRealization(
         {}
     ) as Prisma.RealizationsGetPayload<{}>;
 
-    realizationFirst['actionStatus'] = getActionRealizationStatus(realization['first']);
-    realizationSecond['actionStatus'] = getActionRealizationStatus(realization['second']);
+    realizationFirst['actionStatus'] = getActionRealizationStatus(realizationFirst);
+    realizationSecond['actionStatus'] = getActionRealizationStatus(realizationSecond);
 
     return { realizationFirst, realizationSecond };
 }

@@ -57,17 +57,17 @@ export const AuthAPI = {
 }
 
 export const MainAPI = {
-    getRegions: (data) => instance.get('main/regions', { params: data }),
-    getClientCategories: (data) => instance.get('main/categories', { params: data }),
-    getStatusesIP: (data) => instance.get('main/statuses-ip', { params: data }),
-    getClients: (data, signal) => instance.get('main/clients', { params: data, signal }),
+    getRegions: (params) => instance.get('main/regions', { params }),
+    getClientCategories: (params) => instance.get('main/categories', { params }),
+    getStatusesIP: (params) => instance.get('main/statuses-ip', { params }),
+    getClients: (params, signal) => instance.get('main/clients', { params, signal }),
 }
 
 export const ClientAPI = {
-    getResolutions: () => instance.get('clients/resolutions'),
-    getInteractions: () => instance.get('clients/interactions'),
-    createInteraction: () => instance.post('clients/interaction'),
-    updateInteraction: () => instance.patch('clients/interaction'),
+    getResolutions: (clientId, params) => instance.get(`clients/${clientId}/resolutions`, { params }),
+    getInteractions: (clientId) => instance.get(`clients/${clientId}/interactions`),
+    createInteraction: (clientId) => instance.post(`clients/${clientId}/interactions`),
+    updateInteraction: (interactionId) => instance.patch(`clients/${interactionId}/interactions`),
 }
 
 export const ActiveAPI = {
@@ -78,9 +78,9 @@ export const ActiveAPI = {
 }
 
 export const DownloadAPI = {
-    getCommonStatistics: (data) => instance.get('download/common-statistics', { params: data, responseType: 'blob' }),
-    getResolutionsStatistics: (data) => instance.get('download/resolutions-statistics', { params: data, responseType: 'blob' }),
-    getActivesStatistics: (data) => instance.get('download/actives-statistics', { params: data, responseType: 'blob' }),
+    getCommonStatistics: (params) => instance.get('download/common-statistics', { params, responseType: 'blob' }),
+    getResolutionsStatistics: (params) => instance.get('download/resolutions-statistics', { params, responseType: 'blob' }),
+    getActivesStatistics: (params) => instance.get('download/actives-statistics', { params, responseType: 'blob' }),
 }
 
 export const LibraryAPI = {

@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from "react-router";
 import { Login } from "../pages/Login.jsx";
 import { Coordination } from "../pages/Coordination.jsx";
-// import { Client } from "../pages/Client/Client.jsx";
+import { Client } from "../pages/Client/Client.jsx";
 // import { Library } from "../pages/Library.jsx";
 import { RegionalStatistics } from "../pages/RegionalStatistics.jsx";
 import Layout from "./Layout.jsx";
@@ -30,7 +30,7 @@ export const AppRoutes = ({ isAuth }) => {
                 </Route>
 
                 {/*/!* Без Layout вообще *!/*/}
-                {/*<Route path="/client/:inn" element={<Client />} />*/}
+                <Route path="/client/:clientId" element={<Client />} />
 
                 {/* Перенаправление */}
                 <Route path="*" element={<Navigate to="/coordination" replace />} />

@@ -1,18 +1,21 @@
-import {Body, Controller, Get, Param, Patch, Post, Query} from '@nestjs/common';
+import {Body, Controller, Get, Param, Patch, Post, Query, UseGuards} from '@nestjs/common';
 import { ClientService } from './client.service';
 import { GetResolutionsParamsDto } from './client.dto';
+import {JwtAuthGuard} from "../../common/guards/auth.guard";
 // import { ActivesType, InteractionType } from '../../generated/prisma/enums';
 
+
+@UseGuards(JwtAuthGuard)
 @Controller('clients')
 export class ClientController {
     constructor(private readonly clientService: ClientService) {}
 
-    @Get('resolutions/:clientId')
+    @Get('/:clientId/resolutions')
     getResolutions(
         @Param('clientId') clientId: number,
         @Query() query: GetResolutionsParamsDto
     ) {
-        return this.clientService.getResolutions(clientId, query.isDerived, query.isArchived);
+        return this.clientService.getResolutions(clientId, query);
     }
 
     /*

@@ -6,12 +6,8 @@ import { ExcelColumnOptions, ExcelSheetOptions } from './excel/excel.interface';
 import { GetDownloadParamsDto } from './download.dto';
 import * as ExcelJS from 'exceljs';
 import { Prisma } from '../../generated/prisma/client';
-import {createDataFilters, getArchivedFilter, getDerivedFilter} from '../../common/utils/ResolutionsFilter';
-import {
-    HEADERS_ACTIVES_STATISTICS,
-    HEADERS_COMMON_STATISTICS,
-    HEADERS_RESOLUTIONS_STATISTICS,
-} from './download.headers';
+import { createDataFilters } from '../../common/utils/ResolutionsFilter';
+import { HEADERS_ACTIVES_STATISTICS, HEADERS_COMMON_STATISTICS, HEADERS_RESOLUTIONS_STATISTICS } from './download.headers';
 import { ActivesType, LeasStatus, WantedResults } from '../../generated/prisma/enums';
 import {STATUS_TYPE, VERIFICATION_STATUS, WANTED_STATUS} from "../../common/constants";
 import {
@@ -181,14 +177,11 @@ export class DownloadService {
                 if (active.wanted)
                     active.wanted['resultText'] = getValueFromMap(active.wanted.result, WANTED_STATUS);
 
-                /*
                 if (active.realization) {
                     const realization = destructuringRealization(active.realization);
                     active['realizationFirst'] = realization.realizationFirst;
                     active['realizationSecond'] = realization.realizationSecond;
                 }
-
-                 */
             }
 
             return { name, columns, data: actives };

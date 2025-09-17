@@ -1,9 +1,13 @@
-import React, {useEffect, useState} from 'react';
-import {formatDate, formatNumber} from "../../../../utils/formatData.js";
+import React, { useEffect } from 'react';
+import { useDispatch } from "react-redux";
 import styled from "styled-components";
-import {activesAPI} from "../../../../api/index.js";
-import {useParams} from "react-router";
-import { useSelector } from "react-redux";
+import {
+    fetchGetActivesStatistics,
+    fetchGetResolutions,
+    useResolutions
+} from "../../../../store/client/clientSlice.js";
+import { formatDate, formatNumber } from "../../../../utils/formatData.js";
+
 
 const Container = styled.div`
   height: calc(100vh - 300px);
@@ -81,15 +85,16 @@ const DateCell = styled(TableCell)`
   color: #c0c0c0;
 `;
 
+
+
 export const TableResolutions = () => {
-
-    const {inn} = useParams();
-    const pageKey = useSelector((state) => state.global.pageKey);
-
-    const [resolutions, setResolutions] = useState([])
+    const dispatch = useDispatch();
+    const resolutions = useResolutions();
 
     useEffect(() => {
-        activesAPI.getResolutions(inn, pageKey).then(data => setResolutions(data.data)).catch(console.log)
+        dispatch(fetchGetResolutions())
+
+        dispatch(fetchGetActivesStatistics());
     }, [])
 
     return (
@@ -109,12 +114,12 @@ export const TableResolutions = () => {
                     <tbody>
                     {resolutions.map((data, index) => (
                         <TableRow key={index}>
-                            <TableCell>{data.resolutions_number}</TableCell>
-                            <DateCell>{formatDate(data.resolutions_date)}</DateCell>
-                            <NumberCell>{formatNumber(data.resolutions_sum)}</NumberCell>
-                            <NumberCell>{formatNumber(data.cur_debt)}</NumberCell>
-                            <TableCell>{data.exec_number}</TableCell>
-                            <DateCell>{formatDate(data.exec_date)}</DateCell>
+                            <TableCell>{data.number}</TableCell>
+                            <DateCell>{formatDate(data.date)}</DateCell>
+                            <NumberCell>{formatNumber(data.amount)}</NumberCell>
+                            <NumberCell>{formatNumber(data.balance)}</NumberCell>
+                            <TableCell>{data.WritExecutionNumber}</TableCell>
+                            <DateCell>{formatDate(data.WritExecutionBeginDate)}</DateCell>
                         </TableRow>
                     ))}
                     </tbody>

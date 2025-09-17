@@ -8,7 +8,8 @@ let currentAbortController = null;
 
 
 export const thunkGetRegions = async (_, { rejectWithValue, getState }) => {
-    const data = getState().main
+    const { isDerived, isArchived } = getState().main;
+    const data = { isDerived, isArchived };
     try {
         const response = await MainAPI.getRegions(data);
         return response.data;

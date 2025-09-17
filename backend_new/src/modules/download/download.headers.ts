@@ -30,13 +30,13 @@ const ID_HEADERS: IdHeaders = (
 const COMMON_AGGREGATED_ACTIVE_HEADERS: CommonAggregatedActives = (
     type: KeyCommonStatistics
 ) => [
-    { header: 'Арест имущества, ₽',                     key: `amounts.active.${type}.arrest`,            isNumber: true },
+    { header: 'Арест имущества, ₽',                     key: `amounts.active.${type}.arrest`,            isNumber: true, fillNull: 0 },
     { header: 'Обеспеченность остатка долга арестом',   key: `securingArrest.${type}` },
-    { header: 'Оценка имущества, ₽',                    key: `amounts.active.${type}.evaluation`,        isNumber: true },
-    { header: 'Принудительная реализация, ₽',           key: `amounts.active.${type}.realizationFirst`,  isNumber: true },
-    { header: 'Торги 2 этап, ₽',                        key: `amounts.active.${type}.realizationSecond`, isNumber: true },
-    { header: 'Результат принудительной реализации, ₽', key: `amounts.active.${type}.realizationResult`, isNumber: true },
-    { header: 'Сумма возврата имущества должнику, ₽',   key: `amounts.active.${type}.refundProperty`,    isNumber: true },
+    { header: 'Оценка имущества, ₽',                    key: `amounts.active.${type}.evaluation`,        isNumber: true, fillNull: 0 },
+    { header: 'Принудительная реализация, ₽',           key: `amounts.active.${type}.realizationFirst`,  isNumber: true, fillNull: 0 },
+    { header: 'Торги 2 этап, ₽',                        key: `amounts.active.${type}.realizationSecond`, isNumber: true, fillNull: 0 },
+    { header: 'Результат принудительной реализации, ₽', key: `amounts.active.${type}.realizationResult`, isNumber: true, fillNull: 0 },
+    { header: 'Сумма возврата имущества должнику, ₽',   key: `amounts.active.${type}.refundProperty`,    isNumber: true, fillNull: 0 },
 ];
 
 export const HEADERS_COMMON_STATISTICS: CommonStatistics = (isDerived: boolean) => {
@@ -44,24 +44,24 @@ export const HEADERS_COMMON_STATISTICS: CommonStatistics = (isDerived: boolean) 
     return {
         COMMON: [
             ...ID_HEADERS(),
-            { header: `Сумма ${sourceResolution}, ₽`,                                  key: 'amounts.resolution.amount',              isNumber: true },
-            { header: `Остаток ${sourceResolution}, ₽`,                                key: 'amounts.resolution.balance',             isNumber: true },
+            { header: `Сумма ${sourceResolution}, ₽`,                                  key: 'amounts.resolution.amount',              isNumber: true, fillNull: 0 },
+            { header: `Остаток ${sourceResolution}, ₽`,                                key: 'amounts.resolution.balance',             isNumber: true, fillNull: 0 },
             { header: 'Категория должника',                                            key: 'category.category' },
-            { header: 'Сумма активов и дебиторской задолженности, ₽',                  key: 'amounts.active.COMMON.totalSum',         isNumber: true },
+            { header: 'Сумма активов и дебиторской задолженности, ₽',                  key: 'amounts.active.COMMON.totalSum',         isNumber: true, fillNull: 0 },
             ...COMMON_AGGREGATED_ACTIVE_HEADERS('COMMON'),
-            { header: 'Сумма по обращениям на взыскания дебиторской задолженности, ₽', key: 'amounts.active.COMMON.debitForeclosure', isNumber: true },
+            { header: 'Сумма по обращениям на взыскания дебиторской задолженности, ₽', key: 'amounts.active.COMMON.debitForeclosure', isNumber: true, fillNull: 0 },
             { header: 'Статус ИП',                                                     key: 'statusIP' },
         ],
         ACTIVE: [
             ...ID_HEADERS(),
-            { header: 'Сумма активов, ₽',                                              key: 'amounts.active.ACTIVE.totalSum',         isNumber: true },
+            { header: 'Сумма активов, ₽',                                              key: 'amounts.active.ACTIVE.totalSum',         isNumber: true, fillNull: 0 },
             ...COMMON_AGGREGATED_ACTIVE_HEADERS('ACTIVE'),
         ],
         DEBIT: [
             ...ID_HEADERS(),
-            { header: 'Сумма дебиторской задолженности, ₽',                            key: 'amounts.active.DEBIT.totalSum',          isNumber: true },
+            { header: 'Сумма дебиторской задолженности, ₽',                            key: 'amounts.active.DEBIT.totalSum',          isNumber: true, fillNull: 0 },
             ...COMMON_AGGREGATED_ACTIVE_HEADERS('DEBIT'),
-            { header: 'Сумма по обращениям на взыскания дебиторской задолженности, ₽', key: 'amounts.active.DEBIT.debitForeclosure',  isNumber: true },
+            { header: 'Сумма по обращениям на взыскания дебиторской задолженности, ₽', key: 'amounts.active.DEBIT.debitForeclosure',  isNumber: true, fillNull: 0 },
         ],
     }
 };

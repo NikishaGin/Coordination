@@ -14,33 +14,33 @@ export class ExcelService {
 
     private addSheet(workbook: ExcelJS.Workbook, options: ExcelSheetOptions) {
         const worksheet = workbook.addWorksheet(options.name);
-        worksheet.columns = options.columns;
-        // const numFmt = options.columns.map(({ numFmt }) => numFmt)
         if (options.data.length > 0) {
             options.data.forEach((rowData) => {
                 // доп обработка
 
-                this.extractRowValues(rowData, options.columns);
+                const rowValues = this.extractRowValues(rowData, options.columns);
+                worksheet.addRow(rowValues);
             });
         }
-        this.applySheetStyles(worksheet);
+        this.applySheetStyles(worksheet, options.columns);
     }
 
-    private extractRowValues(rowData, columns: ExcelColumnOptions[]) {
-        const extract = (current, key: string) => {
+    private extractRowValues(rowData: any[], columns: ExcelColumnOptions[]) {
+        const extract = (current: any, key: string) => {
             return current && current[key] ? current[key] : null;
         };
         return columns.map((column) => {
             if (!column.key) return undefined;
             const transform = value => column.isNumber ? Number(value) : value;
+            const defailtValue = column.fillNull !== undefined ? column.fillNull : '';
             const value = column.key.split('.').reduce(extract, rowData);
-            return value ? transform(value) : '';
+            return value ? transform(value) : defailtValue;
         });
     }
 
-    private applySheetStyles(
-        worksheet: ExcelJS.Worksheet,
-    ): void {
+    private applySheetStyles(worksheet: ExcelJS.Worksheet, columns: ExcelColumnOptions[]) {
+        worksheet.columns = columns;
+
         worksheet.views = [
             {
                 state: 'frozen',
@@ -48,13 +48,10 @@ export class ExcelService {
             }
         ];
 
-        worksheet.columns.forEach((column, index) => {
-            column.width = 40;
-
-            // if (numFmt[index] !== undefined) {
-            //     column.numFmt = numFmt[index];
-            // }
-
+        worksheet.columns.forEach((col, indexCol) => {
+            col.width = 40;
+            if (columns[indexCol].isNumber)
+                col.numFmt = '#,##0.00';
         });
 
         worksheet.eachRow((row, rowNumber) => {
