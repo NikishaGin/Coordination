@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
-import { ActivesType, DataStatus, WantedResults } from '../../generated/prisma/enums';
-import {Prisma} from "../../generated/prisma/client";
+import { ActivesType, WantedResults } from '../../generated/prisma/enums';
+import { ActivesStatisticsType } from "./active.type";
 
 @Injectable()
 export class ActiveService {
@@ -29,19 +29,24 @@ export class ActiveService {
             _count: { id: true },
         });
 
-        const x = stats
-            .map(({ type, _sum, _count }) => [
-                type,
-                {
-                amount: Number(_sum.cost),
-                count: _count.id
-                }
-            ])
-            .filter((_, { amount }) => amount > 0)
+        const result: ActivesStatisticsType[] = [];
+        const total = 0;
+        stats.forEach(({ type, _sum, _count }) => {
+            const amount = _sum?.cost ? Number(_sum?.cost) : 0;
+            const count = _count?.id || 0;
+            if (amount > 0) {
+                entriesStats.push([type, {amount, count}])
 
-        console.log(x)
 
-        return stats;
+
+                total.amount += amount;
+                total.count += count;
+            }
+        });
+        if (entriesStats.length > 0)
+            entriesStats.push(['TOTAL', total])
+
+        return result;
     }
 
 

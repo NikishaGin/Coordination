@@ -292,7 +292,7 @@ export default function PieChartAssets() {
         const { value, payload: data } = payload[0];
         const name = data.name;
         const count = data.count || 0;
-        const percent = Math.round((value / getTotalCost()) * 100); // % от общего числа
+        const percent = Math.round((value / activesStatistics.values.TOTAL.amount) * 100);
 
         return (
             <TooltipWrapper>
@@ -309,10 +309,10 @@ export default function PieChartAssets() {
 
     // Получение готовых данных для графика и суммы
     const chartData = getChartData();
-    const totalCost = getTotalCost();
+    const totalCost = activesStatistics.values.TOTAL.amount;
 
     // Отображение загрузки или отсутствия данных
-    if (loading) return <p>Загрузка...</p>;
+    if (activesStatistics.loading) return <p>Загрузка...</p>;
     if (chartData.length === 0) return <NoDataDisplay message="Нет данных о стоимости активов" />;
 
     // Рендер кастомных легенд

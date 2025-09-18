@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { useDispatch } from "react-redux";
 import styled from "styled-components";
 import {
-    fetchGetActivesStatistics,
     fetchGetResolutions,
     useResolutions
 } from "../../../../store/client/clientSlice.js";
@@ -92,9 +91,7 @@ export const TableResolutions = () => {
     const resolutions = useResolutions();
 
     useEffect(() => {
-        dispatch(fetchGetResolutions())
-
-        dispatch(fetchGetActivesStatistics());
+        dispatch(fetchGetResolutions());
     }, [])
 
     return (

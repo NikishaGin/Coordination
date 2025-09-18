@@ -61,13 +61,7 @@ const clientSlice = createSlice({
                 state.activesStatistics.received = false;
             })
             .addCase(fetchGetActivesStatistics.fulfilled, (state, { payload }) => {
-                state.activesStatistics.values.TOTAL = payload;
-                payload.forEach(({ type, _sum, _count }) => {
-                    state.activesStatistics.values[type].amount = _sum.cost;
-                    state.activesStatistics.values[type].count = _count.id;
-                    state.activesStatistics.values.TOTAL.amount += _sum.cost;
-                    state.activesStatistics.values.TOTAL.count += _count.id;
-                });
+                state.activesStatistics.values = payload;
                 state.activesStatistics.loading = false;
                 state.activesStatistics.received = true;
             })
