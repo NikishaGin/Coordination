@@ -1,14 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
+import { ActivesStatisticsResultType, ActivesStatisticsType } from "./active.type";
 import { ActivesType, WantedResults } from '../../generated/prisma/enums';
-import { ActivesStatisticsType } from "./active.type";
+import { OrderActives } from "../../common/constants";
+
+
 
 @Injectable()
 export class ActiveService {
     constructor(private prisma: PrismaService) {}
 
-    async getActivesStatistics(clientId: number) {
-        const stats = await this.prisma.actives.groupBy({
+    async getActivesStatistics(clientId: number): Promise<ActivesStatisticsResultType> {
+        const data = await this.prisma.actives.groupBy({
             by: ['type'],
             where: {
                 clientId,
@@ -29,37 +32,22 @@ export class ActiveService {
             _count: { id: true },
         });
 
-        const result: ActivesStatisticsType[] = [];
-        const total = 0;
-        stats.forEach(({ type, _sum, _count }) => {
-            const amount = _sum?.cost ? Number(_sum?.cost) : 0;
+        let stats: ActivesStatisticsType[] = [];
+        let TOTAL = 0;
+        data.forEach(({ type, _sum, _count }) => {
+            const value = _sum?.cost ? Number(_sum?.cost) : 0;
             const count = _count?.id || 0;
-            if (amount > 0) {
-                entriesStats.push([type, {amount, count}])
-
-
-
-                total.amount += amount;
-                total.count += count;
+            if (value > 0) {
+                stats.push({ id: type, value, count });
+                TOTAL += value;
             }
         });
-        if (entriesStats.length > 0)
-            entriesStats.push(['TOTAL', total])
+        stats = stats.sort((a, b) => {
+            return OrderActives[a.id] - OrderActives[b.id]
+        });
 
-        return result;
+        return { stats, TOTAL };
     }
-
-
-
-
-
-
-
-
-
-
-
-
 
     getActives(clientId: number, type: ActivesType): Promise<any[]> {
         return this.prisma.actives.findMany({

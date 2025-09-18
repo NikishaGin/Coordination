@@ -222,6 +222,14 @@ const ASSET_NAMES = {
     [ActivesType.OTHER]: "Прочие активы"
 };
 
+const COST_NAMES = {
+    [ActivesType.TRANSPORT]: "Рыночная стоимость: ",
+    [ActivesType.PROPERTY]: "Кадастровая стоимость: ",
+    [ActivesType.GROUND]: "Кадастровая стоимость: ",
+    [ActivesType.DEBIT]: "Дебиторская задолженность: ",
+    [ActivesType.OTHER]: "Сумма взыскания: "
+};
+
 
 
 const NoDataDisplay = ({ message = "Нет данных" }) => (
@@ -234,9 +242,10 @@ const NoDataDisplay = ({ message = "Нет данных" }) => (
 
 export default function PieChartAssets() {
     const dispatch = useDispatch();
+
     const { isDerived, isArchived } = usePageMeta();
     const clientId = useClientId()
-    const activesStatistics = useActivesStatistics();
+    const { loading, values: activesStatistics } = useActivesStatistics();
 
 
     useEffect(() => {
@@ -244,46 +253,13 @@ export default function PieChartAssets() {
     }, []);
 
 
-
-
-
-
-
-
-
-
     // Подготовка данных для отображения в диаграмме
-    const getChartData = () => {
-        if (!activesStatistics.received) return [];
-
-
-
-        return Object.entries(ASSET_NAMES)
-            .map(([key, name]) => {
-
-                const cost = parseCost(assets[key]); // Стоимость актива
-                const count = assets[key]?.count || 0; // Кол-во активов
-                return cost > 0 ? { id: key, name, value: cost, count } : null;
-
-
-            })
-            .filter(Boolean); // Убираем null
-
-
-
-
-    };
-
-    // Расчёт общей стоимости всех активов
-    const getTotalCost = () => {
-        if (!assets) return 0;
-
-        return Object.keys(ASSET_NAMES)
-            .reduce((sum, key) => sum + parseCost(assets[key]), 0);
-    };
-
-
-
+    const chartData = activesStatistics.stats.map(
+        item => ({
+            ...item,
+            name: ASSET_NAMES[item.id],
+        })
+    );
 
 
     // Компонент всплывающей подсказки при наведении на сектор диаграммы
@@ -291,29 +267,20 @@ export default function PieChartAssets() {
         if (!active || !payload?.length) return null;
         const { value, payload: data } = payload[0];
         const name = data.name;
+        const name_cost = COST_NAMES[data.id];
         const count = data.count || 0;
-        const percent = Math.round((value / activesStatistics.values.TOTAL.amount) * 100);
+        const percent = ((value / activesStatistics.TOTAL) * 100).toFixed(2);
 
         return (
             <TooltipWrapper>
                 <p><strong>{name}</strong></p>
-                {(payload[0].payload.id === "transport") && <p>Рыночная стоимость: <strong>{formatNumber(value)} ₽</strong></p>}
-                {(["ground", "property"].includes(payload[0].payload.id)) && <p>Кадастровая стоимость: <strong>{formatNumber(value)} ₽</strong></p>}
-                {(payload[0].payload.id === "debit") && <p>Дебиторская задолженность: <strong>{formatNumber(value)} ₽</strong></p>}
-                {(payload[0].payload.id === "another") && <p>Сумма взыскания: <strong>{formatNumber(value)} ₽</strong></p>}
-                <p>Количество: <strong>{formatNumber(count)}</strong></p>
-                <p>{percent}% от общей суммы</p>
+                <p>{name_cost}<strong>{formatNumber(value)} ₽</strong></p>
+                <p>Количество: <strong>{count}</strong></p>
+                <p>{percent} % от общей суммы</p>
             </TooltipWrapper>
         );
     };
 
-    // Получение готовых данных для графика и суммы
-    const chartData = getChartData();
-    const totalCost = activesStatistics.values.TOTAL.amount;
-
-    // Отображение загрузки или отсутствия данных
-    if (activesStatistics.loading) return <p>Загрузка...</p>;
-    if (chartData.length === 0) return <NoDataDisplay message="Нет данных о стоимости активов" />;
 
     // Рендер кастомных легенд
     const renderCustomLegend = () => (
@@ -321,20 +288,21 @@ export default function PieChartAssets() {
             <LegendTitle>Структура активов</LegendTitle>
             <LegendWrapper>
                 {chartData.map((entry, index) => {
-                    const percent = Math.round((entry.value / totalCost) * 100);
+                    const percent = ((entry.value / activesStatistics.TOTAL) * 100).toFixed(2);
                     return (
                         <LegendItem key={`legend-${index}`}>
                             <LegendLabel>
                                 <LegendColorBox style={{ backgroundColor: COLORS[index % COLORS.length] }} />
                                 <span>{entry.name}</span>
                             </LegendLabel>
-                            <LegendValue>{formatNumber(entry.value)} ₽ ({percent}%)</LegendValue>
+                            <LegendValue>{formatNumber(entry.value)} ₽ ({percent} %)</LegendValue>
                         </LegendItem>
                     );
                 })}
             </LegendWrapper>
         </LegendContainer>
     );
+
 
     const handleDownload = async (e) => {
         e.preventDefault();
@@ -351,18 +319,8 @@ export default function PieChartAssets() {
     };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+    if (loading) return <p>Загрузка...</p>;
+    if (chartData.length === 0) return <NoDataDisplay message="Нет данных о стоимости активов" />;
 
     return (
         <>
@@ -404,7 +362,7 @@ export default function PieChartAssets() {
                 <InfoSection>
                     <TotalValueContainer>
                         <p>Общая стоимость активов:</p>
-                        <p>{formatNumber(activesStatistics.value.TOTAL)} ₽</p>
+                        <p>{formatNumber(activesStatistics.TOTAL)} ₽</p>
                     </TotalValueContainer>
 
                     {renderCustomLegend()}

@@ -7,20 +7,22 @@ import { MoneyInput } from "./components/inputs/MoneyInput.jsx";
 import { DatePickerCell } from "./components/inputs/DatePickerCell.jsx";
 import { EditableCell } from "./components/inputs/EditableCell.jsx";
 import { useDispatch, useSelector } from "react-redux";
-import { ROLES } from "../../../../types.js";
 import { formatNumber } from "../../../../utils/formatData.js";
 import { CustomCheckbox } from "./components/inputs/CustomCheckbox.jsx";
-import { toggleSelectedRow } from "../../../../store/activesSlice.js";
+import { toggleSelectedRow } from "../../../../store/active/activesSlice.js";
+import { useRoleDetection } from "../../../../store/user/userSlice.js";
 
 
 
 export const TableRowDebit = memo(({type, row, onValueChange}) => {
     const dispatch = useDispatch();
+
+    const { isAdmin } = useRoleDetection();
+
     const selectedRow = useSelector(state => state.actives.selectedRows[type])
     const role = useSelector((state) => state.user.role)
 
     const activeRow = selectedRow.includes(row.id);
-    const isAdmin = role === ROLES.Admin
 
     const handleSelectChange = (fieldName) => (val) => {
         onValueChange(row.id, fieldName, Number(val));

@@ -26,11 +26,11 @@ export class DownloadService {
     ) {}
 
     generateNameFile(prefix: string, isDerived: boolean, isArchived: boolean): string {
-        const source: string = isDerived ? ' производного долга' : ' взыскания по 47 ст.';
-        const isArchivedSource: string = isArchived ? 'архива' : '';
+        const source: string = isDerived ? 'производный долг' : 'взыскание по 47 ст.';
+        const isArchivedSource: string = isArchived ? ', архив' : '';
         const date = new Date();
-        const formatedDate = date.toLocaleString();
-        const filename = `${prefix} ${isArchivedSource}${source} (${formatedDate}).xlsx`;
+        const formatedDate = date.toLocaleDateString();
+        const filename = `${prefix} (${source}${isArchivedSource}) от ${formatedDate}.xlsx`;
         return encodeURIComponent(filename);
     }
 
@@ -177,7 +177,7 @@ export class DownloadService {
                 if (active.wanted)
                     active.wanted['resultText'] = getValueFromMap(active.wanted.result, WANTED_STATUS);
 
-                if (active.realization) {
+                if (active.realization && active.realization.length > 0) {
                     const realization = destructuringRealization(active.realization);
                     active['realizationFirst'] = realization.realizationFirst;
                     active['realizationSecond'] = realization.realizationSecond;

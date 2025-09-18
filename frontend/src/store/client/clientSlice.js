@@ -8,7 +8,6 @@ import { ActivesType } from "../../constants.js";
 export const fetchGetResolutions = createAsyncThunk('client/fetchGetResolutions', thunkGetResolutions)
 export const fetchGetActivesStatistics = createAsyncThunk('client/fetchGetActivesStatistics', thunkGetActivesStatistics)
 
-const statisticalValues = { amount: 0, count: 0 };
 const initialState = {
     clientId: null,
     info: {
@@ -21,14 +20,9 @@ const initialState = {
     resolutions: [],
     activesStatistics: {
         loading: true,
-        received: false,
         values: {
-            [ActivesType.TRANSPORT]: statisticalValues,
-            [ActivesType.PROPERTY]: statisticalValues,
-            [ActivesType.GROUND]: statisticalValues,
-            [ActivesType.DEBIT]: statisticalValues,
-            [ActivesType.OTHER]: statisticalValues,
-            TOTAL: statisticalValues,
+            stats: [],
+            TOTAL: null,
         }
     },
     interactions: {
@@ -58,16 +52,13 @@ const clientSlice = createSlice({
             })
             .addCase(fetchGetActivesStatistics.pending, (state) => {
                 state.activesStatistics.loading = true;
-                state.activesStatistics.received = false;
             })
             .addCase(fetchGetActivesStatistics.fulfilled, (state, { payload }) => {
                 state.activesStatistics.values = payload;
                 state.activesStatistics.loading = false;
-                state.activesStatistics.received = true;
             })
             .addCase(fetchGetActivesStatistics.rejected, (state) => {
                 state.activesStatistics.loading = false;
-                state.activesStatistics.received = false;
             })
     }
 });

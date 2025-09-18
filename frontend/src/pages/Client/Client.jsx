@@ -1,21 +1,22 @@
 import React, {useState, useEffect, useMemo, useCallback, Suspense, lazy, memo} from 'react';
-import { useNavigate, useSearchParams } from "react-router";
+import { useNavigate } from "react-router";
 import styled, {createGlobalStyle} from "styled-components";
 import {TableResolutions} from "./sections/Info/TableResolutions.jsx";
 import ActivesStatistics from "./sections/Info/ActivesStatistics.jsx";
-// import {TableRowTransport} from "./sections/Actives/TableRowTransport.jsx";
-// import {TableRowProperty} from "./sections/Actives/TableRowProperty.jsx";
-// import {TableRowDebit} from "./sections/Actives/TableRowDebit.jsx";
-// import {TableOtherAssets} from "./sections/Actives/TableOtherAssets.jsx";
-// import {tableHeadersAnother, tableHeadersDebit, tableHeadersProperty, tableHeadersTransport} from "./sections/Actives/components/table/tableHeaders.js";
+import {TableRowTransport} from "./sections/Actives/TableRowTransport.jsx";
+import {TableRowProperty} from "./sections/Actives/TableRowProperty.jsx";
+import {TableRowDebit} from "./sections/Actives/TableRowDebit.jsx";
+import {TableOtherAssets} from "./sections/Actives/TableOtherAssets.jsx";
+import {tableHeadersAnother, tableHeadersDebit, tableHeadersProperty, tableHeadersTransport} from "./sections/Actives/components/table/tableHeaders.js";
 // import { AddButton } from "./sections/Actives/components/modalForm/AddButton.jsx";
 // import DebitForm from "./sections/Actives/components/modalForm/DebitForm.jsx";
 // import OtherAssetForm from "./sections/Actives/components/modalForm/OtherAssetForm.jsx";
 // import InteractionResultForm from "./sections/Interaction/InteractionResultForm.jsx";
 // import TnoInteractionResultForm from "./sections/Interaction/TnoInteractionResultForm.jsx";
 import { useDispatch } from "react-redux";
-import { clearSelectedRows } from "../../store/activesSlice.js";
+// import { clearSelectedRows } from "../../store/active/activesSlice.js";
 import { useClientId, useClientInfo } from "../../store/client/clientSlice.js";
+import { ActivesType } from "../../constants.js";
 
 
 
@@ -202,13 +203,13 @@ export const Client = memo(() => {
 
     const mainNavItems = useMemo(() => [
         {key: "info", label: "Информация о должнике"},
-        // {key: "actives", label: "Активы должника"},
+        {key: "actives", label: "Активы должника"},
         //  {key: "interaction", label: "Взаимодействие"},
     ], []);
 
     const sidebarItems = useMemo(() => ({
         info: ["Постановления", "Статистика по активам"],
-        // actives: ["Транспорт", "Недвижимость", "Земельные участки", "Дебиторская задолженность", "Иные активы"],
+        actives: ["Транспорт", "Недвижимость", "Земельные участки", "Дебиторская задолженность", "Иные активы"],
         // interaction: ["Направление ходатайства в ГМУ", "Примечание ТНО"]
     }), []);
 
@@ -217,45 +218,45 @@ export const Client = memo(() => {
             "Постановления": <TableResolutions/>,
             "Статистика по активам": <ActivesStatistics/>
         },
-        // actives: {
-        //     'Транспорт': (
-        //         <TableUniversal
-        //             type="transport"
-        //             headers={tableHeadersTransport}
-        //             RowComponent={TableRowTransport}
-        //         />
-        //     ),
-        //     'Недвижимость': (
-        //         <TableUniversal
-        //             type="property"
-        //             headers={tableHeadersProperty}
-        //             RowComponent={TableRowProperty}
-        //         />
-        //     ),
-        //     'Земельные участки': (
-        //         <TableUniversal
-        //             type="ground"
-        //             headers={tableHeadersProperty}
-        //             RowComponent={TableRowProperty}
-        //         />
-        //     ),
-        //     'Дебиторская задолженность': (
-        //         <TableUniversal
-        //             type="debit"
-        //             headers={tableHeadersDebit}
-        //             RowComponent={TableRowDebit}
-        //             Button={<AddButton titleBtn="Добавить дебиторскую задолженность" Form={DebitForm}/>}
-        //         />
-        //     ),
-        //     "Иные активы": (
-        //         <TableUniversal
-        //             type="another"
-        //             headers={tableHeadersAnother}
-        //             RowComponent={TableOtherAssets}
-        //             Button={<AddButton titleBtn="Добавить иные активы" Form={OtherAssetForm}/>}
-        //         />
-        //     )
-        // },
+        actives: {
+            'Транспорт': (
+                <TableUniversal
+                    type={ActivesType.TRANSPORT}
+                    headers={tableHeadersTransport}
+                    RowComponent={TableRowTransport}
+                />
+            ),
+            'Недвижимость': (
+                <TableUniversal
+                    type={ActivesType.PROPERTY}
+                    headers={tableHeadersProperty}
+                    RowComponent={TableRowProperty}
+                />
+            ),
+            'Земельные участки': (
+                <TableUniversal
+                    type={ActivesType.GROUND}
+                    headers={tableHeadersProperty}
+                    RowComponent={TableRowProperty}
+                />
+            ),
+            'Дебиторская задолженность': (
+                <TableUniversal
+                    type={ActivesType.DEBIT}
+                    headers={tableHeadersDebit}
+                    RowComponent={TableRowDebit}
+                    // Button={<AddButton titleBtn="Добавить дебиторскую задолженность" Form={DebitForm}/>}
+                />
+            ),
+            "Иные активы": (
+                <TableUniversal
+                    type={ActivesType.OTHER}
+                    headers={tableHeadersAnother}
+                    RowComponent={TableOtherAssets}
+                    // Button={<AddButton titleBtn="Добавить иные активы" Form={OtherAssetForm}/>}
+                />
+            )
+        },
         // interaction: {
         //     "Направление ходатайства в ГМУ": (
         //         <InteractionResultForm/>

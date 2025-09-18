@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useParams } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import {Container, TableWrapper, TableHeader} from './TableStyles.js';
-import {clearActives, fetchActives, updateActiveThunk} from "../../../../../../store/activesSlice.js";
+import {clearActives, fetchActives, updateActiveThunk} from "../../../../../../store/active/activesSlice.js";
 import Snackbar from "../Snacbar.jsx";
 import { VariableSizeList } from 'react-window';
 

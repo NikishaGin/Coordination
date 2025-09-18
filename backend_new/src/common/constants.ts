@@ -63,6 +63,15 @@ export const REALIZATIONS_ACTION_STATUS = {
 };
 
 
+export const OrderActives = {
+    TRANSPORT: 0,
+    PROPERTY: 1,
+    GROUND: 2,
+    DEBIT: 3,
+    OTHER: 4,
+};
+
+
 export const DEADLINES = {
     WEEK: 7 * 24 * 60 * 60 * 1000
 };

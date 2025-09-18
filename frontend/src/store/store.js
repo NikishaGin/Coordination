@@ -8,9 +8,8 @@ import { setupRequestInterceptor, setupResponseInterceptor } from "./API.js";
 import userReducer, { clearUser, updateServiceMode } from "./user/userSlice.js";
 import mainReducer, { clearMain } from "./main/mainSlice.js";
 import clientReducer, { clearClient } from "./client/clientSlice.js";
-import activesReducer from "./activesSlice";
-import interactionsReducer from "./interactionsSlice";
-import fileStorageReducer from "./fileStorageSlice";
+import activesReducer from "./active/activesSlice.js";
+import libraryReducer from "./library/librarySlice.js";
 
 
 const persistConfig = {
@@ -24,8 +23,7 @@ const rootReducer = combineReducers({
     main: mainReducer,
     client: clientReducer,
     actives: activesReducer,
-    interactions: interactionsReducer,
-    fileStorage: fileStorageReducer,
+    library: libraryReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

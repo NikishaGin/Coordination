@@ -9,6 +9,7 @@ export function formatNumber(number, { defaultValue=undefined } = {}) {
 
 
 export function parseNumber(number) {
+  if (typeof number === 'number') return number;
   const strNumbers = number.replace(/,/g, ".").replace(/\s*|\t|\r|\n/gm, "")
   return parseFloat(strNumbers)
 }

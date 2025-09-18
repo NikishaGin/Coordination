@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import {FormField, Input, InputIcon, InputLabel, InputWrapper} from "./styles/FormElements.jsx";
 import {CancelButton, SaveButton} from "./styles/Buttons.jsx";
 import { FileSignature as RubleSign } from 'lucide-react';
-import { createRow } from "../../../../../../store/activesSlice.js";
+import { createRow } from "../../../../../../store/active/activesSlice.js";
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router";
 import { handlesInputNumber } from "../../../../../../utils/handleInput.js";

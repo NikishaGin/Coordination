@@ -15,6 +15,7 @@ export class ExcelService {
     private addSheet(workbook: ExcelJS.Workbook, options: ExcelSheetOptions) {
         const worksheet = workbook.addWorksheet(options.name);
         if (options.data.length > 0) {
+            worksheet.addRow([]);
             options.data.forEach((rowData) => {
                 // доп обработка
 
