@@ -70,25 +70,28 @@ export function getObjectStatus(
 }
 
 
+
+
+
+
+
 export function destructuringRealization(
-    realization: Prisma.RealizationsGetPayload<{}>[]
+    realizations: Prisma.RealizationsGetPayload<{}>[]
 ): {
     realizationFirst: Prisma.RealizationsGetPayload<{}> & { actionStatus?: string };
     realizationSecond: Prisma.RealizationsGetPayload<{}> & { actionStatus?: string };
 } {
-    const getActionRealizationStatus = ({ realizationDate }): string => (
-        realizationDate !== null ? REALIZATIONS_ACTION_STATUS.COMPUTED : REALIZATIONS_ACTION_STATUS.NO_COMPUTED
+    const getActionRealizationStatus = (realization): string => {
+        if (!realization) return '';
+        return realization.realizationDate ? REALIZATIONS_ACTION_STATUS.COMPUTED : REALIZATIONS_ACTION_STATUS.NO_COMPUTED;
+    }
+
+    const realizationFirst = realizations.find(
+        ({ stage }) => stage === RealizationStage.FIRST
     );
-
-    const realizationFirst = (
-        realization.find(({ stage }) => stage === RealizationStage.FIRST) ||
-        {}
-    ) as Prisma.RealizationsGetPayload<{}>;
-
-    const realizationSecond =(
-        realization.find(({ stage }) => stage === RealizationStage.SECOND) ||
-        {}
-    ) as Prisma.RealizationsGetPayload<{}>;
+    const realizationSecond = realizations.find(
+        ({ stage }) => stage === RealizationStage.SECOND
+    );
 
     realizationFirst['actionStatus'] = getActionRealizationStatus(realizationFirst);
     realizationSecond['actionStatus'] = getActionRealizationStatus(realizationSecond);

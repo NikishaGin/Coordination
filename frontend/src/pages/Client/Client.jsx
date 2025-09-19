@@ -171,7 +171,7 @@ const ContentArea = styled.div`
 `;
 
 
-const TableUniversal = lazy(() => import('./sections/Actives/components/table/TableUniversal.jsx'));
+const TableUniversal = lazy(() => import('./sections/Actives/TableUniversal.jsx'));
 
 
 
@@ -222,37 +222,37 @@ export const Client = memo(() => {
             'Транспорт': (
                 <TableUniversal
                     type={ActivesType.TRANSPORT}
-                    headers={tableHeadersTransport}
-                    RowComponent={TableRowTransport}
+                    // headers={tableHeadersTransport}
+                    // RowComponent={TableRowTransport}
                 />
             ),
             'Недвижимость': (
                 <TableUniversal
                     type={ActivesType.PROPERTY}
-                    headers={tableHeadersProperty}
-                    RowComponent={TableRowProperty}
+                    // headers={tableHeadersProperty}
+                    // RowComponent={TableRowProperty}
                 />
             ),
             'Земельные участки': (
                 <TableUniversal
                     type={ActivesType.GROUND}
-                    headers={tableHeadersProperty}
-                    RowComponent={TableRowProperty}
+                    // headers={tableHeadersProperty}
+                    // RowComponent={TableRowProperty}
                 />
             ),
             'Дебиторская задолженность': (
                 <TableUniversal
                     type={ActivesType.DEBIT}
-                    headers={tableHeadersDebit}
-                    RowComponent={TableRowDebit}
+                    // headers={tableHeadersDebit}
+                    // RowComponent={TableRowDebit}
                     // Button={<AddButton titleBtn="Добавить дебиторскую задолженность" Form={DebitForm}/>}
                 />
             ),
             "Иные активы": (
                 <TableUniversal
                     type={ActivesType.OTHER}
-                    headers={tableHeadersAnother}
-                    RowComponent={TableOtherAssets}
+                    // headers={tableHeadersAnother}
+                    //  RowComponent={TableOtherAssets}
                     // Button={<AddButton titleBtn="Добавить иные активы" Form={OtherAssetForm}/>}
                 />
             )

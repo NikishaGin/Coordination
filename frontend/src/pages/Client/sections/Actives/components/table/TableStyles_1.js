@@ -124,7 +124,7 @@ export const Container = styled.div`
     & th:nth-child(4), & td:nth-child(4) { width: 220px; }
     & th:nth-child(5), & td:nth-child(5) { width: 170px; }
     & th:nth-child(6), & td:nth-child(6) { width: 220px; }
-    & th:nth-child(n+7), & td:nth-child(n+7) { width: 275px; }
+    & th:nth-child(n+7), & td:nth-child(n+7) { width: 250px; }
   }
 
   &.property, &.ground {
@@ -135,7 +135,7 @@ export const Container = styled.div`
     & th:nth-child(5), & td:nth-child(5) { width: 350px; }
     & th:nth-child(6), & td:nth-child(6) { width: 250px; }
     & th:nth-child(7), & td:nth-child(7) { width: 150px; }
-    & th:nth-child(n+8), & td:nth-child(n+8) { width: 275px; }
+    & th:nth-child(n+8), & td:nth-child(n+8) { width: 250px; }
   }
 
   &.debit {
@@ -145,14 +145,14 @@ export const Container = styled.div`
     & th:nth-child(4), & td:nth-child(4) { width: 350px; }
     & th:nth-child(5), & td:nth-child(5) { width: 220px; }
     & th:nth-child(6), & td:nth-child(6) { width: 220px; }
-    & th:nth-child(n+7), & td:nth-child(n+7) { width: 275px; }
+    & th:nth-child(n+7), & td:nth-child(n+7) { width: 250px; }
   }
 
   &.another {
     & th:nth-child(1), & td:nth-child(1) { width: 40px; }
     & th:nth-child(2), & td:nth-child(2) { width: 350px; }
     & th:nth-child(3), & td:nth-child(3) { width: 220px; }
-    & th:nth-child(n+4), & td:nth-child(n+4) { width: 275px; }
+    & th:nth-child(n+4), & td:nth-child(n+4) { width: 250px; }
   }
 `;
 
@@ -165,12 +165,9 @@ export const TableWrapper = styled.div`
 
   .scroll-container {
     flex: 1;
-    overflow: auto;
+    overflow-y: auto;
   }
 
-  .inner-scroll {
-    display: inline-block;
-  }
 
   .virtual-table-body {
     min-width: 1300px;
@@ -201,8 +198,6 @@ export const TableWrapper = styled.div`
 export const TableHeader = styled.thead`
   display: table;
   table-layout: fixed;
-  width: 100%;
-  min-width: 1300px;
   z-index: 2;  
   background-color: #2a2a40;
   border-collapse: collapse;

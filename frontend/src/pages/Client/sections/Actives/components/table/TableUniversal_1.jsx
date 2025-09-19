@@ -1,18 +1,25 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useParams } from 'react-router';
-import { useDispatch, useSelector } from 'react-redux';
-import {Container, TableWrapper, TableHeader} from './TableStyles.js';
-import {clearActives, fetchActives, updateActiveThunk} from "../../../../../../store/active/activesSlice.js";
-import Snackbar from "../Snacbar.jsx";
 import { VariableSizeList } from 'react-window';
+import { useDispatch } from 'react-redux';
+import {Container, TableWrapper, TableHeader} from './TableStyles.js';
+import Snackbar from "../Snacbar.jsx";
+import {
+    clearActives,
+    fetchGetActive,
+    useActive,
+    useLoadingStatus
+} from "../../../../../../store/active/activesSlice.js";
+import {useRoleDetection} from "../../../../../../store/user/userSlice.js";
 
 
 const TableUniversal = ({ type, headers, RowComponent, Button }) => {
-    const { inn } = useParams();
     const dispatch = useDispatch();
-    const data = useSelector((state) => state.actives[type]);
+
+    const data = useActive();
+    const status = useLoadingStatus();
+    const { isAdmin } = useRoleDetection();
+
     const [snackbarVisible, setSnackbarVisible] = useState(false);
-    const status = useSelector((state) => state.actives.status[type]);
 
     const rowHeightsRef = useRef({});
     const defaultHeight = 60;
@@ -20,36 +27,36 @@ const TableUniversal = ({ type, headers, RowComponent, Button }) => {
     const headerRef = useRef(null);
     const bodyRef = useRef(null);
 
+
     useEffect(() => {
         return () => {
             dispatch(clearActives());
         };
-    }, [dispatch, inn]);
+    }, [dispatch]);
 
     useEffect(() => {
         if ((!data || data.length === 0) && status === 'idle') {
-            dispatch(fetchActives({ inn, type }));
+            dispatch(fetchGetActive(type));
         }
-    }, [inn, dispatch, data, type, status]);
+    }, [dispatch, data, type, status]);
 
     useEffect(() => {
         const bodyContainer = bodyRef.current;
         const headerContainer = headerRef.current;
-
         if (!bodyContainer || !headerContainer) return;
-
         const handleScroll = () => {
             headerContainer.scrollLeft = bodyContainer.scrollLeft;
         };
-
         bodyContainer.addEventListener('scroll', handleScroll);
-
         return () => {
             bodyContainer.removeEventListener('scroll', handleScroll);
         };
     }, []);
 
+
     const handleValueChange = useCallback(async (id, field, newValue) => {
+
+        /*
         const updatedRow = { [field]: newValue };
         try {
             const response = await dispatch(updateActiveThunk({ id, type, inn, updatedRow }))
@@ -59,7 +66,11 @@ const TableUniversal = ({ type, headers, RowComponent, Button }) => {
         } catch (error) {
             console.error("Ошибка при обновлении:", error);
         }
-    }, [dispatch, type, inn]);
+         */
+
+    }, [dispatch, type]);
+
+
 
     const tableHeaders = useMemo(() => {
         return headers.map((header, i) => (
@@ -115,7 +126,6 @@ const TableUniversal = ({ type, headers, RowComponent, Button }) => {
                 }}
             >
                 <RowComponent
-                    type={type}
                     row={row}
                     onValueChange={handleValueChange}
                 />
@@ -141,21 +151,19 @@ const TableUniversal = ({ type, headers, RowComponent, Button }) => {
                                     headerRef.current.scrollLeft = e.currentTarget.scrollLeft;
                                 }
                             }}>
-                                <div className="inner-scroll" style={{ minWidth: '1300px' }}>
-                                    <TableHeader ref={headerRef}>
-                                        <tr>{tableHeaders}</tr>
-                                    </TableHeader>
-                                    <VariableSizeList
-                                        ref={listRef}
-                                        height={getListHeight()}
-                                        itemCount={data.length}
-                                        itemSize={getRowHeight}
-                                        width="100%"
-                                        className="virtual-table-body"
-                                    >
-                                        {RowRenderer}
-                                    </VariableSizeList>
-                                </div>
+                                <TableHeader ref={headerRef}>
+                                    <tr>{tableHeaders}</tr>
+                                </TableHeader>
+                                <VariableSizeList
+                                    ref={listRef}
+                                    height={getListHeight()}
+                                    itemCount={data.length}
+                                    itemSize={getRowHeight}
+                                    width="100%"
+                                    className="virtual-table-body"
+                                >
+                                    {RowRenderer}
+                                </VariableSizeList>
                             </div>
                         </>
                     ) : (

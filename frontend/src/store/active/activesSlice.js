@@ -14,8 +14,8 @@ const activesData = {
 };
 
 const initialState = {
-    type: ActivesType.TRANSPORT,
-    status: 'idle',
+    typeActive: ActivesType.TRANSPORT,
+    loadingStatus: 'idle',
     error: null,
     data: {
         [ActivesType.TRANSPORT]: activesData,
@@ -34,14 +34,14 @@ const activesSlice = createSlice({
     initialState,
     reducers: {
         toggleSelectedRow: (state, { payload }) => {
-            const selectedRows = state.data[state.type].selectedRows;
-            state.data[state.type].selectedRows = selectedRows.includes(payload)
+            const selectedRows = state.data[state.typeActive].selectedRows;
+            state.data[state.typeActive].selectedRows = selectedRows.includes(payload)
                 ? selectedRows.filter(index => index !== payload)
                 : [ ...selectedRows, payload ];
         },
         clearSelectedRows: (state) => {
-            Object.keys(ActivesType).forEach((type) => {
-                state.data[type].selectedRows = [];
+            Object.keys(ActivesType).forEach((typeActive) => {
+                state.data[typeActive].selectedRows = [];
             });
         },
         clearActives: () => initialState
@@ -49,33 +49,32 @@ const activesSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(fetchGetActive.pending, (state) => {
-                state.status = 'loading';
+                state.loadingStatus = 'loading';
             })
             .addCase(fetchGetActive.fulfilled, (state, { payload }) => {
-                const { type, data } = payload;
-                state.status = 'succeeded';
-                console.log(data)
-                state.data[type].tableData = data;
-                state.type = type;
+                const { typeActive, data } = payload;
+                state.loadingStatus = 'succeeded';
+                state.data[typeActive].tableData = data;
+                state.typeActive = typeActive;
             })
             .addCase(fetchGetActive.rejected, (state, { payload }) => {
-                state.status = 'failed';
+                state.loadingStatus = 'failed';
                 state.error = payload;
             })
 
             /*
             .addCase(updateActiveThunk.fulfilled, (state, action) => {
-                const {id, field, value, type} = action.payload;
-                const list = state[type];
+                const {id, field, value, typeActive} = action.payload;
+                const list = state[typeActive];
                 const index = list.findIndex(item => item.id === id);
                 if (index !== -1) {
                     if (field) {
                         // Обновление одного поля
-                        state[type][index][field] = value;
-                    } else if (typeof value === 'object') {
+                        state[typeActive][index][field] = value;
+                    } else if (typeActiveof value === 'object') {
                         // Обновление нескольких полей
                         Object.entries(value).forEach(([key, val]) => {
-                            state[type][index][key] = val;
+                            state[typeActive][index][key] = val;
                         });
                     }
                 }
@@ -95,9 +94,9 @@ export const {
     clearActives
 } = activesSlice.actions;
 
-export const useActive = () => useSelector(state => state.actives.data[state.actives.type].tableData);
-export const useSelectedRows = () => useSelector(state => state.actives.data[state.actives.type].selectedRows);
-export const useLoadingStatus = () => useSelector(state => state.actives.status);
-export const useActiveType = () => useSelector(state => state.actives.type);
+export const useActive = () => useSelector(state => state.actives.data[state.actives.typeActive].tableData);
+export const useSelectedRows = () => useSelector(state => state.actives.data[state.actives.typeActive].selectedRows);
+export const useLoadingStatus = () => useSelector(state => state.actives.loadingStatus);
+export const useActiveType = () => useSelector(state => state.actives.typeActive);
 
 export default activesSlice.reducer;

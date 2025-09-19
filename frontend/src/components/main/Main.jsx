@@ -368,7 +368,7 @@ export const Main = () => {
                         <tbody>
                         {filteredData.map((row, rowIndex) => (
                             <MemoizedRow
-                                key={row.inn}
+                                key={rowIndex}
                                 row={row}
                                 rowIndex={rowIndex}
                                 selectedClientId={selectedClientId}
@@ -409,7 +409,7 @@ export const Main = () => {
 
 const MemoizedRow = React.memo(({ row, rowIndex, selectedClientId, handleSelectClient, handleLink, renderTableCells, isDerived }) => {
     return (
-        <Tr key={rowIndex} isSelected={selectedClientId.includes(row.id)} cursor={true}
+        <Tr key={rowIndex} $isSelected={selectedClientId.includes(row.id)} $cursor={true}
             onClick={event => handleLink(event, row)}>
             <td onClick={event => event.stopPropagation()}>
                 <CustomCheckbox>

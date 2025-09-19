@@ -54,12 +54,12 @@ export const TableContainer = styled.div`
 
 
 export const Tr = styled.tr`
-  cursor: ${({cursor}) => cursor ? "pointer" : "default"};
-  background-color: ${({ isSelected }) =>
-        isSelected ? "rgba(2, 122, 242, 0.16)" : "transparent"};
+  cursor: ${({$cursor}) => $cursor ? "pointer" : "default"};
+  background-color: ${({ $isSelected }) =>
+        $isSelected ? "rgba(2, 122, 242, 0.16)" : "transparent"};
   &:hover {
-    background-color: ${({ isSelected }) =>
-        isSelected ? "rgba(242, 162, 2, 0.16)" : "rgba(71, 83, 107, 0.2)"};
+    background-color: ${({ $isSelected }) =>
+        $isSelected ? "rgba(242, 162, 2, 0.16)" : "rgba(71, 83, 107, 0.2)"};
   }
     
   .status {
