@@ -1,13 +1,12 @@
 import { ActiveAPI } from "../API.js";
 
 
-export const thunkGetActive = async (_, { rejectWithValue, getState }) => {
+export const thunkGetActive = async (type, { rejectWithValue, getState }) => {
     const clientId = getState().client.clientId;
-    const type = getState().actives.type;
     if (!clientId) return rejectWithValue("Client ID not found");
     try {
         const response = await ActiveAPI.getActives(clientId, type);
-        return response.data;
+        return { type, data: response.data };
     } catch (error) {
         console.error('Ошибка при загрузке данных:', error);
         return rejectWithValue(error.message);

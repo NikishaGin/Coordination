@@ -1,20 +1,24 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useParams } from 'react-router';
-import { useDispatch, useSelector } from 'react-redux';
-import { Container, TableHeader } from './TableStyles.js';
-import { clearActives, fetchActives, updateActiveThunk } from "../../../../../../store/active/activesSlice.js";
-import Snackbar from "../Snacbar.jsx";
+import { useDispatch } from 'react-redux';
 import { VariableSizeList } from 'react-window';
-import { ROLES } from "../../../../../../types.js";
+import { Container, TableHeader } from './TableStyles.js';
+import Snackbar from "../Snacbar.jsx";
+import {
+    clearActives,
+    fetchGetActive,
+    useActive,
+    useLoadingStatus
+} from "../../../../../../store/active/activesSlice.js";
+import {useRoleDetection} from "../../../../../../store/user/userSlice.js";
+
 
 
 const TableUniversal = ({type, headers, RowComponent, Button}) => {
-    const {inn} = useParams();
     const dispatch = useDispatch();
-    const data = useSelector((state) => state.actives[type]);
-    const status = useSelector((state) => state.actives.status[type]);
-    const role = useSelector((state) => state.user.role)
-    const isAdmin = role === ROLES.Admin
+
+    const data = useActive();
+    const status = useLoadingStatus();
+    const { isAdmin } = useRoleDetection();
 
     const [snackbarVisible, setSnackbarVisible] = useState(false);
     const rowHeightsRef = useRef({});
@@ -23,25 +27,25 @@ const TableUniversal = ({type, headers, RowComponent, Button}) => {
     const widthList = useRef(400);
     const heightList = useRef(400);
 
-
     const containerRef = useRef(null);
     const tableRef = useRef(null);
     const listRef = useRef(null);
     const headerRef = useRef(null);
 
 
+
     useEffect(() => {
         return () => {
             dispatch(clearActives());
         };
-    }, [dispatch, inn]);
+    }, [dispatch]);
+
 
     useEffect(() => {
         if ((!data || data.length === 0) && status === 'idle') {
-            dispatch(fetchActives({inn, type}));
+            dispatch(fetchGetActive(type));
         }
-    }, [inn, dispatch, data, type, status]);
-
+    }, [dispatch, data, type, status]);
 
 
     useEffect(() => {
@@ -71,6 +75,8 @@ const TableUniversal = ({type, headers, RowComponent, Button}) => {
 
 
     const handleValueChange = useCallback(async (id, field, newValue) => {
+
+        /*
         const updatedRow = {[field]: newValue};
         try {
             const response = await dispatch(updateActiveThunk({id, type, inn, updatedRow}))
@@ -80,7 +86,9 @@ const TableUniversal = ({type, headers, RowComponent, Button}) => {
         } catch (error) {
             console.error("Ошибка при обновлении:", error);
         }
-    }, [dispatch, type, inn]);
+         */
+
+    }, [dispatch, type]);
 
 
 
@@ -141,7 +149,6 @@ const TableUniversal = ({type, headers, RowComponent, Button}) => {
                 }}
             >
                 <RowComponent
-                    type={type}
                     row={row}
                     onValueChange={handleValueChange}
                 />

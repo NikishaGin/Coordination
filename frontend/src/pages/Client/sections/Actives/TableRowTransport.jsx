@@ -9,16 +9,18 @@ import { EditableCell } from "./components/inputs/EditableCell.jsx";
 import {formatNumber} from "../../../../utils/formatData.js";
 import { useDispatch, useSelector } from "react-redux";
 import { CustomCheckbox } from "./components/inputs/CustomCheckbox.jsx";
-import { toggleSelectedRow } from "../../../../store/active/activesSlice.js";
+import {toggleSelectedRow, useActiveType, useSelectedRows} from "../../../../store/active/activesSlice.js";
 import { useRoleDetection } from "../../../../store/user/userSlice.js";
 
 
 
-export const TableRowTransport = memo(({ type, row, onValueChange }) => {
+export const TableRowTransport = memo(({ row, onValueChange }) => {
     const dispatch = useDispatch();
+
+    const type = useActiveType();
     const { isAdmin } = useRoleDetection();
 
-    const selectedRow = useSelector(state => state.actives.selectedRows[type])
+    const selectedRow = useSelectedRows();
 
     const activeRow = selectedRow.includes(row.id);
 

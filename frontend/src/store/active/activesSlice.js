@@ -1,6 +1,7 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import { ActivesType } from "../../constants.js";
 import { thunkGetActive } from "./activeThunks.js";
+import {useSelector} from "react-redux";
 
 
 
@@ -33,15 +34,14 @@ const activesSlice = createSlice({
     initialState,
     reducers: {
         toggleSelectedRow: (state, { payload }) => {
-            const currentActive = state.currentActive;
-            const selectedRows = state.data[currentActive].selectedRows;
-            state.data[currentActive].selectedRows = selectedRows.includes(payload)
+            const selectedRows = state.data[state.type].selectedRows;
+            state.data[state.type].selectedRows = selectedRows.includes(payload)
                 ? selectedRows.filter(index => index !== payload)
                 : [ ...selectedRows, payload ];
         },
         clearSelectedRows: (state) => {
-            Object.keys(ActivesType).forEach((key) => {
-                state.data[key].selectedRows = [];
+            Object.keys(ActivesType).forEach((type) => {
+                state.data[type].selectedRows = [];
             });
         },
         clearActives: () => initialState
@@ -52,8 +52,11 @@ const activesSlice = createSlice({
                 state.status = 'loading';
             })
             .addCase(fetchGetActive.fulfilled, (state, { payload }) => {
+                const { type, data } = payload;
                 state.status = 'succeeded';
-                state[state.type] = payload;
+                console.log(data)
+                state.data[type].tableData = data;
+                state.type = type;
             })
             .addCase(fetchGetActive.rejected, (state, { payload }) => {
                 state.status = 'failed';
@@ -86,8 +89,15 @@ const activesSlice = createSlice({
 });
 
 
-export const { toggleSelectedRow, clearSelectedRows, clearActives } = activesSlice.actions;
+export const {
+    toggleSelectedRow,
+    clearSelectedRows,
+    clearActives
+} = activesSlice.actions;
 
-
+export const useActive = () => useSelector(state => state.actives.data[state.actives.type].tableData);
+export const useSelectedRows = () => useSelector(state => state.actives.data[state.actives.type].selectedRows);
+export const useLoadingStatus = () => useSelector(state => state.actives.status);
+export const useActiveType = () => useSelector(state => state.actives.type);
 
 export default activesSlice.reducer;
