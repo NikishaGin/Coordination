@@ -3,7 +3,7 @@ import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { StorageService } from "../storage/storage.service";
 import { GetResolutionsParamsDto } from './client.dto';
 import { InteractionType } from '../../generated/prisma/enums';
-import {createDataFilters} from "../../common/utils/ResolutionsFilter";
+import {createServiceFilters} from "../../common/utils/ServiceFilters";
 
 @Injectable()
 export class ClientService {
@@ -16,7 +16,7 @@ export class ClientService {
         clientId: number,
         data: GetResolutionsParamsDto,
     ) {
-        const { resolutionsFilter } = createDataFilters(data.isDerived, data.isArchived);
+        const { resolutionsFilter } = createServiceFilters(data.isDerived, data.isArchived);
 
         return this.prisma.resolutions.findMany({
             where: {

@@ -123,10 +123,10 @@ const DEBIT_FORECLOSURE_HEADERS: ExcelColumnOptions[] = [
 const COMMON_ACTIVE_HEADERS: (type: ActivesType) => ExcelColumnOptions[] = (
     type,
 ) => {
-    const validateRigstration: Array<ActivesType> = [ActivesType.TRANSPORT, ActivesType.PROPERTY];
+    const validateRegistration: ActivesType[] = [ActivesType.TRANSPORT, ActivesType.PROPERTY];
     return [
         { header: 'Статус объекта',                                          key: 'objectStatusText' },
-        ...(validateRigstration.includes(type) ? REGISTRATION_HEADERS : []),
+        ...(validateRegistration.includes(type) ? REGISTRATION_HEADERS : []),
         ...(type !== ActivesType.DEBIT ? ENCUMBRANCE_HEADERS : []),
         { header: 'Верифицированы активы ФССП',                              key: 'isVerifiedText' },
         { header: 'Арест имущества',                                         key: 'arrest.beginDate' },

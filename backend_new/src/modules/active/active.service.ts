@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { ActivesStatisticsResultType, ActivesStatisticsType } from "./active.type";
 import { ActivesType, WantedResults } from '../../generated/prisma/enums';
-import { OrderActives } from "../../common/constants";
+import { OrderActives } from "../../constants";
 
 
 

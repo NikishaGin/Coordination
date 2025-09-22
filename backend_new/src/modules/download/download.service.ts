@@ -1,21 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import {AggregatedStatisticsService} from "../aggregated-statistics/aggregated-statistics.service";
 import { ExcelService } from './excel/excel.service';
+import { AggregatedStatisticsService } from "../aggregated-statistics/aggregated-statistics.service";
+import { CalculatedActualValuesService } from "../core/services/calculated-actual-values.service";
+import { IndicatorsService } from "../core/services/indicators.service";
+import { Prisma } from '../../generated/prisma/client';
+import * as ExcelJS from 'exceljs';
 import { ExcelColumnOptions, ExcelSheetOptions } from './excel/excel.interface';
 import { GetDownloadParamsDto } from './download.dto';
-import * as ExcelJS from 'exceljs';
-import { Prisma } from '../../generated/prisma/client';
-import { createDataFilters } from '../../common/utils/ResolutionsFilter';
+import { createServiceFilters } from '../../common/utils/ServiceFilters';
+import { getValueFromMap } from "../../common/utils/data-transform";
 import { HEADERS_ACTIVES_STATISTICS, HEADERS_COMMON_STATISTICS, HEADERS_RESOLUTIONS_STATISTICS } from './download.headers';
 import { ActivesType, LeasStatus, WantedResults } from '../../generated/prisma/enums';
-import {STATUS_TYPE, VERIFICATION_STATUS, WANTED_STATUS} from "../../common/constants";
-import {
-    getValueFromMap,
-    getObjectStatus,
-    destructuringRealization,
-    getStatusIP
-} from "../../common/utils/calculatedActualValues";
+import { STATUS_TYPE, VERIFICATION_STATUS, WANTED_STATUS } from "../../constants";
+
+
 
 @Injectable()
 export class DownloadService {
@@ -23,7 +22,10 @@ export class DownloadService {
         private prisma: PrismaService,
         private excel: ExcelService,
         private stats: AggregatedStatisticsService,
+        private calculatedValues: CalculatedActualValuesService,
+        private indicators: IndicatorsService,
     ) {}
+
 
     generateNameFile(prefix: string, isDerived: boolean, isArchived: boolean): string {
         const source: string = isDerived ? 'производный долг' : 'взыскание по 47 ст.';
@@ -34,8 +36,9 @@ export class DownloadService {
         return encodeURIComponent(filename);
     }
 
+
     async getCommonStatistics(data: GetDownloadParamsDto): Promise<ExcelJS.Buffer> {
-        const { clientsFilter, resolutionsFilter } = createDataFilters(data.isDerived, data.isArchived);
+        const { clientsFilter, resolutionsFilter } = createServiceFilters(data.isDerived, data.isArchived);
         if (data.clientIds)
             clientsFilter.id = { in: data.clientIds };
 
@@ -63,8 +66,9 @@ export class DownloadService {
         });
     }
 
+
     async getResolutionsStatistics(data: GetDownloadParamsDto): Promise<ExcelJS.Buffer> {
-        const { clientsFilter, resolutionsFilter } = createDataFilters(data.isDerived, data.isArchived);
+        const { clientsFilter, resolutionsFilter } = createServiceFilters(data.isDerived, data.isArchived);
         if (data.clientIds)
             clientsFilter.id = { in: data.clientIds };
 
@@ -90,7 +94,7 @@ export class DownloadService {
         });
 
         for (const resolution of resolutions) {
-            resolution['statusIP'] = getStatusIP({
+            resolution['statusIP'] = this.calculatedValues.getStatusIP({
                 WritExecutionEndDate: resolution.WritExecutionEndDate,
                 WritExecutionStopDate: resolution.WritExecutionStopDate,
                 WritExecutionPostponementDate: resolution.WritExecutionPostponementDate,
@@ -108,8 +112,19 @@ export class DownloadService {
         });
     }
 
+
+
+
+
+
+
+
+
+
+
+
     async getActivesStatistics(data: GetDownloadParamsDto): Promise<ExcelJS.Buffer> {
-        const { clientsFilter, resolutionsFilter } = createDataFilters(data.isDerived, data.isArchived);
+        const { clientsFilter, resolutionsFilter } = createServiceFilters(data.isDerived, data.isArchived);
         if (data.clientIds)
             clientsFilter.id = { in: data.clientIds };
 
@@ -168,9 +183,12 @@ export class DownloadService {
                     (item): boolean => item.clientId === active.clientId,
                 );
 
+
+
+
                 active['statusText'] = getValueFromMap(active.status, STATUS_TYPE);
 
-                active['objectStatusText'] = getObjectStatus(active.objectStatus, active.otherObjectStatus);
+                active['objectStatusText'] = this.calculatedValues.getObjectStatus(active.objectStatus, active.otherObjectStatus);
 
                 active['isVerifiedText'] = getValueFromMap(active.isVerified, VERIFICATION_STATUS);
 
@@ -178,7 +196,7 @@ export class DownloadService {
                     active.wanted['resultText'] = getValueFromMap(active.wanted.result, WANTED_STATUS);
 
                 if (active.realization && active.realization.length > 0) {
-                    const realization = destructuringRealization(active.realization);
+                    const realization = this.calculatedValues.destructuringRealization(active.realization);
                     active['realizationFirst'] = realization.realizationFirst;
                     active['realizationSecond'] = realization.realizationSecond;
                 }

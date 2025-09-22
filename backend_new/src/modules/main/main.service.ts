@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from 'src/generated/prisma/client';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { GetMainParamsDto } from './main.dto';
-import {createDataFilters} from '../../common/utils/ResolutionsFilter';
-import {AggregatedStatisticsService} from "../aggregated-statistics/aggregated-statistics.service";
-import {STATUS_IP} from "../../common/constants";
+import { createServiceFilters } from '../../common/utils/ServiceFilters';
+import { AggregatedStatisticsService } from "../aggregated-statistics/aggregated-statistics.service";
+import { STATUS_IP } from "../../constants";
 
 
 @Injectable()
@@ -20,7 +20,7 @@ export class MainService {
     ): Promise<Prisma.RegionsGetPayload<{ omit: { sonoName: true } }>[]> {
         const regionFilter: Prisma.RegionsWhereInput =
             userRegionId !== null ? { id: userRegionId } : {};
-        const { clientsFilter } = createDataFilters(data.isDerived, data.isArchived);
+        const { clientsFilter } = createServiceFilters(data.isDerived, data.isArchived);
 
         return this.prisma.regions.findMany({
             omit: { sonoName: true },
@@ -92,7 +92,7 @@ export class MainService {
         data: GetMainParamsDto,
         isGMU: boolean,
     ) {
-        const { clientsFilter, resolutionsFilter } = createDataFilters(data.isDerived, data.isArchived);
+        const { clientsFilter, resolutionsFilter } = createServiceFilters(data.isDerived, data.isArchived);
         if (data?.regionId)
             clientsFilter.tno = { regionId: data.regionId };
 

@@ -1,16 +1,23 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
-import {Prisma} from "../../generated/prisma/client";
-import {ActivesType, InteractionType} from "../../generated/prisma/enums";
-import {AggregatedActivesType, AggregatedIndicatorsType, ClientsType, SelectType} from "./aggregated-statistics.type";
+import { CalculatedActualValuesService } from "../core/services/calculated-actual-values.service";
+import { IndicatorsService } from "../core/services/indicators.service";
+import { Prisma } from "../../generated/prisma/client";
 import { queryAggregatedActives } from "./aggregated-statistics.query";
-import {CommonStatisticsType} from "../download/download.type";
-import {getInteractionStatusWithGMU, getSecuringArrest, getStatusIP} from "../../common/utils/calculatedActualValues";
-import {DEADLINES} from "../../common/constants";
+import { CommonStatisticsType } from "../download/download.type";
+import { AggregatedActivesType, AggregatedIndicatorsType, ClientsType } from "./aggregated-statistics.type";
+import { ActivesType, InteractionType } from "../../generated/prisma/enums";
+import { DEADLINES } from "../../constants";
+
+
 
 @Injectable()
 export class AggregatedStatisticsService {
-    constructor(private prisma: PrismaService) {}
+    constructor(
+        private prisma: PrismaService,
+        private calculatedValues: CalculatedActualValuesService,
+        private indicators: IndicatorsService,
+    ) {}
 
     private deleteUnnecessaryKey(active: AggregatedActivesType | undefined) {
         return active && {
@@ -128,6 +135,8 @@ export class AggregatedStatisticsService {
         })
          */
 
+        // this.indicators
+
         const currDate = new Date();
         const lastDate = new Date(lastUploadDate || 0);
 
@@ -182,11 +191,11 @@ export class AggregatedStatisticsService {
             };
 
             client.securingArrest = {
-                COMMON: getSecuringArrest(active?.COMMON, resolution?._sum?.balance),
-                ACTIVE: getSecuringArrest(active?.ACTIVE, resolution?._sum?.balance),
-                DEBIT: getSecuringArrest(active?.DEBIT, resolution?._sum?.balance),
+                COMMON: this.calculatedValues.getSecuringArrest(active?.COMMON, resolution?._sum?.balance),
+                ACTIVE: this.calculatedValues.getSecuringArrest(active?.ACTIVE, resolution?._sum?.balance),
+                DEBIT: this.calculatedValues.getSecuringArrest(active?.DEBIT, resolution?._sum?.balance),
             };
-            client.statusIP = getStatusIP(resolution?._count);
+            client.statusIP = this.calculatedValues.getStatusIP(resolution?._count);
         }
 
         return clients;
@@ -237,10 +246,10 @@ export class AggregatedStatisticsService {
                 active: this.deleteUnnecessaryKey(active),
             }
 
-            client.securingArrest = getSecuringArrest(active, resolution?._sum?.balance);
-            client.statusIP = getStatusIP(resolution?._count);
+            client.securingArrest = this.calculatedValues.getSecuringArrest(active, resolution?._sum?.balance);
+            client.statusIP = this.calculatedValues.getStatusIP(resolution?._count);
             client.interaction = {
-                GMU: getInteractionStatusWithGMU(interaction?._count, isGMU)
+                GMU: this.calculatedValues.getInteractionStatusWithGMU(interaction?._count, isGMU)
             };
             const { lastUploadDate, isLeasing } = active || {};
             const { WritExecutionBeginDate } = resolution?._min || {};

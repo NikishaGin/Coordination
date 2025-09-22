@@ -1,10 +1,10 @@
 import { Prisma } from 'src/generated/prisma/client';
 
-export function getDerivedFilter(isDerived: boolean): Prisma.ResolutionsWhereInput {
+function createDerivedFilter(isDerived: boolean): Prisma.ResolutionsWhereInput {
     return { isDerived };
 }
 
-export function getArchivedFilter(isArchived: boolean): Prisma.ResolutionsWhereInput {
+function createArchivedFilter(isArchived: boolean): Prisma.ResolutionsWhereInput {
     const logicalOperator: 'OR' | 'AND' = isArchived ? 'OR' : 'AND';
     const isExistsDate: Partial<{ not: null; equals: null }> = isArchived
         ? { not: null }
@@ -18,15 +18,15 @@ export function getArchivedFilter(isArchived: boolean): Prisma.ResolutionsWhereI
     };
 }
 
-export function createDataFilters(
+export function createServiceFilters(
     isDerived: boolean,
     isArchived: boolean
 ): {
     clientsFilter: Prisma.ClientsWhereInput,
     resolutionsFilter: Prisma.ResolutionsWhereInput,
 } {
-    const derivedFilter: Prisma.ResolutionsWhereInput = getDerivedFilter(isDerived);
-    const archivedFilter: Prisma.ResolutionsWhereInput = getArchivedFilter(isArchived);
+    const derivedFilter: Prisma.ResolutionsWhereInput = createDerivedFilter(isDerived);
+    const archivedFilter: Prisma.ResolutionsWhereInput = createArchivedFilter(isArchived);
     const clientsFilter: Prisma.ClientsWhereInput = {
         isVisible: true,
         resolution: {

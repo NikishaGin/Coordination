@@ -11,6 +11,58 @@ export const TableContent = {
 
         tableFields: [
             {
+                key: "description.name",
+                headerName: "Марка",
+                field: (row) => (
+                    <InputCell>
+                        <EditableCell
+                            value={row. || ''}
+                            onSave={handleInputChange('name')}
+                            isEditable={isAdmin}
+                        />
+                    </InputCell>
+                )
+            },
+            {
+                key: "description.vin",
+                headerName: "VIN-номер",
+                field: (row) => (
+                    <InputCell>
+                        <EditableCell
+                            value={row. || ''}
+                            onSave={handleInputChange('name')}
+                            isEditable={isAdmin}
+                        />
+                    </InputCell>
+                )
+            },
+            {
+                key: "description.stateNumber",
+                headerName: "Государственный номер",
+                field: (row) => (
+                    <InputCell>
+                        <EditableCell
+                            value={row. || ''}
+                            onSave={handleInputChange('name')}
+                            isEditable={isAdmin}
+                        />
+                    </InputCell>
+                )
+            },
+            {
+                key: "description.yearRelease",
+                headerName: "Год выпуска",
+                field: (row) => (
+                    <InputCell>
+                        <EditableCell
+                            value={row. || ''}
+                            onSave={handleInputChange('name')}
+                            isEditable={isAdmin}
+                        />
+                    </InputCell>
+                )
+            },
+            {
                 key: "name",
                 headerName: "Марка",
                 field: (row) => (
