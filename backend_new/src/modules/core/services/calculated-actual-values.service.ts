@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from "../../../generated/prisma/client";
 import { Decimal } from '@prisma/client/runtime/library';
 import { AggregatedActivesType } from '../../aggregated-statistics/aggregated-statistics.type';
 import { getValueFromMap } from "../../../common/utils/data-transform";
-import { ObjectStatus, RealizationStage } from "../../../generated/prisma/enums";
+import { ObjectStatus } from "../../../generated/prisma/enums";
 import { INTERACTION_STATUS, REALIZATIONS_ACTION_STATUS, STATUS_IP, STATUS_OBJECT } from "../../../constants";
 
 
@@ -69,27 +68,7 @@ export class CalculatedActualValuesService {
     }
 
 
-    destructuringRealization(
-        realizations: Prisma.RealizationsGetPayload<{}>[]
-    ): {
-        realizationFirst: Prisma.RealizationsGetPayload<{}> & { actionStatus?: string };
-        realizationSecond: Prisma.RealizationsGetPayload<{}> & { actionStatus?: string };
-    } {
-        const getActionRealizationStatus = (realization): string => {
-            if (!realization) return '';
-            return realization.realizationDate ? REALIZATIONS_ACTION_STATUS.COMPUTED : REALIZATIONS_ACTION_STATUS.NO_COMPUTED;
-        }
-
-        const realizationFirst = realizations.find(
-            ({ stage }) => stage === RealizationStage.FIRST
-        );
-        const realizationSecond = realizations.find(
-            ({ stage }) => stage === RealizationStage.SECOND
-        );
-
-        realizationFirst['actionStatus'] = getActionRealizationStatus(realizationFirst);
-        realizationSecond['actionStatus'] = getActionRealizationStatus(realizationSecond);
-
-        return { realizationFirst, realizationSecond };
-    }
+   getActionRealizationStatus({ realizationDate }): string {
+       return realizationDate ? REALIZATIONS_ACTION_STATUS.COMPUTED : REALIZATIONS_ACTION_STATUS.NO_COMPUTED;
+   }
 }

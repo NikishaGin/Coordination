@@ -15,6 +15,11 @@ export function parseNumber(number) {
 }
 
 
+export function parseDate(date) {
+  return (date) ? date.toLocaleDateString('en-CA') : date;
+}
+
+
 // Функция для отображения даты в формате DD.MM.YYYY
 export function formatDate(date) {
   if (!date) return '';

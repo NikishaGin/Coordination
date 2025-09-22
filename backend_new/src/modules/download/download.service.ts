@@ -11,7 +11,7 @@ import { GetDownloadParamsDto } from './download.dto';
 import { createServiceFilters } from '../../common/utils/ServiceFilters';
 import { getValueFromMap } from "../../common/utils/data-transform";
 import { HEADERS_ACTIVES_STATISTICS, HEADERS_COMMON_STATISTICS, HEADERS_RESOLUTIONS_STATISTICS } from './download.headers';
-import { ActivesType, LeasStatus, WantedResults } from '../../generated/prisma/enums';
+import {ActivesType, LeasStatus, RealizationStage, WantedResults} from '../../generated/prisma/enums';
 import { STATUS_TYPE, VERIFICATION_STATUS, WANTED_STATUS } from "../../constants";
 
 
@@ -113,16 +113,6 @@ export class DownloadService {
     }
 
 
-
-
-
-
-
-
-
-
-
-
     async getActivesStatistics(data: GetDownloadParamsDto): Promise<ExcelJS.Buffer> {
         const { clientsFilter, resolutionsFilter } = createServiceFilters(data.isDerived, data.isArchived);
         if (data.clientIds)
@@ -183,9 +173,6 @@ export class DownloadService {
                     (item): boolean => item.clientId === active.clientId,
                 );
 
-
-
-
                 active['statusText'] = getValueFromMap(active.status, STATUS_TYPE);
 
                 active['objectStatusText'] = this.calculatedValues.getObjectStatus(active.objectStatus, active.otherObjectStatus);
@@ -196,9 +183,16 @@ export class DownloadService {
                     active.wanted['resultText'] = getValueFromMap(active.wanted.result, WANTED_STATUS);
 
                 if (active.realization && active.realization.length > 0) {
-                    const realization = this.calculatedValues.destructuringRealization(active.realization);
-                    active['realizationFirst'] = realization.realizationFirst;
-                    active['realizationSecond'] = realization.realizationSecond;
+                    active['realizationFirst'] = active.realization.find(
+                        ({ stage }) => stage === RealizationStage.FIRST
+                    );
+                    active['realizationSecond'] = active.realization.find(
+                        ({ stage }) => stage === RealizationStage.SECOND
+                    );
+                    if (active['realizationFirst'])
+                        active['realizationFirst']['actionStatus'] = this.calculatedValues.getActionRealizationStatus(active['realizationFirst']);
+                    if (active['realizationSecond'])
+                        active['realizationSecond']['actionStatus'] = this.calculatedValues.getActionRealizationStatus(active['realizationSecond']);
                 }
             }
 

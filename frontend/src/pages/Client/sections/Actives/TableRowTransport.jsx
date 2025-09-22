@@ -97,6 +97,9 @@ export const TableRowTransport = memo(({ row, onValueChange }) => {
                     isEditable={isAdmin}
                 />
             </NumberCell>
+
+
+
             {/*Статус объекта*/}
             <SelectCell>
                 <UniversalSelect
@@ -121,6 +124,10 @@ export const TableRowTransport = memo(({ row, onValueChange }) => {
                     onChange={handleDateChange('registration_start_date')}
                 />
             </DateCell>
+
+
+
+
             {/*Дата окончания регистрации*/}
             <DateCell>
                 <DatePickerCell
