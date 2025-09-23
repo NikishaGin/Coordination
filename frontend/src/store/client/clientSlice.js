@@ -1,12 +1,13 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { useSelector } from "react-redux";
-import { thunkGetResolutions, thunkGetActivesStatistics } from "./clientThunks.js";
-import { ActivesType } from "../../constants.js";
+import { thunkGetResolutions, thunkGetActivesStatistics, thunkGetInteractions } from "./clientThunks.js";
+import { ActivesType, InteractionType } from "../../constants.js";
 
 
 
 export const fetchGetResolutions = createAsyncThunk('client/fetchGetResolutions', thunkGetResolutions)
 export const fetchGetActivesStatistics = createAsyncThunk('client/fetchGetActivesStatistics', thunkGetActivesStatistics)
+export const fetchGetInteractions = createAsyncThunk('client/fetchGetInteractions', thunkGetInteractions)
 
 const initialState = {
     clientId: null,
@@ -26,8 +27,9 @@ const initialState = {
         }
     },
     interactions: {
-        GMU: [],
-        TNO: [],
+        type: InteractionType.GMU,
+        [InteractionType.GMU]: [],
+        [InteractionType.TNO]: [],
     },
 };
 
@@ -60,6 +62,11 @@ const clientSlice = createSlice({
             .addCase(fetchGetActivesStatistics.rejected, (state) => {
                 state.activesStatistics.loading = false;
             })
+            .addCase(fetchGetInteractions.fulfilled, (state, { payload }) => {
+                const { type, data } = payload;
+                state.interactions.type = type;
+                state.interactions[type] = data;
+            })
     }
 });
 
@@ -73,5 +80,6 @@ export const useClientId = () => useSelector((state) => state.client.clientId);
 export const useClientInfo = () => useSelector((state) => state.client.info);
 export const useResolutions = () => useSelector((state) => state.client.resolutions);
 export const useActivesStatistics = () => useSelector((state) => state.client.activesStatistics);
+export const useInteraction = () => useSelector((state) => state.client.interactions[state.client.interactions.type]);
 
 export default clientSlice.reducer;

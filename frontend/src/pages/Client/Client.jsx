@@ -11,7 +11,7 @@ import {tableHeadersAnother, tableHeadersDebit, tableHeadersProperty, tableHeade
 // import { AddButton } from "./sections/Actives/components/modalForm/AddButton.jsx";
 // import DebitForm from "./sections/Actives/components/modalForm/DebitForm.jsx";
 // import OtherAssetForm from "./sections/Actives/components/modalForm/OtherAssetForm.jsx";
-// import InteractionResultForm from "./sections/Interaction/InteractionResultForm.jsx";
+import InteractionResultForm from "./sections/Interaction/InteractionResultForm.jsx";
 // import TnoInteractionResultForm from "./sections/Interaction/TnoInteractionResultForm.jsx";
 import { useDispatch } from "react-redux";
 // import { clearSelectedRows } from "../../store/active/activesSlice.js";
@@ -204,13 +204,13 @@ export const Client = memo(() => {
     const mainNavItems = useMemo(() => [
         {key: "info", label: "Информация о должнике"},
         {key: "actives", label: "Активы должника"},
-        //  {key: "interaction", label: "Взаимодействие"},
+        {key: "interaction", label: "Взаимодействие"},
     ], []);
 
     const sidebarItems = useMemo(() => ({
         info: ["Постановления", "Статистика по активам"],
         actives: ["Транспорт", "Недвижимость", "Земельные участки", "Дебиторская задолженность", "Иные активы"],
-        // interaction: ["Направление ходатайства в ГМУ", "Примечание ТНО"]
+        interaction: ["Направление ходатайства в ГМУ", "Примечание ТНО"]
     }), []);
 
     const contentMap = useMemo(() => ({
@@ -257,14 +257,14 @@ export const Client = memo(() => {
                 />
             )
         },
-        // interaction: {
-        //     "Направление ходатайства в ГМУ": (
-        //         <InteractionResultForm/>
-        //     ),
-        //     'Примечание ТНО': (
-        //         <TnoInteractionResultForm/>
-        //     )
-        // }
+        interaction: {
+            "Направление ходатайства в ГМУ": (
+                <InteractionResultForm/>
+            ),
+            // 'Примечание ТНО': (
+            //     <TnoInteractionResultForm/>
+            // )
+        }
     }), []);
 
     const handleNavClick = useCallback((key) => {

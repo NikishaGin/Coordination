@@ -4,6 +4,8 @@ import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { AppModule } from './app.module';
+import * as path from "node:path";
+import * as process from "node:process";
 
 async function bootstrap() {
     const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
@@ -11,7 +13,8 @@ async function bootstrap() {
     const configService = app.get(ConfigService);
     const host = configService.get<string>('HOST');
     const port = configService.get<number>('PORT');
-    const origins = configService.get('ORIGINS').split(',') ?? [];
+    const origins = configService.get('ORIGINS').split(',') || [];
+    const storageName = configService.get('STORAGE_PATH') || './storage/';
 
     app.setGlobalPrefix('api');
     app.enableCors({
@@ -27,6 +30,11 @@ async function bootstrap() {
             transform: true,
         }),
     );
+
+    app.useStaticAssets({
+        root: path.join(process.cwd(), storageName),
+        prefix: storageName.replaceAll('.', ''),
+    });
 
     await app.register(compress);
 

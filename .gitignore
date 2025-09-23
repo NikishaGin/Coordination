@@ -7,10 +7,9 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-FileStore
-
 */db/migrations
 */src/generated
+*/storage
 node_modules
 dist
 dist-ssr

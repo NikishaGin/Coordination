@@ -65,7 +65,7 @@ export const MainAPI = {
 
 export const ClientAPI = {
     getResolutions: (clientId, params) => instance.get(`clients/${clientId}/resolutions`, { params }),
-    getInteractions: (clientId) => instance.get(`clients/${clientId}/interactions`),
+    getInteractions: (clientId, type) => instance.get(`clients/${clientId}/interactions/${type}`),
     createInteraction: (clientId) => instance.post(`clients/${clientId}/interactions`),
     updateInteraction: (interactionId) => instance.patch(`clients/${interactionId}/interactions`),
 }

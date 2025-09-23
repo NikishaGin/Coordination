@@ -1,28 +1,26 @@
 import {Card, CardHeader, CardBody, CardRow, RowLabel, RowValue, FileLink, EditButton, NoDataText} from './styles.js';
-import { useSelector } from "react-redux";
-import { ROLES } from "../../../../types.js";
+import { useRoleDetection } from "../../../../store/user/userSlice.js";
 
+
+
+const formatDate = (dateString) => {
+    if (!dateString) return null;
+
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    } catch (error) {
+        return dateString;
+    }
+};
 
 
 const InteractionCard = ({ data, onEdit }) => {
-    const role = useSelector((state) => state.user.role)
-    const isUser = role === ROLES.User
-
-    const formatDate = (dateString) => {
-        if (!dateString) return null;
-
-        try {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('ru-RU', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            });
-        } catch (error) {
-            return dateString;
-        }
-    };
-
+    const { isUser } = useRoleDetection();
 
     return (
         <Card>

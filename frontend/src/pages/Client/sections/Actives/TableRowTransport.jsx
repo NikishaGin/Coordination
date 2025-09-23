@@ -58,7 +58,7 @@ export const TableRowTransport = memo(({ row, onValueChange }) => {
             {/*Марка*/}
             <InputCell>
                 <EditableCell
-                    value={row.name || ''}
+                    value={row.description.name || ''}
                     onSave={handleInputChange('name')}
                     isEditable={isAdmin}
                 />
@@ -66,7 +66,7 @@ export const TableRowTransport = memo(({ row, onValueChange }) => {
             {/*VIN-номер*/}
             <InputCell>
                 <EditableCell
-                    value={row.vin || ''}
+                    value={row.description.vin || ''}
                     onSave={handleInputChange('vin')}
                     isEditable={isAdmin}
                 />
@@ -74,7 +74,7 @@ export const TableRowTransport = memo(({ row, onValueChange }) => {
             {/*Гос. номер*/}
             <InputCell>
                 <EditableCell
-                    value={row.state_number || ''}
+                    value={row.description.stateNumber || ''}
                     onSave={handleInputChange('state_number')}
                     isEditable={isAdmin}
                 />
@@ -82,7 +82,7 @@ export const TableRowTransport = memo(({ row, onValueChange }) => {
             {/*Год выпуска*/}
             <InputCell>
                 <EditableCell
-                    value={row.year || ''}
+                    value={row.description.yearRelease || ''}
                     type="year"
                     onSave={handleInputChange('year')}
                     isEditable={isAdmin}
@@ -103,7 +103,7 @@ export const TableRowTransport = memo(({ row, onValueChange }) => {
             {/*Статус объекта*/}
             <SelectCell>
                 <UniversalSelect
-                    value={row.obj_status}
+                    value={row.objectStatus}
                     onChange={handleStringSelectChange('obj_status')}
                     options={objStatusOptions(type)}
                 />
@@ -111,7 +111,7 @@ export const TableRowTransport = memo(({ row, onValueChange }) => {
             {/*Иной статус*/}
             <InputCell>
                 <CustomInput
-                    value={(row.obj_status_manual && (row.obj_status === "other")) ? row.obj_status_manual : ''}
+                    value={(row.otherObjectStatus && (row.objectStatus === "other")) ? row.otherObjectStatus : ''}
                     valuePlaceholder={'Введите статус'}
                     onChange={handleInputChange('obj_status_manual')}
                     disabled={row.obj_status !== "other"}

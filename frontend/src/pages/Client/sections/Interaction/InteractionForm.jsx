@@ -14,15 +14,12 @@ import {
     CancelButton,
     RemoveFileButton
 } from './styles.js';
-import { useSelector } from "react-redux";
-import { ROLES } from "../../../../types.js";
+import { useRoleDetection } from "../../../../store/user/userSlice.js";
 
 
 
 const InteractionForm = ({ onSubmit, onCancel, initialData }) => {
-    const role = useSelector((state) => state.user.role)
-    const isMIUDOL = role === ROLES.Admin
-    const isGMU = role === ROLES.GMUArkhangelsk
+    const { isGMU } = useRoleDetection();
 
     const [formData, setFormData] = useState({
         submissionDate: '',
@@ -93,7 +90,7 @@ const InteractionForm = ({ onSubmit, onCancel, initialData }) => {
                     name="submissionDate"
                     value={formData.submissionDate}
                     onChange={handleInputChange}
-                    disabled={!isMIUDOL}
+                    disabled={isGMU}
                 />
             </FormGroup>
             <FormGroup>
@@ -130,7 +127,7 @@ const InteractionForm = ({ onSubmit, onCancel, initialData }) => {
                             <RemoveFileButton
                                 type="button"
                                 onClick={() => removeFile('submissionFiles')}
-                                disabled={!isMIUDOL}
+                                disabled={isGMU}
                             >
                                 ✕
                             </RemoveFileButton>
@@ -142,7 +139,7 @@ const InteractionForm = ({ onSubmit, onCancel, initialData }) => {
                                 name="submissionFiles"
                                 accept="application/pdf"
                                 onChange={handleFileChange}
-                                disabled={!isMIUDOL}
+                                disabled={isGMU}
                             />
                             Выберите PDF-файл
                         </FileUploadLabel>

@@ -2,24 +2,25 @@ import { useEffect, useState } from 'react';
 import InteractionForm from './InteractionForm.jsx';
 import InteractionCard from './InteractionCard.jsx';
 import {Container, AddButton, InteractionsList, EmptyState} from './styles.js';
-import { useDispatch, useSelector } from "react-redux";
-import { fetchGetInteractions, fetchSaveInteraction } from "../../../../store/interactionsSlice.js";
-import { useParams } from "react-router";
-import { ROLES } from "../../../../types.js";
+import { useDispatch } from "react-redux";
+import { fetchGetInteractions, useInteraction } from "../../../../store/client/clientSlice.js";
+import { useRoleDetection } from "../../../../store/user/userSlice.js";
+import { InteractionType } from "../../../../constants.js";
 
 
 
 const InteractionResultForm = () => {
-    const {inn} = useParams()
     const dispatch = useDispatch();
-    const interactions = useSelector((state) => state.interactions.interactions);
+    const interactions = useInteraction();
+    const { isUser } = useRoleDetection();
+
     const [isFormOpen, setIsFormOpen] = useState(false); // флаг открыта ли форма
     const [editingId, setEditingId] = useState(null); // Если null значит добавляется новая запись
-    const role = useSelector((state) => state.user.role)
-    const isUser = role === ROLES.User
+
+
 
     useEffect(() => {
-        dispatch(fetchGetInteractions({ source: "gmu", inn }))
+        dispatch(fetchGetInteractions(InteractionType.GMU));
     }, [])
 
     const handleAddClick = () => {
@@ -33,7 +34,7 @@ const InteractionResultForm = () => {
     };
 
     const handleFormSubmit = (data) => {
-        dispatch(fetchSaveInteraction({ source: "gmu", inn, data }));
+        // dispatch(fetchSaveInteraction({ source: "gmu", inn, data }));
         setIsFormOpen(false);
         setEditingId(null);
     };

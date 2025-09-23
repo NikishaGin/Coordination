@@ -2,6 +2,7 @@ import {Body, Controller, Get, Param, Patch, Post, Query, UseGuards} from '@nest
 import { ClientService } from './client.service';
 import { GetResolutionsParamsDto } from './client.dto';
 import {JwtAuthGuard} from "../../common/guards/auth.guard";
+import {InteractionType} from "../../generated/prisma/enums";
 // import { ActivesType, InteractionType } from '../../generated/prisma/enums';
 
 
@@ -17,16 +18,16 @@ export class ClientController {
     ) {
         return this.clientService.getResolutions(clientId, query);
     }
-
-    /*
-    @Get('interactions/:clientId')
+    @Get('/:clientId/interactions/:interactionType')
     getInteractions(
         @Param('clientId') clientId: number,
-        @Query('type') type: InteractionType
+        @Param('interactionType') type: InteractionType,
     ) {
         return this.clientService.getInteractions(clientId, type);
     }
 
+
+    /*
     @Post('interactions/:clientId')
     // @UseInterceptors(ClientController.FilesInterceptor)
     createInteraction(

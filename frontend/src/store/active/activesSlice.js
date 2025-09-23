@@ -97,6 +97,10 @@ export const {
 export const useActive = () => useSelector(state => state.actives.data[state.actives.typeActive].tableData);
 export const useSelectedRows = () => useSelector(state => state.actives.data[state.actives.typeActive].selectedRows);
 export const useLoadingStatus = () => useSelector(state => state.actives.loadingStatus);
+
+
+
+
 export const useActiveType = () => useSelector(state => state.actives.typeActive);
 
 export default activesSlice.reducer;

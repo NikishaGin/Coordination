@@ -31,11 +31,11 @@ export const thunkGetActivesStatistics = async (_, { rejectWithValue, getState }
 
 
 export const thunkGetInteractions = async (type, { rejectWithValue, getState }) => {
+    const clientId = getState().client.clientId;
+    if (!clientId) return rejectWithValue("Client ID not found");
     try {
-
-        // const response = await interactionAPI.getInteractions(source, inn);
-        // return response.data;
-
+        const response = await ClientAPI.getInteractions(clientId, type);
+        return { type, data: response.data };
     } catch (error) {
         console.error('Ошибка при загрузке данных:', error);
         return rejectWithValue(error.message);

@@ -144,7 +144,6 @@ export function EditableCell({value, onSave, type = "text", isEditable = true}) 
 
     const handleSave = () => {
         if (tempValue !== value) {
-            console.log(value)
             if (type === "inn" && ![0, 10, 12].includes(tempValue.length))
                 return
             if ((type === "year") && (tempValue.length > 0)) {

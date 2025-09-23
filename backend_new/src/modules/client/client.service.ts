@@ -34,19 +34,29 @@ export class ClientService {
         });
     }
 
-
-
-
-
-
-
-    /*
     getInteractions(clientId: number, type: InteractionType) {
         return this.prisma.interactions.findMany({
             where: { clientId, type },
+            omit: {
+                type: true,
+                clientId: true,
+                ...(
+                    type === InteractionType.GMU ? { note: true, tnoId: true } : {}
+                ),
+            },
+            ...(
+                type === InteractionType.TNO
+                    ? {
+                        include: {
+                            tno: { select: { CodeTNO: true } },
+                        },
+                    }
+                    : {}
+            ),
         });
     }
 
+    /*
     createInteraction(clientId: number, metadata: CreateInteractionDto, files: InteractionFilesInfo) {
         return this.prisma.interactions.create({
             data: {
